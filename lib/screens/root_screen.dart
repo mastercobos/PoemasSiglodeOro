@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/poema.dart';
 import 'inicio_screen.dart';
 import 'home_screen.dart';
+import 'busqueda_screen.dart';
+import 'favoritos_screen.dart';
 
 class RootScreen extends StatefulWidget {
   final List<Poema> poemas;
@@ -15,8 +17,6 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> {
   int _tab = 0;
 
-  static const _titulos = ['Inicio', 'Índice'];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,9 +27,7 @@ class _RootScreenState extends State<RootScreen> {
         title: Text(
           'Antología Poética',
           style: GoogleFonts.playfairDisplay(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
+              fontSize: 22, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         elevation: 0,
@@ -38,20 +36,19 @@ class _RootScreenState extends State<RootScreen> {
           child: Container(color: const Color(0xFF8B6914), height: 1),
         ),
       ),
-
       body: IndexedStack(
         index: _tab,
         children: [
           InicioScreen(poemas: widget.poemas),
           HomeScreen(poemas: widget.poemas),
+          BusquedaScreen(poemas: widget.poemas),
+          const FavoritosScreen(),
         ],
       ),
-
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: Color(0xFFD4AF6A), width: 1),
-          ),
+          border:
+              Border(top: BorderSide(color: Color(0xFFD4AF6A), width: 1)),
         ),
         child: BottomNavigationBar(
           currentIndex: _tab,
@@ -59,11 +56,10 @@ class _RootScreenState extends State<RootScreen> {
           backgroundColor: const Color(0xFF3B2F2F),
           selectedItemColor: const Color(0xFFD4AF6A),
           unselectedItemColor: Colors.white54,
-          selectedLabelStyle: GoogleFonts.lato(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelStyle: GoogleFonts.lato(fontSize: 12),
+          selectedLabelStyle:
+              GoogleFonts.lato(fontSize: 11, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: GoogleFonts.lato(fontSize: 11),
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.wb_sunny_outlined),
@@ -74,6 +70,16 @@ class _RootScreenState extends State<RootScreen> {
               icon: Icon(Icons.menu_book_outlined),
               activeIcon: Icon(Icons.menu_book),
               label: 'Índice',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              activeIcon: Icon(Icons.search),
+              label: 'Buscar',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_border),
+              activeIcon: Icon(Icons.favorite),
+              label: 'Favoritos',
             ),
           ],
         ),

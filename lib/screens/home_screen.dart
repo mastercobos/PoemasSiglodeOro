@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/poema.dart';
+import '../utils/roman.dart';
 import 'poema_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Poema> poemas;
-
   const HomeScreen({super.key, required this.poemas});
 
   Map<String, List<Poema>> _agrupar() {
@@ -14,8 +14,7 @@ class HomeScreen extends StatelessWidget {
       mapa.putIfAbsent(p.autor, () => []).add(p);
     }
     for (final lista in mapa.values) {
-      lista.sort((a, b) =>
-          a.titulo.toLowerCase().compareTo(b.titulo.toLowerCase()));
+      lista.sort((a, b) => compareTitulos(a.etiqueta, b.etiqueta));
     }
     return Map.fromEntries(
       mapa.entries.toList()
@@ -31,7 +30,6 @@ class HomeScreen extends StatelessWidget {
 
     return Column(
       children: [
-        // Subtítulo decorativo
         Container(
           width: double.infinity,
           color: const Color(0xFF3B2F2F),
@@ -48,7 +46,8 @@ class HomeScreen extends StatelessWidget {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             itemCount: autores.length,
             itemBuilder: (context, i) {
               final autor = autores[i];
@@ -61,7 +60,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// ──────────────────────────────────────────────────────────
 class _AutorCard extends StatefulWidget {
   final String autor;
   final List<Poema> poemas;
@@ -95,11 +93,14 @@ class _AutorCardState extends State<_AutorCard> {
         child: Column(
           children: [
             Material(
-              color: _open ? const Color(0xFF3B2F2F) : const Color(0xFFFAF0E0),
+              color: _open
+                  ? const Color(0xFF3B2F2F)
+                  : const Color(0xFFFAF0E0),
               child: InkWell(
                 onTap: () => setState(() => _open = !_open),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
                       Container(
@@ -182,7 +183,6 @@ class _AutorCardState extends State<_AutorCard> {
   }
 }
 
-// ──────────────────────────────────────────────────────────
 class _PoemasLista extends StatelessWidget {
   final List<Poema> poemas;
   const _PoemasLista({required this.poemas});
@@ -198,17 +198,15 @@ class _PoemasLista extends StatelessWidget {
             children: [
               Container(width: 20, height: 1, color: const Color(0xFFD4AF6A)),
               const SizedBox(width: 8),
-              Text(
-                'POEMAS',
-                style: GoogleFonts.lato(
-                  fontSize: 10,
-                  letterSpacing: 2,
-                  color: const Color(0xFF8B6914),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text('POEMAS',
+                  style: GoogleFonts.lato(
+                    fontSize: 10, letterSpacing: 2,
+                    color: const Color(0xFF8B6914),
+                    fontWeight: FontWeight.w700,
+                  )),
               const SizedBox(width: 8),
-              Expanded(child: Container(height: 1, color: const Color(0xFFD4AF6A))),
+              Expanded(
+                  child: Container(height: 1, color: const Color(0xFFD4AF6A))),
             ],
           ),
         ),
@@ -227,7 +225,8 @@ class _PoemasLista extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (_, __, ___) => PoemaScreen(poema: poema),
+                      pageBuilder: (_, __, ___) =>
+                          PoemaScreen(poema: poema),
                       transitionsBuilder: (_, animation, __, child) =>
                           FadeTransition(opacity: animation, child: child),
                       transitionDuration: const Duration(milliseconds: 250),
@@ -235,20 +234,44 @@ class _PoemasLista extends StatelessWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 13),
+                        horizontal: 16, vertical: 11),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.menu_book_outlined,
-                            size: 16, color: Color(0xFF8B6914)),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 2),
+                          child: Icon(Icons.menu_book_outlined,
+                              size: 16, color: Color(0xFF8B6914)),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            poema.titulo,
-                            style: GoogleFonts.lato(
-                              fontSize: 15,
-                              color: const Color(0xFF3B2F2F),
-                              fontWeight: FontWeight.w500,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Etiqueta: título o primer verso
+                              Text(
+                                poema.etiqueta,
+                                style: GoogleFonts.lato(
+                                  fontSize: 15,
+                                  color: const Color(0xFF3B2F2F),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              // Si tiene título, mostrar primer verso como pista
+                              if (poema.titulo.isNotEmpty &&
+                                  poema.primerVerso.isNotEmpty &&
+                                  poema.primerVerso != poema.titulo)
+                                Text(
+                                  '«${poema.primerVerso}»',
+                                  style: GoogleFonts.lato(
+                                    fontSize: 12,
+                                    color: Colors.grey[500],
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
                           ),
                         ),
                         const Icon(Icons.chevron_right,
