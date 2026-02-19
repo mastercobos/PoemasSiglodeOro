@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/poema.dart';
 import '../providers/favoritos_provider.dart';
+import '../utils/roman.dart';
 import 'poema_screen.dart';
 
 class FavoritosScreen extends StatelessWidget {
@@ -16,7 +17,7 @@ class FavoritosScreen extends StatelessWidget {
     }
     for (final lista in mapa.values) {
       lista.sort((a, b) =>
-          a.etiqueta.toLowerCase().compareTo(b.etiqueta.toLowerCase()));
+          compareTitulos(a.etiqueta, b.etiqueta));
     }
     return Map.fromEntries(
       mapa.entries.toList()
