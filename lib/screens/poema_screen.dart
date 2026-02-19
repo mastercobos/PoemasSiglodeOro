@@ -9,8 +9,35 @@ class PoemaScreen extends StatelessWidget {
 
   const PoemaScreen({super.key, required this.poema});
 
+  static const _cortesEstrofa = {4, 8, 11};
+
+  List<String> get _versos => poema.texto
+      .split('\n')
+      .map((l) => l.trimRight())
+      .where((l) => l.isNotEmpty)
+      .toList();
+
+  List<Widget> _buildCuerpo(TextStyle estilo) {
+    final versos = _versos;
+    final widgets = <Widget>[];
+    for (int i = 0; i < versos.length; i++) {
+      widgets.add(Text(versos[i], textAlign: TextAlign.center, style: estilo));
+      if (_cortesEstrofa.contains(i + 1) && i + 1 < versos.length) {
+        widgets.add(const SizedBox(height: 20));
+      }
+    }
+    return widgets;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final estiloVerso = GoogleFonts.lato(
+      fontSize: 17,
+      height: 1.85,
+      color: const Color(0xFF3B2F2F),
+      letterSpacing: 0.15,
+    );
+
     return Consumer<FavoritosProvider>(
       builder: (context, favoritos, _) {
         final esFav = favoritos.esFavorito(poema);
@@ -20,7 +47,7 @@ class PoemaScreen extends StatelessWidget {
             backgroundColor: const Color(0xFF3B2F2F),
             foregroundColor: Colors.white,
             title: Text(
-              poema.titulo,
+              poema.etiqueta,
               style: GoogleFonts.playfairDisplay(
                   fontSize: 17, fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
@@ -47,9 +74,7 @@ class PoemaScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        esFav
-                            ? 'Eliminado de favoritos'
-                            : 'Añadido a favoritos',
+                        esFav ? 'Eliminado de favoritos' : 'Añadido a favoritos',
                         style: GoogleFonts.lato(),
                       ),
                       backgroundColor: const Color(0xFF3B2F2F),
@@ -64,15 +89,15 @@ class PoemaScreen extends StatelessWidget {
             ],
           ),
           body: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _ornament(),
                 const SizedBox(height: 28),
+
                 Text(
-                  poema.titulo,
+                  poema.etiqueta,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 28,
@@ -81,6 +106,23 @@ class PoemaScreen extends StatelessWidget {
                     height: 1.25,
                   ),
                 ),
+
+                if (poema.titulo.isNotEmpty &&
+                    poema.primerVerso.isNotEmpty &&
+                    poema.primerVerso != poema.titulo)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      '«${poema.primerVerso}»',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.lato(
+                        fontSize: 13,
+                        color: Colors.grey[500],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+
                 const SizedBox(height: 10),
                 Text(
                   poema.autor,
@@ -100,16 +142,9 @@ class PoemaScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 34),
-                Text(
-                  poema.texto,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.lato(
-                    fontSize: 17,
-                    height: 2.05,
-                    color: const Color(0xFF3B2F2F),
-                    letterSpacing: 0.15,
-                  ),
-                ),
+
+                ..._buildCuerpo(estiloVerso),
+
                 const SizedBox(height: 52),
                 _ornament(),
                 const SizedBox(height: 16),
