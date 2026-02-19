@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'models/poema.dart';
 import 'providers/favoritos_provider.dart';
+import 'providers/ajustes_provider.dart';
 import 'screens/root_screen.dart';
 
 void main() => runApp(const PoemasApp());
@@ -33,7 +34,11 @@ class _PoemasAppState extends State<PoemasApp> {
           ? decoded
           : (decoded as Map)['poemas'] as List;
       setState(() => _poemas = list
-          .asMap().entries.map((e) => Poema.fromJson(Map<String, dynamic>.from(e.value as Map), index: e.key))
+          .asMap()
+          .entries
+          .map((e) => Poema.fromJson(
+              Map<String, dynamic>.from(e.value as Map),
+              index: e.key))
           .toList());
     } catch (e) {
       setState(() => _error = e.toString());
@@ -42,7 +47,6 @@ class _PoemasAppState extends State<PoemasApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Mientras carga: app sin provider (no se necesita aún)
     if (_error != null) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -51,11 +55,9 @@ class _PoemasAppState extends State<PoemasApp> {
           body: Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text(
-                'Error al cargar los poemas:\n$_error',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red),
-              ),
+              child: Text('Error al cargar los poemas:\n$_error',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.red)),
             ),
           ),
         ),
@@ -81,9 +83,18 @@ class _PoemasAppState extends State<PoemasApp> {
       );
     }
 
-    // Provider por encima del MaterialApp → accesible en TODAS las rutas
-    return ChangeNotifierProvider(
-      create: (_) => FavoritosProvider(_poemas!),
+    // Extraer autores únicos ordenados alfabéticamente
+    final autores = _poemas!
+        .map((p) => p.autor)
+        .toSet()
+        .toList()
+      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoritosProvider(_poemas!)),
+        ChangeNotifierProvider(create: (_) => AjustesProvider(autores)),
+      ],
       child: MaterialApp(
         title: 'Antología Poética',
         debugShowCheckedModeBanner: false,
