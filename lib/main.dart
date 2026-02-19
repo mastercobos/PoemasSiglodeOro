@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'models/poema.dart';
-import 'screens/home_screen.dart';
+import 'screens/root_screen.dart';
 
 void main() => runApp(const PoemasApp());
 
@@ -16,9 +16,7 @@ class PoemasApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF3B2F2F),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3B2F2F)),
         splashColor: const Color(0x228B6914),
         highlightColor: const Color(0x118B6914),
       ),
@@ -70,7 +68,6 @@ class _LoaderState extends State<_Loader> {
         ),
       );
     }
-
     if (_poemas == null) {
       return const Scaffold(
         backgroundColor: Color(0xFF3B2F2F),
@@ -86,7 +83,6 @@ class _LoaderState extends State<_Loader> {
         ),
       );
     }
-
-    return HomeScreen(poemas: _poemas!);
+    return RootScreen(poemas: _poemas!);
   }
 }

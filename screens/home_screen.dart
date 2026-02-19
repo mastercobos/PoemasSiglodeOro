@@ -8,6 +8,7 @@ class HomeScreen extends StatelessWidget {
 
   const HomeScreen({super.key, required this.poemas});
 
+  /// Agrupa por autor, ordena autores y poemas alfabéticamente.
   Map<String, List<Poema>> _agrupar() {
     final Map<String, List<Poema>> mapa = {};
     for (final p in poemas) {
@@ -29,42 +30,68 @@ class HomeScreen extends StatelessWidget {
     final grupos = _agrupar();
     final autores = grupos.keys.toList();
 
-    return Column(
-      children: [
-        // Subtítulo decorativo
-        Container(
-          width: double.infinity,
-          color: const Color(0xFF3B2F2F),
-          padding: const EdgeInsets.only(top: 4, bottom: 14),
-          child: Text(
-            '— Índice de Autores —',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
-              color: const Color(0xFFD4AF6A),
-              fontSize: 12,
-              letterSpacing: 2.5,
+    return Scaffold(
+      backgroundColor: const Color(0xFFFDF6EC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF3B2F2F),
+        foregroundColor: Colors.white,
+        title: Text(
+          'Antología Poética',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: const Color(0xFF8B6914), height: 1),
+        ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            color: const Color(0xFF3B2F2F),
+            padding: const EdgeInsets.only(top: 4, bottom: 14),
+            child: Text(
+              '— Índice de Autores —',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(
+                color: const Color(0xFFD4AF6A),
+                fontSize: 12,
+                letterSpacing: 2.5,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            itemCount: autores.length,
-            itemBuilder: (context, i) {
-              final autor = autores[i];
-              return _AutorCard(autor: autor, poemas: grupos[autor]!);
-            },
+          Expanded(
+            child: ListView.builder(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              itemCount: autores.length,
+              itemBuilder: (context, i) {
+                final autor = autores[i];
+                return _AutorCard(
+                  autor: autor,
+                  poemas: grupos[autor]!,
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 // ──────────────────────────────────────────────────────────
+// Tarjeta expandible por autor
+// ──────────────────────────────────────────────────────────
 class _AutorCard extends StatefulWidget {
   final String autor;
   final List<Poema> poemas;
+
   const _AutorCard({required this.autor, required this.poemas});
 
   @override
@@ -94,16 +121,21 @@ class _AutorCardState extends State<_AutorCard> {
         borderRadius: BorderRadius.circular(12),
         child: Column(
           children: [
+            // ── Cabecera ──
             Material(
-              color: _open ? const Color(0xFF3B2F2F) : const Color(0xFFFAF0E0),
+              color:
+                  _open ? const Color(0xFF3B2F2F) : const Color(0xFFFAF0E0),
               child: InkWell(
                 onTap: () => setState(() => _open = !_open),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
+                      // Avatar
                       Container(
-                        width: 46, height: 46,
+                        width: 46,
+                        height: 46,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _open
@@ -124,6 +156,8 @@ class _AutorCardState extends State<_AutorCard> {
                         ),
                       ),
                       const SizedBox(width: 14),
+
+                      // Nombre + conteo
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,6 +186,8 @@ class _AutorCardState extends State<_AutorCard> {
                           ],
                         ),
                       ),
+
+                      // Flecha animada
                       AnimatedRotation(
                         turns: _open ? 0.5 : 0,
                         duration: const Duration(milliseconds: 220),
@@ -168,6 +204,8 @@ class _AutorCardState extends State<_AutorCard> {
                 ),
               ),
             ),
+
+            // ── Cuerpo colapsable con AnimatedSize (más eficiente) ──
             AnimatedSize(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeInOut,
@@ -183,8 +221,11 @@ class _AutorCardState extends State<_AutorCard> {
 }
 
 // ──────────────────────────────────────────────────────────
+// Lista de poemas dentro de la tarjeta
+// ──────────────────────────────────────────────────────────
 class _PoemasLista extends StatelessWidget {
   final List<Poema> poemas;
+
   const _PoemasLista({required this.poemas});
 
   @override
@@ -192,6 +233,7 @@ class _PoemasLista extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Cabecera "POEMAS"
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Row(
@@ -208,17 +250,23 @@ class _PoemasLista extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(child: Container(height: 1, color: const Color(0xFFD4AF6A))),
+              Expanded(
+                  child:
+                      Container(height: 1, color: const Color(0xFFD4AF6A))),
             ],
           ),
         ),
+
+        // Filas de poemas
         ...List.generate(poemas.length, (idx) {
           final poema = poemas[idx];
           return Column(
             children: [
               if (idx > 0)
                 Divider(
-                  height: 1, indent: 16, endIndent: 16,
+                  height: 1,
+                  indent: 16,
+                  endIndent: 16,
                   color: Colors.brown.withValues(alpha: 0.1),
                 ),
               Material(
