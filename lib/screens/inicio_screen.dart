@@ -12,10 +12,7 @@ class InicioScreen extends StatelessWidget {
   const InicioScreen({super.key, required this.poemas});
 
   List<Poema> _poemasDelDia(List<String> autoresActivos) {
-    // Filtrar solo poemas de autores activos
-    final pool = autoresActivos.isEmpty
-        ? poemas
-        : poemas.where((p) => autoresActivos.contains(p.autor)).toList();
+    final pool = poemas.where((p) => autoresActivos.contains(p.autor)).toList();
 
     if (pool.isEmpty) return [];
 
