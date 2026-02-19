@@ -25,7 +25,7 @@ class _RootScreenState extends State<RootScreen> {
         backgroundColor: const Color(0xFF3B2F2F),
         foregroundColor: Colors.white,
         title: Text(
-          'Antología Poética',
+          'Sonetos del Siglo de Oro',
           style: GoogleFonts.playfairDisplay(
               fontSize: 22, fontWeight: FontWeight.bold),
         ),
