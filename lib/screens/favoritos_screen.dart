@@ -16,7 +16,7 @@ class FavoritosScreen extends StatelessWidget {
     }
     for (final lista in mapa.values) {
       lista.sort((a, b) =>
-          a.titulo.toLowerCase().compareTo(b.titulo.toLowerCase()));
+          a.etiqueta.toLowerCase().compareTo(b.etiqueta.toLowerCase()));
     }
     return Map.fromEntries(
       mapa.entries.toList()
@@ -204,13 +204,31 @@ class _FavAutorCard extends StatelessWidget {
                                 size: 16, color: Color(0xFF8B6914)),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(
-                                poema.titulo,
-                                style: GoogleFonts.lato(
-                                  fontSize: 15,
-                                  color: const Color(0xFF3B2F2F),
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    poema.etiqueta,
+                                    style: GoogleFonts.lato(
+                                      fontSize: 15,
+                                      color: const Color(0xFF3B2F2F),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  if (poema.titulo.isNotEmpty &&
+                                      poema.primerVerso.isNotEmpty &&
+                                      poema.primerVerso != poema.titulo)
+                                    Text(
+                                      '«${poema.primerVerso}»',
+                                      style: GoogleFonts.lato(
+                                        fontSize: 12,
+                                        color: Colors.grey[500],
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
                               ),
                             ),
                             const Icon(Icons.chevron_right,
