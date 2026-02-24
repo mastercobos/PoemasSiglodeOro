@@ -187,7 +187,19 @@ class _TarjetaPoema extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
-        child: Column(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, __, ___) => PoemaScreen(poema: poema),
+                transitionsBuilder: (_, animation, __, child) =>
+                    FadeTransition(opacity: animation, child: child),
+                transitionDuration: const Duration(milliseconds: 250),
+              ),
+            ),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
@@ -231,29 +243,26 @@ class _TarjetaPoema extends StatelessWidget {
                       height: 1.85,
                       color: const Color(0xFF4A3728))),
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (_, __, ___) => PoemaScreen(poema: poema),
-                    transitionsBuilder: (_, animation, __, child) =>
-                        FadeTransition(opacity: animation, child: child),
-                    transitionDuration: const Duration(milliseconds: 250),
-                  ),
-                ),
-                icon: const Icon(Icons.menu_book_outlined,
-                    size: 16, color: Color(0xFF8B6914)),
-                label: Text('Leer poema completo',
-                    style: GoogleFonts.lato(
-                        fontSize: 13,
-                        color: const Color(0xFF8B6914),
-                        fontWeight: FontWeight.w600)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('Leer poema completo',
+                      style: GoogleFonts.lato(
+                          fontSize: 12,
+                          color: const Color(0xFF8B6914),
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right,
+                      size: 16, color: Color(0xFF8B6914)),
+                ],
               ),
             ),
             const SizedBox(height: 6),
           ],
+        ),
+          ),
         ),
       ),
     );
