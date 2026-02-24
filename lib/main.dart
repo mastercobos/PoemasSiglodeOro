@@ -96,7 +96,7 @@ class _PoemasAppState extends State<PoemasApp> {
         ChangeNotifierProvider(create: (_) => AjustesProvider(autores)),
       ],
       child: MaterialApp(
-        title: 'Sonetos del Siglo de Oro',
+        title: 'Antología Poética',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
