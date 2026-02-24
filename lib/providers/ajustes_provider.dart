@@ -4,33 +4,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AjustesProvider extends ChangeNotifier {
   static const _key = 'autores_seleccionados';
 
-  Set<String>? _autoresSeleccionados; // null = todos activos
+  Set<String> _autoresSeleccionados;
   final List<String> todosLosAutores;
 
-  AjustesProvider(this.todosLosAutores) {
+  AjustesProvider(this.todosLosAutores)
+      : _autoresSeleccionados = Set.from(todosLosAutores) {
     _cargar();
   }
 
-  List<String> get autoresActivos {
-    if (_autoresSeleccionados == null || _autoresSeleccionados!.isEmpty) {
-      return [];
-    }
-    return todosLosAutores
-        .where((a) => _autoresSeleccionados!.contains(a))
-        .toList();
-  }
+  List<String> get autoresActivos => todosLosAutores
+      .where((a) => _autoresSeleccionados.contains(a))
+      .toList();
 
-  bool estaActivo(String autor) {
-    if (_autoresSeleccionados == null) return true;
-    return _autoresSeleccionados!.contains(autor);
-  }
+  bool estaActivo(String autor) => _autoresSeleccionados.contains(autor);
+
+  int get totalActivos => _autoresSeleccionados.length;
 
   Future<void> toggleAutor(String autor) async {
-    _autoresSeleccionados ??= Set.from(todosLosAutores);
-    if (_autoresSeleccionados!.contains(autor)) {
-      _autoresSeleccionados!.remove(autor);
+    if (_autoresSeleccionados.contains(autor)) {
+      _autoresSeleccionados.remove(autor);
     } else {
-      _autoresSeleccionados!.add(autor);
+      _autoresSeleccionados.add(autor);
     }
     notifyListeners();
     await _guardar();
@@ -53,13 +47,15 @@ class AjustesProvider extends ChangeNotifier {
     final guardados = prefs.getStringList(_key);
     if (guardados != null) {
       _autoresSeleccionados = Set.from(guardados);
+    } else {
+      // Primera vez: todos seleccionados, guardar para futuras sesiones
+      await _guardar();
     }
     notifyListeners();
   }
 
   Future<void> _guardar() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-        _key, (_autoresSeleccionados ?? <String>{}).toList());
+    await prefs.setStringList(_key, _autoresSeleccionados.toList());
   }
 }

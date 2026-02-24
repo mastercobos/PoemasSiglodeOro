@@ -28,7 +28,7 @@ class AjustesInicioScreen extends StatelessWidget {
       body: Consumer<AjustesProvider>(
         builder: (context, ajustes, _) {
           final autores = ajustes.todosLosAutores;
-          final activosCount = ajustes.autoresActivos.length;
+          final activosCount = ajustes.totalActivos;
 
           return Column(
             children: [
@@ -136,7 +136,7 @@ class AjustesInicioScreen extends StatelessWidget {
                       trailing: Switch(
                         value: activo,
                         onChanged: (_) => ajustes.toggleAutor(autor),
-                        activeColor: const Color(0xFF8B6914),
+                        activeThumbColor: const Color(0xFF8B6914),
                         activeTrackColor:
                             const Color(0xFFD4AF6A).withValues(alpha: 0.4),
                       ),
