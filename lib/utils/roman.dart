@@ -8,8 +8,9 @@ const _vals = {
 int? romanToInt(String s) {
   final str = s.trim().toUpperCase();
   if (str.isEmpty) return null;
-  if (!RegExp(r'^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$')
-      .hasMatch(str)) return null;
+  if (!RegExp(r'^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$').hasMatch(str)) {
+    return null;
+  }
   int result = 0, i = 0;
   while (i < str.length) {
     if (i + 1 < str.length && _vals.containsKey(str.substring(i, i + 2))) {
