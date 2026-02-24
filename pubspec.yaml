@@ -17,3 +17,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/poemas.json
+dev_dependencies:
+  flutter_lints: ^4.0.0
