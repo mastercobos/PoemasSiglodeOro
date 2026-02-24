@@ -3,11 +3,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/poema.dart';
 import '../providers/favoritos_provider.dart';
+import '../widgets/autor_link.dart';
 
 class PoemaScreen extends StatelessWidget {
   final Poema poema;
+  final List<Poema> todosLosPoemas;
 
-  const PoemaScreen({super.key, required this.poema});
+  const PoemaScreen({
+    super.key,
+    required this.poema,
+    required this.todosLosPoemas,
+  });
 
   static const _cortesEstrofa = {4, 8, 11};
 
@@ -21,7 +27,8 @@ class PoemaScreen extends StatelessWidget {
     final versos = _versos;
     final widgets = <Widget>[];
     for (int i = 0; i < versos.length; i++) {
-      widgets.add(SelectableText(versos[i], textAlign: TextAlign.center, style: estilo));
+      widgets.add(SelectableText(versos[i],
+          textAlign: TextAlign.center, style: estilo));
       if (_cortesEstrofa.contains(i + 1) && i + 1 < versos.length) {
         widgets.add(const SizedBox(height: 20));
       }
@@ -60,13 +67,15 @@ class PoemaScreen extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                tooltip: esFav ? 'Quitar de favoritos' : 'Añadir a favoritos',
+                tooltip:
+                    esFav ? 'Quitar de favoritos' : 'Añadir a favoritos',
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 250),
                   child: Icon(
                     esFav ? Icons.favorite : Icons.favorite_border,
                     key: ValueKey(esFav),
-                    color: esFav ? const Color(0xFFD4AF6A) : Colors.white70,
+                    color:
+                        esFav ? const Color(0xFFD4AF6A) : Colors.white70,
                   ),
                 ),
                 onPressed: () {
@@ -74,7 +83,9 @@ class PoemaScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        esFav ? 'Eliminado de favoritos' : 'Añadido a favoritos',
+                        esFav
+                            ? 'Eliminado de favoritos'
+                            : 'Añadido a favoritos',
                         style: GoogleFonts.lato(),
                       ),
                       backgroundColor: const Color(0xFF3B2F2F),
@@ -89,7 +100,8 @@ class PoemaScreen extends StatelessWidget {
             ],
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -112,7 +124,7 @@ class PoemaScreen extends StatelessWidget {
                     poema.primerVerso != poema.titulo)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(
+                    child: SelectableText(
                       '«${poema.primerVerso}»',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.lato(
@@ -124,18 +136,17 @@ class PoemaScreen extends StatelessWidget {
                   ),
 
                 const SizedBox(height: 10),
-                SelectableText(
-                  poema.autor,
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: const Color(0xFF8B6914),
-                    fontStyle: FontStyle.italic,
-                    letterSpacing: 0.6,
-                  ),
+
+                // Autor clicable
+                AutorLink(
+                  autor: poema.autor,
+                  todosLosPoemas: todosLosPoemas,
                 ),
+
                 const SizedBox(height: 30),
                 Container(
-                  width: 56, height: 2,
+                  width: 56,
+                  height: 2,
                   decoration: BoxDecoration(
                     color: const Color(0xFF8B6914),
                     borderRadius: BorderRadius.circular(1),

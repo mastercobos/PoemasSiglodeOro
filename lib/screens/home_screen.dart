@@ -88,7 +88,7 @@ class _AutorCard extends StatelessWidget {
               context,
               PageRouteBuilder(
                 pageBuilder: (_, __, ___) =>
-                    AutorScreen(autor: autor, poemas: poemas),
+                    AutorScreen(autor: autor, poemas: poemas, todosLosPoemas: poemas),
                 transitionsBuilder: (_, animation, __, child) =>
                     FadeTransition(opacity: animation, child: child),
                 transitionDuration: const Duration(milliseconds: 250),

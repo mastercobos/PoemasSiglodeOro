@@ -8,7 +8,8 @@ class AutorScreen extends StatelessWidget {
   final String autor;
   final List<Poema> poemas;
 
-  const AutorScreen({super.key, required this.autor, required this.poemas});
+  final List<Poema> todosLosPoemas;
+  const AutorScreen({super.key, required this.autor, required this.poemas, required this.todosLosPoemas});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +74,7 @@ class AutorScreen extends StatelessWidget {
                           context,
                           PageRouteBuilder(
                             pageBuilder: (_, __, ___) =>
-                                PoemaScreen(poema: poema),
+                                PoemaScreen(poema: poema, todosLosPoemas: todosLosPoemas),
                             transitionsBuilder: (_, animation, __, child) =>
                                 FadeTransition(opacity: animation, child: child),
                             transitionDuration:

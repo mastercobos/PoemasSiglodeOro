@@ -5,7 +5,8 @@ import 'poema_screen.dart';
 
 class BusquedaScreen extends StatefulWidget {
   final List<Poema> poemas;
-  const BusquedaScreen({super.key, required this.poemas});
+  final List<Poema> todosLosPoemas;
+  const BusquedaScreen({super.key, required this.poemas, required this.todosLosPoemas});
 
   @override
   State<BusquedaScreen> createState() => _BusquedaScreenState();
@@ -128,6 +129,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                         return _ResultadoCard(
                           poema: p,
                           query: q,
+                          todosLosPoemas: widget.todosLosPoemas,
                           fragmento:
                               enTexto ? _fragmentoConTexto(p, q) : null,
                         );
@@ -143,10 +145,12 @@ class _ResultadoCard extends StatelessWidget {
   final Poema poema;
   final String query;
   final String? fragmento;
+  final List<Poema> todosLosPoemas;
 
   const _ResultadoCard({
     required this.poema,
     required this.query,
+    required this.todosLosPoemas,
     this.fragmento,
   });
 
@@ -173,7 +177,7 @@ class _ResultadoCard extends StatelessWidget {
           onTap: () => Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => PoemaScreen(poema: poema),
+              pageBuilder: (_, __, ___) => PoemaScreen(poema: poema, todosLosPoemas: todosLosPoemas),
               transitionsBuilder: (_, animation, __, child) =>
                   FadeTransition(opacity: animation, child: child),
               transitionDuration: const Duration(milliseconds: 250),

@@ -5,9 +5,11 @@ import '../models/poema.dart';
 import '../providers/favoritos_provider.dart';
 import '../utils/roman.dart';
 import 'poema_screen.dart';
+import 'autor_screen.dart';
 
 class FavoritosScreen extends StatelessWidget {
-  const FavoritosScreen({super.key});
+  final List<Poema> todosLosPoemas;
+  const FavoritosScreen({super.key, required this.todosLosPoemas});
 
   /// Agrupa los favoritos por autor, ordenados alfabéticamente.
   Map<String, List<Poema>> _agrupar(List<Poema> poemas) {
@@ -92,6 +94,7 @@ class FavoritosScreen extends StatelessWidget {
                   return _FavAutorCard(
                     autor: autor,
                     poemas: grupos[autor]!,
+                    todosLosPoemas: todosLosPoemas,
                   );
                 },
               ),
@@ -107,7 +110,8 @@ class FavoritosScreen extends StatelessWidget {
 class _FavAutorCard extends StatelessWidget {
   final String autor;
   final List<Poema> poemas;
-  const _FavAutorCard({required this.autor, required this.poemas});
+  final List<Poema> todosLosPoemas;
+  const _FavAutorCard({required this.autor, required this.poemas, required this.todosLosPoemas});
 
   @override
   Widget build(BuildContext context) {
@@ -155,12 +159,30 @@ class _FavAutorCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      autor,
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => AutorScreen(
+                              autor: autor,
+                              poemas: todosLosPoemas
+                                  .where((p) => p.autor == autor)
+                                  .toList(),
+                              todosLosPoemas: todosLosPoemas),
+                          transitionsBuilder: (_, animation, __, child) =>
+                              FadeTransition(opacity: animation, child: child),
+                          transitionDuration: const Duration(milliseconds: 250),
+                        ),
+                      ),
+                      child: Text(
+                        autor,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          decoration: TextDecoration.underline,
+                          decorationColor: const Color(0xFFD4AF6A),
+                        ),
                       ),
                     ),
                   ),
@@ -187,7 +209,7 @@ class _FavAutorCard extends StatelessWidget {
                         context,
                         PageRouteBuilder(
                           pageBuilder: (_, __, ___) =>
-                              PoemaScreen(poema: poema),
+                              PoemaScreen(poema: poema, todosLosPoemas: todosLosPoemas),
                           transitionsBuilder:
                               (_, animation, __, child) =>
                                   FadeTransition(

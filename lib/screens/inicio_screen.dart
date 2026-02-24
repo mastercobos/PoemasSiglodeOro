@@ -147,7 +147,7 @@ class InicioScreen extends StatelessWidget {
                   ),
                 )
               else
-                ...destacados.map((p) => _TarjetaPoema(poema: p)),
+                ...destacados.map((p) => _TarjetaPoema(poema: p, todosLosPoemas: poemas)),
             ],
           ),
         );
@@ -158,7 +158,8 @@ class InicioScreen extends StatelessWidget {
 
 class _TarjetaPoema extends StatelessWidget {
   final Poema poema;
-  const _TarjetaPoema({required this.poema});
+  final List<Poema> todosLosPoemas;
+  const _TarjetaPoema({required this.poema, required this.todosLosPoemas});
 
   String _fragmento() {
     final lineas = poema.texto
@@ -193,7 +194,7 @@ class _TarjetaPoema extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (_, __, ___) => PoemaScreen(poema: poema),
+                pageBuilder: (_, __, ___) => PoemaScreen(poema: poema, todosLosPoemas: todosLosPoemas),
                 transitionsBuilder: (_, animation, __, child) =>
                     FadeTransition(opacity: animation, child: child),
                 transitionDuration: const Duration(milliseconds: 250),

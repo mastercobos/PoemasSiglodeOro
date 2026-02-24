@@ -25,7 +25,7 @@ class _RootScreenState extends State<RootScreen> {
         backgroundColor: const Color(0xFF3B2F2F),
         foregroundColor: Colors.white,
         title: Text(
-          'Sonetos del Siglo de Oro',
+          'Antología Poética',
           style: GoogleFonts.playfairDisplay(
               fontSize: 22, fontWeight: FontWeight.bold),
         ),
@@ -41,8 +41,8 @@ class _RootScreenState extends State<RootScreen> {
         children: [
           InicioScreen(poemas: widget.poemas),
           HomeScreen(poemas: widget.poemas),
-          BusquedaScreen(poemas: widget.poemas),
-          const FavoritosScreen(),
+          BusquedaScreen(poemas: widget.poemas, todosLosPoemas: widget.poemas),
+          FavoritosScreen(todosLosPoemas: widget.poemas),
         ],
       ),
       bottomNavigationBar: Container(
