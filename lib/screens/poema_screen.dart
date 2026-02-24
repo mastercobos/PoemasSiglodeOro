@@ -21,7 +21,7 @@ class PoemaScreen extends StatelessWidget {
     final versos = _versos;
     final widgets = <Widget>[];
     for (int i = 0; i < versos.length; i++) {
-      widgets.add(Text(versos[i], textAlign: TextAlign.center, style: estilo));
+      widgets.add(SelectableText(versos[i], textAlign: TextAlign.center, style: estilo));
       if (_cortesEstrofa.contains(i + 1) && i + 1 < versos.length) {
         widgets.add(const SizedBox(height: 20));
       }
@@ -96,7 +96,7 @@ class PoemaScreen extends StatelessWidget {
                 _ornament(),
                 const SizedBox(height: 28),
 
-                Text(
+                SelectableText(
                   poema.etiqueta,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.playfairDisplay(
@@ -124,7 +124,7 @@ class PoemaScreen extends StatelessWidget {
                   ),
 
                 const SizedBox(height: 10),
-                Text(
+                SelectableText(
                   poema.autor,
                   style: GoogleFonts.lato(
                     fontSize: 14,
