@@ -17,71 +17,108 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> {
   int _tab = 0;
 
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+  ];
+
+  Widget _tabContent(int index) {
+    switch (index) {
+      case 0: return InicioScreen(poemas: widget.poemas);
+      case 1: return HomeScreen(poemas: widget.poemas);
+      case 2: return BusquedaScreen(poemas: widget.poemas, todosLosPoemas: widget.poemas);
+      case 3: return FavoritosScreen(todosLosPoemas: widget.poemas);
+      default: return const SizedBox();
+    }
+  }
+
+  Widget _buildTab(int index) {
+    return Navigator(
+      key: _navigatorKeys[index],
+      onGenerateRoute: (settings) => MaterialPageRoute(
+        builder: (_) => _tabContent(index),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFDF6EC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF3B2F2F),
-        foregroundColor: Colors.white,
-        title: Text(
-          'Antología Poética',
-          style: GoogleFonts.playfairDisplay(
-              fontSize: 22, fontWeight: FontWeight.bold),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        final nav = _navigatorKeys[_tab].currentState;
+        if (nav != null && nav.canPop()) nav.pop();
+      },
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          navigationBarTheme: NavigationBarThemeData(
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              final selected = states.contains(WidgetState.selected);
+              return GoogleFonts.lato(
+                fontSize: 11,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                color: selected ? const Color(0xFFD4AF6A) : Colors.white54,
+              );
+            }),
+          ),
         ),
-        centerTitle: true,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: const Color(0xFF8B6914), height: 1),
-        ),
-      ),
-      body: IndexedStack(
-        index: _tab,
-        children: [
-          InicioScreen(poemas: widget.poemas),
-          HomeScreen(poemas: widget.poemas),
-          BusquedaScreen(poemas: widget.poemas, todosLosPoemas: widget.poemas),
-          FavoritosScreen(todosLosPoemas: widget.poemas),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border:
-              Border(top: BorderSide(color: Color(0xFFD4AF6A), width: 1)),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _tab,
-          onTap: (i) => setState(() => _tab = i),
-          backgroundColor: const Color(0xFF3B2F2F),
-          selectedItemColor: const Color(0xFFD4AF6A),
-          unselectedItemColor: Colors.white54,
-          selectedLabelStyle:
-              GoogleFonts.lato(fontSize: 11, fontWeight: FontWeight.w600),
-          unselectedLabelStyle: GoogleFonts.lato(fontSize: 11),
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.wb_sunny_outlined),
-              activeIcon: Icon(Icons.wb_sunny),
-              label: 'Inicio',
+        child: Scaffold(
+          backgroundColor: const Color(0xFFFDF6EC),
+          body: IndexedStack(
+            index: _tab,
+            children: List.generate(4, _buildTab),
+          ),
+          bottomNavigationBar: Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                  top: BorderSide(color: Color(0xFF8B6914), width: 1)),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_outlined),
-              activeIcon: Icon(Icons.menu_book),
-              label: 'Índice',
+            child: NavigationBar(
+              selectedIndex: _tab,
+              onDestinationSelected: (i) {
+                if (i == _tab) {
+                  _navigatorKeys[i]
+                      .currentState
+                      ?.popUntil((route) => route.isFirst);
+                } else {
+                  setState(() => _tab = i);
+                }
+              },
+              backgroundColor: const Color(0xFF3B2F2F),
+              indicatorColor:
+                  const Color(0xFF8B6914).withValues(alpha: 0.4),
+              surfaceTintColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              elevation: 0,
+              labelBehavior:
+                  NavigationDestinationLabelBehavior.alwaysShow,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.wb_sunny_outlined, color: Colors.white54),
+                  selectedIcon: Icon(Icons.wb_sunny, color: Color(0xFFD4AF6A)),
+                  label: 'Inicio',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.menu_book_outlined, color: Colors.white54),
+                  selectedIcon: Icon(Icons.menu_book, color: Color(0xFFD4AF6A)),
+                  label: 'Índice',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.search, color: Colors.white54),
+                  selectedIcon: Icon(Icons.search, color: Color(0xFFD4AF6A)),
+                  label: 'Buscar',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.favorite_border, color: Colors.white54),
+                  selectedIcon: Icon(Icons.favorite, color: Color(0xFFD4AF6A)),
+                  label: 'Favoritos',
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              activeIcon: Icon(Icons.search),
-              label: 'Buscar',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_border),
-              activeIcon: Icon(Icons.favorite),
-              label: 'Favoritos',
-            ),
-          ],
+          ),
         ),
       ),
     );

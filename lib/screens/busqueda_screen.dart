@@ -6,7 +6,8 @@ import 'poema_screen.dart';
 class BusquedaScreen extends StatefulWidget {
   final List<Poema> poemas;
   final List<Poema> todosLosPoemas;
-  const BusquedaScreen({super.key, required this.poemas, required this.todosLosPoemas});
+  const BusquedaScreen(
+      {super.key, required this.poemas, required this.todosLosPoemas});
 
   @override
   State<BusquedaScreen> createState() => _BusquedaScreenState();
@@ -26,7 +27,6 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     }).toList();
   }
 
-  /// Fragmento del texto que contiene la coincidencia.
   String _fragmentoConTexto(Poema p, String q) {
     final idx = p.texto.toLowerCase().indexOf(q);
     if (idx == -1) return '';
@@ -47,96 +47,109 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     final resultados = _resultados;
     final q = _query.toLowerCase();
 
-    return Column(
-      children: [
-        // Barra de búsqueda
-        Container(
-          color: const Color(0xFF3B2F2F),
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
-          child: TextField(
-            controller: _controller,
-            autofocus: false,
-            style: GoogleFonts.lato(color: Colors.white),
-            cursorColor: const Color(0xFFD4AF6A),
-            decoration: InputDecoration(
+    return Scaffold(
+      backgroundColor: const Color(0xFFFDF6EC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF3B2F2F),
+        foregroundColor: Colors.white,
+        title: Text('Buscar',
+            style: GoogleFonts.playfairDisplay(
+                fontSize: 22, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: const Color(0xFF8B6914), height: 1),
+        ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            color: const Color(0xFF3B2F2F),
+            padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+            child: SearchBar(
+              controller: _controller,
               hintText: 'Buscar por título, autor o verso…',
-              hintStyle: GoogleFonts.lato(color: Colors.white38),
-              prefixIcon:
-                  const Icon(Icons.search, color: Color(0xFFD4AF6A)),
-              suffixIcon: _query.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white54),
-                      onPressed: () {
-                        _controller.clear();
-                        setState(() => _query = '');
-                      },
-                    )
+              hintStyle: WidgetStateProperty.all(
+                  GoogleFonts.lato(color: Colors.white38)),
+              textStyle: WidgetStateProperty.all(
+                  GoogleFonts.lato(color: Colors.white)),
+              leading: const Icon(Icons.search, color: Color(0xFFD4AF6A)),
+              trailing: _query.isNotEmpty
+                  ? [
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white54),
+                        onPressed: () {
+                          _controller.clear();
+                          setState(() => _query = '');
+                        },
+                      )
+                    ]
                   : null,
-              filled: true,
-              fillColor: Colors.white10,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              backgroundColor:
+                  WidgetStateProperty.all(Colors.white10),
+              surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
+              shadowColor: WidgetStateProperty.all(Colors.transparent),
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12))),
+              padding: const WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: 8)),
+              onChanged: (v) => setState(() => _query = v),
             ),
-            onChanged: (v) => setState(() => _query = v),
           ),
-        ),
-
-        // Resultados
-        Expanded(
-          child: _query.trim().isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.search,
-                          size: 56, color: Color(0xFFD4AF6A)),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Escribe para buscar',
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 18,
-                          color: const Color(0xFF3B2F2F),
+          Expanded(
+            child: _query.trim().isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.search,
+                            size: 56, color: Color(0xFFD4AF6A)),
+                        const SizedBox(height: 16),
+                        Text('Escribe para buscar',
+                            style: GoogleFonts.playfairDisplay(
+                                fontSize: 18,
+                                color: const Color(0xFF3B2F2F))),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Busca por título, autor o cualquier verso',
+                          style: GoogleFonts.lato(
+                              fontSize: 13,
+                              color: const Color(0xFF8B6914)),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Busca por título, autor o cualquier verso',
-                        style: GoogleFonts.lato(
-                            fontSize: 13, color: const Color(0xFF8B6914)),
-                      ),
-                    ],
-                  ),
-                )
-              : resultados.isEmpty
-                  ? Center(
-                      child: Text(
-                        'Sin resultados para "$_query"',
-                        style: GoogleFonts.lato(
-                            fontSize: 15, color: const Color(0xFF8B6914)),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      itemCount: resultados.length,
-                      itemBuilder: (context, i) {
-                        final p = resultados[i];
-                        final enTexto = !p.titulo.toLowerCase().contains(q) &&
-                            !p.autor.toLowerCase().contains(q);
-                        return _ResultadoCard(
-                          poema: p,
-                          query: q,
-                          todosLosPoemas: widget.todosLosPoemas,
-                          fragmento:
-                              enTexto ? _fragmentoConTexto(p, q) : null,
-                        );
-                      },
+                      ],
                     ),
-        ),
-      ],
+                  )
+                : resultados.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Sin resultados para "$_query"',
+                          style: GoogleFonts.lato(
+                              fontSize: 15,
+                              color: const Color(0xFF8B6914)),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        itemCount: resultados.length,
+                        itemBuilder: (context, i) {
+                          final p = resultados[i];
+                          final enTexto =
+                              !p.titulo.toLowerCase().contains(q) &&
+                                  !p.autor.toLowerCase().contains(q);
+                          return _ResultadoCard(
+                            poema: p,
+                            query: q,
+                            todosLosPoemas: widget.todosLosPoemas,
+                            fragmento:
+                                enTexto ? _fragmentoConTexto(p, q) : null,
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -177,7 +190,8 @@ class _ResultadoCard extends StatelessWidget {
           onTap: () => Navigator.push(
             context,
             PageRouteBuilder(
-              pageBuilder: (_, __, ___) => PoemaScreen(poema: poema, todosLosPoemas: todosLosPoemas),
+              pageBuilder: (_, __, ___) => PoemaScreen(
+                  poema: poema, todosLosPoemas: todosLosPoemas),
               transitionsBuilder: (_, animation, __, child) =>
                   FadeTransition(opacity: animation, child: child),
               transitionDuration: const Duration(milliseconds: 250),
@@ -196,7 +210,6 @@ class _ResultadoCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Título o primer verso
                       _HighlightText(
                         text: poema.etiqueta,
                         query: query,
@@ -206,8 +219,8 @@ class _ResultadoCard extends StatelessWidget {
                           color: const Color(0xFF3B2F2F),
                         ),
                       ),
-                      // Si hay título y también primer verso diferente, mostrar verso
                       if (poema.titulo.isNotEmpty &&
+                          poema.primerVerso.isNotEmpty &&
                           poema.primerVerso != poema.titulo)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
@@ -223,7 +236,6 @@ class _ResultadoCard extends StatelessWidget {
                           ),
                         ),
                       const SizedBox(height: 3),
-                      // Autor
                       _HighlightText(
                         text: poema.autor,
                         query: query,
@@ -233,7 +245,6 @@ class _ResultadoCard extends StatelessWidget {
                           fontStyle: FontStyle.italic,
                         ),
                       ),
-                      // Fragmento si la coincidencia es en el texto
                       if (fragmento != null && fragmento!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
@@ -261,7 +272,6 @@ class _ResultadoCard extends StatelessWidget {
   }
 }
 
-/// Texto con las coincidencias resaltadas en dorado.
 class _HighlightText extends StatelessWidget {
   final String text;
   final String query;

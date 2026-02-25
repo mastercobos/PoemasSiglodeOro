@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'models/poema.dart';
@@ -100,10 +101,53 @@ class _PoemasAppState extends State<PoemasApp> {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme:
-              ColorScheme.fromSeed(seedColor: const Color(0xFF3B2F2F)),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF8B6914),
+            brightness: Brightness.light,
+          ).copyWith(
+            primary: const Color(0xFF8B6914),
+            onPrimary: Colors.white,
+            secondary: const Color(0xFFD4AF6A),
+            surface: const Color(0xFFFDF6EC),
+            onSurface: const Color(0xFF3B2F2F),
+          ),
+          // Ripple coherente con la paleta
           splashColor: const Color(0x228B6914),
           highlightColor: const Color(0x118B6914),
+          // AppBar global
+          appBarTheme: AppBarTheme(
+            backgroundColor: const Color(0xFF3B2F2F),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+            titleTextStyle: GoogleFonts.playfairDisplay(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          // Cards con esquinas más suaves (M3)
+          cardTheme: CardThemeData(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFFD4AF6A), width: 0.8),
+            ),
+            color: Colors.white,
+          ),
+          // Dividers coherentes
+          dividerTheme: const DividerThemeData(
+            color: Color(0xFFD4AF6A),
+            thickness: 0.8,
+          ),
+          // SnackBar flotante por defecto
+          snackBarTheme: SnackBarThemeData(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF3B2F2F),
+            contentTextStyle: GoogleFonts.lato(color: Colors.white),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
         ),
         home: RootScreen(poemas: _poemas!),
       ),

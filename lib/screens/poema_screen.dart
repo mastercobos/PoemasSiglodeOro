@@ -83,16 +83,9 @@ class PoemaScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        esFav
-                            ? 'Eliminado de favoritos'
-                            : 'Añadido a favoritos',
-                        style: GoogleFonts.lato(),
+                        esFav ? 'Eliminado de favoritos' : 'Añadido a favoritos',
                       ),
-                      backgroundColor: const Color(0xFF3B2F2F),
                       duration: const Duration(seconds: 2),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
                     ),
                   );
                 },

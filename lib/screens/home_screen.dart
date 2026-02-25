@@ -23,37 +23,49 @@ class HomeScreen extends StatelessWidget {
     final grupos = _agrupar();
     final autores = grupos.keys.toList();
 
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          color: const Color(0xFF3B2F2F),
-          padding: const EdgeInsets.only(top: 4, bottom: 14),
-          child: Text(
-            '— Índice de Autores —',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
-              color: const Color(0xFFD4AF6A),
-              fontSize: 12,
-              letterSpacing: 2.5,
+    return Scaffold(
+      backgroundColor: const Color(0xFFFDF6EC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF3B2F2F),
+        foregroundColor: Colors.white,
+        title: Text('Índice',
+            style: GoogleFonts.playfairDisplay(
+                fontSize: 22, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        elevation: 0,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: const Color(0xFF8B6914), height: 1),
+        ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            color: const Color(0xFF3B2F2F),
+            padding: const EdgeInsets.only(top: 4, bottom: 14),
+            child: Text(
+              '— Índice de Autores —',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(
+                color: const Color(0xFFD4AF6A),
+                fontSize: 12,
+                letterSpacing: 2.5,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            itemCount: autores.length,
-            itemBuilder: (context, i) {
-              final autor = autores[i];
-              final lista = grupos[autor]!;
-              return _AutorCard(
-                autor: autor,
-                poemas: lista,
-              );
-            },
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              itemCount: autores.length,
+              itemBuilder: (context, i) {
+                final autor = autores[i];
+                return _AutorCard(autor: autor, poemas: grupos[autor]!);
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -87,8 +99,10 @@ class _AutorCard extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (_, __, ___) =>
-                    AutorScreen(autor: autor, poemas: poemas, todosLosPoemas: poemas),
+                pageBuilder: (_, __, ___) => AutorScreen(
+                    autor: autor,
+                    poemas: poemas,
+                    todosLosPoemas: poemas),
                 transitionsBuilder: (_, animation, __, child) =>
                     FadeTransition(opacity: animation, child: child),
                 transitionDuration: const Duration(milliseconds: 250),
@@ -98,7 +112,6 @@ class _AutorCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  // Avatar
                   Container(
                     width: 46, height: 46,
                     decoration: const BoxDecoration(
@@ -117,28 +130,21 @@ class _AutorCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 14),
-
-                  // Nombre y conteo
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          autor,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF3B2F2F),
-                          ),
-                        ),
+                        Text(autor,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF3B2F2F),
+                            )),
                         const SizedBox(height: 2),
                         Text(
-                          '${poemas.length} poema'
-                          '${poemas.length != 1 ? 's' : ''}',
+                          '${poemas.length} poema${poemas.length != 1 ? 's' : ''}',
                           style: GoogleFonts.lato(
-                            fontSize: 12,
-                            color: const Color(0xFF8B6914),
-                          ),
+                              fontSize: 12, color: const Color(0xFF8B6914)),
                         ),
                       ],
                     ),

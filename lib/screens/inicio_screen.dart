@@ -65,7 +65,24 @@ class InicioScreen extends StatelessWidget {
         ];
         final fechaStr = '${hoy.day} de ${meses[hoy.month]} de ${hoy.year}';
 
-        return SingleChildScrollView(
+        return Scaffold(
+          backgroundColor: const Color(0xFFFDF6EC),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF3B2F2F),
+            foregroundColor: Colors.white,
+            title: Text(
+              'Antología Poética',
+              style: GoogleFonts.playfairDisplay(
+                  fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            elevation: 0,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(color: const Color(0xFF8B6914), height: 1),
+            ),
+          ),
+          body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -150,7 +167,8 @@ class InicioScreen extends StatelessWidget {
                 ...destacados.map((p) => _TarjetaPoema(poema: p, todosLosPoemas: poemas)),
             ],
           ),
-        );
+        ),
+          );
       },
     );
   }
