@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert';
 import 'models/poema.dart';
 import 'providers/favoritos_provider.dart';
 import 'providers/ajustes_provider.dart';
 import 'providers/tema_provider.dart';
 import 'screens/root_screen.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ① Edge-to-edge: barras del sistema transparentes desde el inicio
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarDividerColor: Colors.transparent,
+  ));
+
   final poemas = await _cargarPoemas();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => FavoritosProvider(poemas)),
-        ChangeNotifierProvider(create: (_) => AjustesProvider(poemas.map((p) => p.autor).toSet().toList()..sort())),
+        ChangeNotifierProvider(
+            create: (_) => AjustesProvider(
+                poemas.map((p) => p.autor).toSet().toList()..sort())),
         ChangeNotifierProvider(create: (_) => TemaProvider()),
       ],
       child: MiApp(poemas: poemas),
@@ -60,12 +72,20 @@ class MiApp extends StatelessWidget {
       scaffoldBackgroundColor:
           isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC),
       appBarTheme: AppBarTheme(
-        backgroundColor: isDark
-            ? const Color(0xFF0F0A08)
-            : const Color(0xFF3B2F2F),
+        backgroundColor:
+            isDark ? const Color(0xFF0F0A08) : const Color(0xFF3B2F2F),
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        // ① Edge-to-edge: AppBar dibuja detrás de la status bar
+        scrolledUnderElevation: 0,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness:
+              isDark ? Brightness.light : Brightness.dark,
+        ),
         titleTextStyle: GoogleFonts.playfairDisplay(
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -93,12 +113,11 @@ class MiApp extends StatelessWidget {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: isDark
-            ? const Color(0xFF2A1F18)
-            : const Color(0xFF3B2F2F),
+        backgroundColor:
+            isDark ? const Color(0xFF2A1F18) : const Color(0xFF3B2F2F),
         contentTextStyle: GoogleFonts.lato(color: Colors.white),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -113,6 +132,18 @@ class MiApp extends StatelessWidget {
           themeMode: tema.modo,
           theme: _buildTheme(Brightness.light),
           darkTheme: _buildTheme(Brightness.dark),
+          // ① Edge-to-edge global
+          builder: (context, child) {
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness:
+                    tema.modo == ThemeMode.dark ? Brightness.light : Brightness.light,
+                systemNavigationBarColor: Colors.transparent,
+              ),
+              child: child!,
+            );
+          },
           home: RootScreen(poemas: poemas),
         );
       },

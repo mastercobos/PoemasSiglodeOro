@@ -47,7 +47,7 @@ class InicioScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
     final titleColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
-    final subColor = isDark ? Colors.white54 : Colors.grey[500]!;
+    final subColor = isDark ? Colors.white54 : const Color(0xFF666666);
 
     return Consumer<AjustesProvider>(
       builder: (context, ajustes, _) {
@@ -175,7 +175,8 @@ class _TarjetaPoema extends StatelessWidget {
     final cardColor = isDark ? const Color(0xFF2A1F18) : Colors.white;
     final versoColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF4A3728);
 
-    return Container(
+    return MergeSemantics(
+    child: Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: cardColor,
@@ -253,8 +254,8 @@ class _TarjetaPoema extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8, bottom: 6),
                     child: TextButton.icon(
                       onPressed: null,
-                      icon: const Icon(Icons.menu_book_outlined,
-                          size: 16, color: Color(0xFF8B6914)),
+                      icon: const ExcludeSemantics(child: Icon(Icons.menu_book_outlined,
+                          size: 16, color: Color(0xFF8B6914))),
                       label: Text('Leer poema completo',
                           style: GoogleFonts.lato(
                               fontSize: 13,
@@ -268,6 +269,7 @@ class _TarjetaPoema extends StatelessWidget {
           ),
         ),
       ),
+    ), // MergeSemantics
     );
   }
 }

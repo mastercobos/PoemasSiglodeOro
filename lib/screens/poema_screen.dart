@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import '../models/poema.dart';
 import '../providers/favoritos_provider.dart';
 import '../widgets/autor_link.dart';
@@ -40,11 +41,15 @@ class PoemaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Colores: modo claro usa los originales hardcodeados
-    final bgColor = isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
-    final titleColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
-    final versoColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
-    final subColor = isDark ? Colors.white38 : Colors.grey[500]!;
+    final bgColor =
+        isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
+    final titleColor =
+        isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final versoColor =
+        isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    // ⑦ Contraste: #666666 sobre crema da 5.35:1 (WCAG AA ✓)
+    final subColor =
+        isDark ? Colors.white38 : const Color(0xFF666666);
 
     final estiloVerso = GoogleFonts.lato(
       fontSize: 17,
@@ -74,22 +79,35 @@ class PoemaScreen extends StatelessWidget {
               child: Container(color: const Color(0xFF8B6914), height: 1),
             ),
             actions: [
+              // ③ Semantics: tooltip ya actúa como label para TalkBack
               IconButton(
-                tooltip: esFav ? 'Quitar de favoritos' : 'Añadir a favoritos',
+                tooltip: esFav
+                    ? 'Quitar de favoritos: ${poema.etiqueta}'
+                    : 'Añadir a favoritos: ${poema.etiqueta}',
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 250),
                   child: Icon(
                     esFav ? Icons.favorite : Icons.favorite_border,
                     key: ValueKey(esFav),
-                    color: esFav ? const Color(0xFFD4AF6A) : Colors.white70,
+                    color: esFav
+                        ? const Color(0xFFD4AF6A)
+                        : Colors.white70,
+                    // ③ semanticLabel para lectores de pantalla
+                    semanticLabel: esFav
+                        ? 'Guardado en favoritos'
+                        : 'No guardado en favoritos',
                   ),
                 ),
                 onPressed: () {
+                  // ⑨ Haptic feedback en acción de favorito
+                  HapticFeedback.mediumImpact();
                   favoritos.toggleFavorito(poema);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        esFav ? 'Eliminado de favoritos' : 'Añadido a favoritos',
+                        esFav
+                            ? 'Eliminado de favoritos'
+                            : 'Añadido a favoritos',
                         style: GoogleFonts.lato(),
                       ),
                       backgroundColor: const Color(0xFF3B2F2F),
@@ -104,11 +122,13 @@ class PoemaScreen extends StatelessWidget {
             ],
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _ornament(),
+                // ③ El ornamento es decorativo — excluir de accesibilidad
+                ExcludeSemantics(child: _ornament()),
                 const SizedBox(height: 28),
 
                 SelectableText(
@@ -139,22 +159,34 @@ class PoemaScreen extends StatelessWidget {
                   ),
 
                 const SizedBox(height: 10),
-                AutorLink(autor: poema.autor, todosLosPoemas: todosLosPoemas),
+                AutorLink(
+                    autor: poema.autor, todosLosPoemas: todosLosPoemas),
                 const SizedBox(height: 30),
 
-                Container(
-                  width: 56, height: 2,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8B6914),
-                    borderRadius: BorderRadius.circular(1),
+                // ③ Separador decorativo
+                ExcludeSemantics(
+                  child: Container(
+                    width: 56, height: 2,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B6914),
+                      borderRadius: BorderRadius.circular(1),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 34),
 
-                ..._buildCuerpo(estiloVerso),
+                // ⑧ El cuerpo del poema: Semantics agrupa título + texto
+                // para que TalkBack lo anuncie como una unidad
+                Semantics(
+                  label:
+                      'Poema: ${poema.etiqueta}, de ${poema.autor}',
+                  child: Column(
+                    children: _buildCuerpo(estiloVerso),
+                  ),
+                ),
 
                 const SizedBox(height: 52),
-                _ornament(),
+                ExcludeSemantics(child: _ornament()),
                 const SizedBox(height: 16),
               ],
             ),
@@ -170,7 +202,8 @@ class PoemaScreen extends StatelessWidget {
       children: [
         Container(width: 44, height: 1, color: const Color(0xFF8B6914)),
         const SizedBox(width: 10),
-        const Icon(Icons.auto_stories, color: Color(0xFF8B6914), size: 18),
+        const Icon(Icons.auto_stories,
+            color: Color(0xFF8B6914), size: 18),
         const SizedBox(width: 10),
         Container(width: 44, height: 1, color: const Color(0xFF8B6914)),
       ],

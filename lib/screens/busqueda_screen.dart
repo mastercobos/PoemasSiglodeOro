@@ -160,7 +160,7 @@ class _ResultadoCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? const Color(0xFF2A1F18) : Colors.white;
     final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
-    final subColor = isDark ? Colors.white38 : Colors.grey[600]!;
+    final subColor = isDark ? Colors.white38 : const Color(0xFF555555);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -177,6 +177,7 @@ class _ResultadoCard extends StatelessWidget {
           ),
         ],
       ),
+      child: MergeSemantics(
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -196,8 +197,8 @@ class _ResultadoCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.menu_book_outlined,
-                    size: 18, color: Color(0xFF8B6914)),
+                const ExcludeSemantics(child: Icon(Icons.menu_book_outlined,
+                    size: 18, color: Color(0xFF8B6914))),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -250,6 +251,7 @@ class _ResultadoCard extends StatelessWidget {
           ),
         ),
       ),
+      ), // MergeSemantics
     );
   }
 }

@@ -22,7 +22,7 @@ class AutorScreen extends StatelessWidget {
     final bgColor = isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
     final rowColor = isDark ? const Color(0xFF2A1F18) : Colors.white;
     final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
-    final subColor = isDark ? Colors.white38 : Colors.grey[500]!;
+    final subColor = isDark ? Colors.white38 : const Color(0xFF666666);
 
     final sorted = [...poemas]
       ..sort((a, b) => compareTitulos(a.etiqueta, b.etiqueta));
@@ -70,7 +70,8 @@ class AutorScreen extends StatelessWidget {
                         height: 1, indent: 16, endIndent: 16,
                         color: const Color(0xFFD4AF6A).withValues(alpha: 0.3),
                       ),
-                    Material(
+                    MergeSemantics(
+                  child: Material(
                       color: rowColor,
                       child: InkWell(
                         onTap: () => Navigator.push(
@@ -90,11 +91,12 @@ class AutorScreen extends StatelessWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Padding(
+                              const ExcludeSemantics(
+                                child: Padding(
                                 padding: EdgeInsets.only(top: 2),
                                 child: Icon(Icons.menu_book_outlined,
                                     size: 16, color: Color(0xFF8B6914)),
-                              ),
+                              ),),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
@@ -126,6 +128,7 @@ class AutorScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                  ), // MergeSemantics
                   ],
                 );
               },

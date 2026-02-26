@@ -133,7 +133,7 @@ class _FavAutorCard extends StatelessWidget {
     final cardColor = isDark ? const Color(0xFF2A1F18) : Colors.white;
     final rowColor  = isDark ? const Color(0xFF2A1F18) : Colors.white;
     final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
-    final subColor  = isDark ? Colors.white38 : Colors.grey[500]!;
+    final subColor  = isDark ? Colors.white38 : const Color(0xFF666666);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -185,13 +185,15 @@ class _FavAutorCard extends StatelessWidget {
                           shape: BoxShape.circle,
                           color: Color(0xFF8B6914),
                         ),
-                        child: Center(
-                          child: Text(
-                            autor.isNotEmpty ? autor[0].toUpperCase() : '?',
-                            style: GoogleFonts.playfairDisplay(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        child: ExcludeSemantics(
+                          child: Center(
+                            child: Text(
+                              autor.isNotEmpty ? autor[0].toUpperCase() : '?',
+                              style: GoogleFonts.playfairDisplay(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -225,7 +227,8 @@ class _FavAutorCard extends StatelessWidget {
                       height: 1, indent: 16, endIndent: 16,
                       color: Colors.brown.withValues(alpha: isDark ? 0.3 : 0.1),
                     ),
-                  Material(
+                  MergeSemantics(
+                  child: Material(
                     color: rowColor,
                     child: InkWell(
                       onTap: () => Navigator.push(
@@ -244,8 +247,8 @@ class _FavAutorCard extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.menu_book_outlined,
-                                size: 16, color: Color(0xFF8B6914)),
+                            const ExcludeSemantics(child: Icon(Icons.menu_book_outlined,
+                                size: 16, color: Color(0xFF8B6914))),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -277,10 +280,10 @@ class _FavAutorCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            }),
+                  ), // MergeSemantics
+              )],
+                );
+              }),
             const SizedBox(height: 8),
           ],
         ),

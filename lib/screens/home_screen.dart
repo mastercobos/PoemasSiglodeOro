@@ -110,6 +110,7 @@ class _AutorCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
+        child: MergeSemantics(
         child: Material(
           color: cardColor,
           child: InkWell(
@@ -135,13 +136,15 @@ class _AutorCard extends StatelessWidget {
                     decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color(0xFF3B2F2F)),
-                    child: Center(
-                      child: Text(
-                        autor.isNotEmpty ? autor[0].toUpperCase() : '?',
-                        style: GoogleFonts.playfairDisplay(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
+                    child: ExcludeSemantics(
+                      child: Center(
+                        child: Text(
+                          autor.isNotEmpty ? autor[0].toUpperCase() : '?',
+                          style: GoogleFonts.playfairDisplay(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ),
@@ -172,6 +175,7 @@ class _AutorCard extends StatelessWidget {
             ),
           ),
         ),
+        ), // MergeSemantics
       ),
     );
   }
