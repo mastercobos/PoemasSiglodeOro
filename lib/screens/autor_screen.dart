@@ -7,26 +7,35 @@ import 'poema_screen.dart';
 class AutorScreen extends StatelessWidget {
   final String autor;
   final List<Poema> poemas;
-
   final List<Poema> todosLosPoemas;
-  const AutorScreen({super.key, required this.autor, required this.poemas, required this.todosLosPoemas});
+
+  const AutorScreen({
+    super.key,
+    required this.autor,
+    required this.poemas,
+    required this.todosLosPoemas,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
+    final rowColor = isDark ? const Color(0xFF2A1F18) : Colors.white;
+    final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final subColor = isDark ? Colors.white38 : Colors.grey[500]!;
+
     final sorted = [...poemas]
       ..sort((a, b) => compareTitulos(a.etiqueta, b.etiqueta));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF6EC),
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: const Color(0xFF3B2F2F),
         foregroundColor: Colors.white,
-        title: Text(
-          autor,
-          style: GoogleFonts.playfairDisplay(
-              fontSize: 18, fontWeight: FontWeight.bold),
-          overflow: TextOverflow.ellipsis,
-        ),
+        title: Text(autor,
+            style: GoogleFonts.playfairDisplay(
+                fontSize: 18, fontWeight: FontWeight.bold),
+            overflow: TextOverflow.ellipsis),
         centerTitle: true,
         elevation: 0,
         bottom: PreferredSize(
@@ -36,7 +45,6 @@ class AutorScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // Cabecera con conteo
           Container(
             width: double.infinity,
             color: const Color(0xFF3B2F2F),
@@ -45,14 +53,11 @@ class AutorScreen extends StatelessWidget {
               '${sorted.length} poema${sorted.length != 1 ? 's' : ''}',
               textAlign: TextAlign.center,
               style: GoogleFonts.lato(
-                color: const Color(0xFFD4AF6A),
-                fontSize: 12,
-                letterSpacing: 2.5,
-              ),
+                  color: const Color(0xFFD4AF6A),
+                  fontSize: 12,
+                  letterSpacing: 2.5),
             ),
           ),
-
-          // Lista eficiente con ListView.builder
           Expanded(
             child: ListView.builder(
               itemCount: sorted.length,
@@ -62,19 +67,17 @@ class AutorScreen extends StatelessWidget {
                   children: [
                     if (idx > 0)
                       Divider(
-                        height: 1,
-                        indent: 16,
-                        endIndent: 16,
-                        color: Colors.brown.withValues(alpha: 0.1),
+                        height: 1, indent: 16, endIndent: 16,
+                        color: const Color(0xFFD4AF6A).withValues(alpha: 0.3),
                       ),
                     Material(
-                      color: Colors.white,
+                      color: rowColor,
                       child: InkWell(
                         onTap: () => Navigator.push(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (_, __, ___) =>
-                                PoemaScreen(poema: poema, todosLosPoemas: todosLosPoemas),
+                            pageBuilder: (_, __, ___) => PoemaScreen(
+                                poema: poema, todosLosPoemas: todosLosPoemas),
                             transitionsBuilder: (_, animation, __, child) =>
                                 FadeTransition(opacity: animation, child: child),
                             transitionDuration:
@@ -95,29 +98,24 @@ class AutorScreen extends StatelessWidget {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      poema.etiqueta,
-                                      style: GoogleFonts.lato(
-                                        fontSize: 15,
-                                        color: const Color(0xFF3B2F2F),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
+                                    Text(poema.etiqueta,
+                                        style: GoogleFonts.lato(
+                                            fontSize: 15,
+                                            color: textColor,
+                                            fontWeight: FontWeight.w500)),
                                     if (poema.titulo.isNotEmpty &&
                                         poema.primerVerso.isNotEmpty &&
                                         poema.primerVerso != poema.titulo)
-                                      Text(
-                                        '«${poema.primerVerso}»',
-                                        style: GoogleFonts.lato(
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                      Text('«${poema.primerVerso}»',
+                                          style: GoogleFonts.lato(
+                                              fontSize: 12,
+                                              color: subColor,
+                                              fontStyle: FontStyle.italic),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis),
                                   ],
                                 ),
                               ),

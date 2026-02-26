@@ -27,8 +27,11 @@ class FavoritosScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF6EC),
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: const Color(0xFF3B2F2F),
         foregroundColor: Colors.white,
@@ -54,14 +57,14 @@ class FavoritosScreen extends StatelessWidget {
                   const Icon(Icons.favorite_border,
                       size: 64, color: Color(0xFFD4AF6A)),
                   const SizedBox(height: 20),
-                  Text(
-                    'Aún no tienes favoritos',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 20,
-                      color: const Color(0xFF3B2F2F),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('Aún no tienes favoritos',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 20,
+                        color: isDark
+                            ? const Color(0xFFF5E6C8)
+                            : const Color(0xFF3B2F2F),
+                        fontWeight: FontWeight.bold,
+                      )),
                   const SizedBox(height: 10),
                   Text(
                     'Pulsa el corazón al leer un poema\npara guardarlo aquí.',
@@ -87,10 +90,9 @@ class FavoritosScreen extends StatelessWidget {
                   '— ${lista.length} poema${lista.length != 1 ? 's' : ''} guardado${lista.length != 1 ? 's' : ''} —',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lato(
-                    color: const Color(0xFFD4AF6A),
-                    fontSize: 12,
-                    letterSpacing: 2.5,
-                  ),
+                      color: const Color(0xFFD4AF6A),
+                      fontSize: 12,
+                      letterSpacing: 2.5),
                 ),
               ),
               Expanded(
@@ -99,10 +101,9 @@ class FavoritosScreen extends StatelessWidget {
                       horizontal: 14, vertical: 14),
                   itemCount: autores.length,
                   itemBuilder: (context, i) {
-                    final autor = autores[i];
                     return _FavAutorCard(
-                      autor: autor,
-                      poemas: grupos[autor]!,
+                      autor: autores[i],
+                      poemas: grupos[autores[i]]!,
                       todosLosPoemas: todosLosPoemas,
                     );
                   },
@@ -128,15 +129,23 @@ class _FavAutorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF2A1F18) : Colors.white;
+    final rowColor  = isDark ? const Color(0xFF2A1F18) : Colors.white;
+    final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final subColor  = isDark ? Colors.white38 : Colors.grey[500]!;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD4AF6A)),
+        border: Border.all(
+            color: const Color(0xFFD4AF6A)
+                .withValues(alpha: isDark ? 0.5 : 1.0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withValues(alpha: 0.09),
+            color: Colors.brown.withValues(alpha: isDark ? 0.3 : 0.09),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -189,16 +198,14 @@ class _FavAutorCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          autor,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            decoration: TextDecoration.underline,
-                            decorationColor: const Color(0xFFD4AF6A),
-                          ),
-                        ),
+                        child: Text(autor,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              decoration: TextDecoration.underline,
+                              decorationColor: const Color(0xFFD4AF6A),
+                            )),
                       ),
                       const Icon(Icons.chevron_right,
                           size: 18, color: Color(0xFFD4AF6A)),
@@ -208,7 +215,7 @@ class _FavAutorCard extends StatelessWidget {
               ),
             ),
 
-            // Lista de poemas favoritos
+            // Lista poemas
             ...List.generate(poemas.length, (idx) {
               final poema = poemas[idx];
               return Column(
@@ -216,21 +223,19 @@ class _FavAutorCard extends StatelessWidget {
                   if (idx > 0)
                     Divider(
                       height: 1, indent: 16, endIndent: 16,
-                      color: Colors.brown.withValues(alpha: 0.1),
+                      color: Colors.brown.withValues(alpha: isDark ? 0.3 : 0.1),
                     ),
                   Material(
-                    color: Colors.white,
+                    color: rowColor,
                     child: InkWell(
                       onTap: () => Navigator.push(
                         context,
                         PageRouteBuilder(
                           pageBuilder: (_, __, ___) => PoemaScreen(
-                              poema: poema,
-                              todosLosPoemas: todosLosPoemas),
+                              poema: poema, todosLosPoemas: todosLosPoemas),
                           transitionsBuilder: (_, animation, __, child) =>
                               FadeTransition(opacity: animation, child: child),
-                          transitionDuration:
-                              const Duration(milliseconds: 250),
+                          transitionDuration: const Duration(milliseconds: 250),
                         ),
                       ),
                       child: Padding(
@@ -246,27 +251,23 @@ class _FavAutorCard extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    poema.etiqueta,
-                                    style: GoogleFonts.lato(
-                                      fontSize: 15,
-                                      color: const Color(0xFF3B2F2F),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                                  Text(poema.etiqueta,
+                                      style: GoogleFonts.lato(
+                                        fontSize: 15,
+                                        color: textColor,
+                                        fontWeight: FontWeight.w500,
+                                      )),
                                   if (poema.titulo.isNotEmpty &&
                                       poema.primerVerso.isNotEmpty &&
                                       poema.primerVerso != poema.titulo)
-                                    Text(
-                                      '«${poema.primerVerso}»',
-                                      style: GoogleFonts.lato(
-                                        fontSize: 12,
-                                        color: Colors.grey[500],
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                    Text('«${poema.primerVerso}»',
+                                        style: GoogleFonts.lato(
+                                          fontSize: 12,
+                                          color: subColor,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis),
                                 ],
                               ),
                             ),

@@ -1,156 +1,121 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'models/poema.dart';
 import 'providers/favoritos_provider.dart';
 import 'providers/ajustes_provider.dart';
+import 'providers/tema_provider.dart';
 import 'screens/root_screen.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 
-void main() => runApp(const PoemasApp());
-
-class PoemasApp extends StatefulWidget {
-  const PoemasApp({super.key});
-
-  @override
-  State<PoemasApp> createState() => _PoemasAppState();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final poemas = await _cargarPoemas();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FavoritosProvider(poemas)),
+        ChangeNotifierProvider(create: (_) => AjustesProvider(poemas.map((p) => p.autor).toSet().toList()..sort())),
+        ChangeNotifierProvider(create: (_) => TemaProvider()),
+      ],
+      child: MiApp(poemas: poemas),
+    ),
+  );
 }
 
-class _PoemasAppState extends State<PoemasApp> {
-  List<Poema>? _poemas;
-  String? _error;
+Future<List<Poema>> _cargarPoemas() async {
+  final raw = await rootBundle.loadString('assets/poemas.json');
+  final lista = jsonDecode(raw) as List;
+  return lista
+      .asMap()
+      .entries
+      .map((e) => Poema.fromJson(e.value as Map<String, dynamic>, index: e.key))
+      .toList();
+}
 
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
+class MiApp extends StatelessWidget {
+  final List<Poema> poemas;
+  const MiApp({super.key, required this.poemas});
 
-  Future<void> _load() async {
-    try {
-      final raw = await rootBundle.loadString('assets/poemas.json');
-      final decoded = jsonDecode(raw);
-      final list = decoded is List
-          ? decoded
-          : (decoded as Map)['poemas'] as List;
-      setState(() => _poemas = list
-          .asMap()
-          .entries
-          .map((e) => Poema.fromJson(
-              Map<String, dynamic>.from(e.value as Map),
-              index: e.key))
-          .toList());
-    } catch (e) {
-      setState(() => _error = e.toString());
-    }
+  ThemeData _buildTheme(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF8B6914),
+      brightness: brightness,
+    ).copyWith(
+      primary: const Color(0xFF8B6914),
+      onPrimary: Colors.white,
+      secondary: const Color(0xFFD4AF6A),
+      surface: isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC),
+      onSurface: isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F),
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: colorScheme,
+      splashColor: const Color(0x228B6914),
+      highlightColor: const Color(0x118B6914),
+      scaffoldBackgroundColor:
+          isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC),
+      appBarTheme: AppBarTheme(
+        backgroundColor: isDark
+            ? const Color(0xFF0F0A08)
+            : const Color(0xFF3B2F2F),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: GoogleFonts.playfairDisplay(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        elevation: isDark ? 4 : 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: isDark
+                ? const Color(0xFF8B6914).withValues(alpha: 0.5)
+                : const Color(0xFFD4AF6A),
+            width: 0.8,
+          ),
+        ),
+        color: isDark ? const Color(0xFF2A1F18) : Colors.white,
+      ),
+      dividerTheme: DividerThemeData(
+        color: isDark
+            ? const Color(0xFF8B6914).withValues(alpha: 0.4)
+            : const Color(0xFFD4AF6A),
+        thickness: 0.8,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isDark
+            ? const Color(0xFF2A1F18)
+            : const Color(0xFF3B2F2F),
+        contentTextStyle: GoogleFonts.lato(color: Colors.white),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: const Color(0xFFFDF6EC),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text('Error al cargar los poemas:\n$_error',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red)),
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (_poemas == null) {
-      return const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: Color(0xFF3B2F2F),
-          body: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.auto_stories, size: 72, color: Color(0xFFD4AF6A)),
-                SizedBox(height: 28),
-                CircularProgressIndicator(color: Color(0xFFD4AF6A)),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Extraer autores únicos ordenados alfabéticamente
-    final autores = _poemas!
-        .map((p) => p.autor)
-        .toSet()
-        .toList()
-      ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => FavoritosProvider(_poemas!)),
-        ChangeNotifierProvider(create: (_) => AjustesProvider(autores)),
-      ],
-      child: MaterialApp(
-        title: 'Antología Poética',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF8B6914),
-            brightness: Brightness.light,
-          ).copyWith(
-            primary: const Color(0xFF8B6914),
-            onPrimary: Colors.white,
-            secondary: const Color(0xFFD4AF6A),
-            surface: const Color(0xFFFDF6EC),
-            onSurface: const Color(0xFF3B2F2F),
-          ),
-          // Ripple coherente con la paleta
-          splashColor: const Color(0x228B6914),
-          highlightColor: const Color(0x118B6914),
-          // AppBar global
-          appBarTheme: AppBarTheme(
-            backgroundColor: const Color(0xFF3B2F2F),
-            foregroundColor: Colors.white,
-            elevation: 0,
-            centerTitle: true,
-            titleTextStyle: GoogleFonts.playfairDisplay(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          // Cards con esquinas más suaves (M3)
-          cardTheme: CardThemeData(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: Color(0xFFD4AF6A), width: 0.8),
-            ),
-            color: Colors.white,
-          ),
-          // Dividers coherentes
-          dividerTheme: const DividerThemeData(
-            color: Color(0xFFD4AF6A),
-            thickness: 0.8,
-          ),
-          // SnackBar flotante por defecto
-          snackBarTheme: SnackBarThemeData(
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: const Color(0xFF3B2F2F),
-            contentTextStyle: GoogleFonts.lato(color: Colors.white),
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
-        home: RootScreen(poemas: _poemas!),
-      ),
+    return Consumer<TemaProvider>(
+      builder: (context, tema, _) {
+        return MaterialApp(
+          title: 'Antología Poética',
+          debugShowCheckedModeBanner: false,
+          themeMode: tema.modo,
+          theme: _buildTheme(Brightness.light),
+          darkTheme: _buildTheme(Brightness.dark),
+          home: RootScreen(poemas: poemas),
+        );
+      },
     );
   }
 }

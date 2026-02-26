@@ -38,10 +38,18 @@ class PoemaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Colores: modo claro usa los originales hardcodeados
+    final bgColor = isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
+    final titleColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final versoColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final subColor = isDark ? Colors.white38 : Colors.grey[500]!;
+
     final estiloVerso = GoogleFonts.lato(
       fontSize: 17,
-      height: 1.85,
-      color: const Color(0xFF3B2F2F),
+      height: 2.05,
+      color: versoColor,
       letterSpacing: 0.15,
     );
 
@@ -49,7 +57,7 @@ class PoemaScreen extends StatelessWidget {
       builder: (context, favoritos, _) {
         final esFav = favoritos.esFavorito(poema);
         return Scaffold(
-          backgroundColor: const Color(0xFFFDF6EC),
+          backgroundColor: bgColor,
           appBar: AppBar(
             backgroundColor: const Color(0xFF3B2F2F),
             foregroundColor: Colors.white,
@@ -67,15 +75,13 @@ class PoemaScreen extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                tooltip:
-                    esFav ? 'Quitar de favoritos' : 'Añadir a favoritos',
+                tooltip: esFav ? 'Quitar de favoritos' : 'Añadir a favoritos',
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 250),
                   child: Icon(
                     esFav ? Icons.favorite : Icons.favorite_border,
                     key: ValueKey(esFav),
-                    color:
-                        esFav ? const Color(0xFFD4AF6A) : Colors.white70,
+                    color: esFav ? const Color(0xFFD4AF6A) : Colors.white70,
                   ),
                 ),
                 onPressed: () {
@@ -84,8 +90,13 @@ class PoemaScreen extends StatelessWidget {
                     SnackBar(
                       content: Text(
                         esFav ? 'Eliminado de favoritos' : 'Añadido a favoritos',
+                        style: GoogleFonts.lato(),
                       ),
+                      backgroundColor: const Color(0xFF3B2F2F),
                       duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                   );
                 },
@@ -93,8 +104,7 @@ class PoemaScreen extends StatelessWidget {
             ],
           ),
           body: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -107,7 +117,7 @@ class PoemaScreen extends StatelessWidget {
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: const Color(0xFF3B2F2F),
+                    color: titleColor,
                     height: 1.25,
                   ),
                 ),
@@ -122,24 +132,18 @@ class PoemaScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.lato(
                         fontSize: 13,
-                        color: Colors.grey[500],
+                        color: subColor,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
                   ),
 
                 const SizedBox(height: 10),
-
-                // Autor clicable
-                AutorLink(
-                  autor: poema.autor,
-                  todosLosPoemas: todosLosPoemas,
-                ),
-
+                AutorLink(autor: poema.autor, todosLosPoemas: todosLosPoemas),
                 const SizedBox(height: 30),
+
                 Container(
-                  width: 56,
-                  height: 2,
+                  width: 56, height: 2,
                   decoration: BoxDecoration(
                     color: const Color(0xFF8B6914),
                     borderRadius: BorderRadius.circular(1),

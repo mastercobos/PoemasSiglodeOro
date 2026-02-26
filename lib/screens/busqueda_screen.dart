@@ -44,23 +44,17 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
     final resultados = _resultados;
     final q = _query.toLowerCase();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF6EC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF3B2F2F),
-        foregroundColor: Colors.white,
         title: Text('Buscar',
             style: GoogleFonts.playfairDisplay(
                 fontSize: 22, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: const Color(0xFF8B6914), height: 1),
-        ),
       ),
       body: Column(
         children: [
@@ -86,8 +80,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                       )
                     ]
                   : null,
-              backgroundColor:
-                  WidgetStateProperty.all(Colors.white10),
+              backgroundColor: WidgetStateProperty.all(Colors.white10),
               surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
               shadowColor: WidgetStateProperty.all(Colors.transparent),
               shape: WidgetStateProperty.all(RoundedRectangleBorder(
@@ -108,26 +101,21 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                         const SizedBox(height: 16),
                         Text('Escribe para buscar',
                             style: GoogleFonts.playfairDisplay(
-                                fontSize: 18,
-                                color: const Color(0xFF3B2F2F))),
+                                fontSize: 18, color: textColor)),
                         const SizedBox(height: 8),
-                        Text(
-                          'Busca por título, autor o cualquier verso',
-                          style: GoogleFonts.lato(
-                              fontSize: 13,
-                              color: const Color(0xFF8B6914)),
-                        ),
+                        Text('Busca por título, autor o cualquier verso',
+                            style: GoogleFonts.lato(
+                                fontSize: 13,
+                                color: const Color(0xFF8B6914))),
                       ],
                     ),
                   )
                 : resultados.isEmpty
                     ? Center(
-                        child: Text(
-                          'Sin resultados para "$_query"',
-                          style: GoogleFonts.lato(
-                              fontSize: 15,
-                              color: const Color(0xFF8B6914)),
-                        ),
+                        child: Text('Sin resultados para "$_query"',
+                            style: GoogleFonts.lato(
+                                fontSize: 15,
+                                color: const Color(0xFF8B6914))),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(
@@ -169,15 +157,21 @@ class _ResultadoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF2A1F18) : Colors.white;
+    final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final subColor = isDark ? Colors.white38 : Colors.grey[600]!;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFD4AF6A)),
+        border: Border.all(
+            color: const Color(0xFFD4AF6A).withValues(alpha: isDark ? 0.4 : 1.0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withValues(alpha: 0.07),
+            color: Colors.brown.withValues(alpha: isDark ? 0.3 : 0.07),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -198,8 +192,7 @@ class _ResultadoCard extends StatelessWidget {
             ),
           ),
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -211,52 +204,41 @@ class _ResultadoCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _HighlightText(
-                        text: poema.etiqueta,
-                        query: query,
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF3B2F2F),
-                        ),
-                      ),
+                          text: poema.etiqueta,
+                          query: query,
+                          style: GoogleFonts.playfairDisplay(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: textColor)),
                       if (poema.titulo.isNotEmpty &&
                           poema.primerVerso.isNotEmpty &&
                           poema.primerVerso != poema.titulo)
                         Padding(
                           padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            '«${poema.primerVerso}»',
-                            style: GoogleFonts.lato(
-                              fontSize: 12,
-                              color: Colors.grey[500],
-                              fontStyle: FontStyle.italic,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          child: Text('«${poema.primerVerso}»',
+                              style: GoogleFonts.lato(
+                                  fontSize: 12,
+                                  color: subColor,
+                                  fontStyle: FontStyle.italic),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
                         ),
                       const SizedBox(height: 3),
                       _HighlightText(
-                        text: poema.autor,
-                        query: query,
-                        style: GoogleFonts.lato(
-                          fontSize: 12,
-                          color: const Color(0xFF8B6914),
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
+                          text: poema.autor,
+                          query: query,
+                          style: GoogleFonts.lato(
+                              fontSize: 12,
+                              color: const Color(0xFF8B6914),
+                              fontStyle: FontStyle.italic)),
                       if (fragmento != null && fragmento!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: _HighlightText(
-                            text: fragmento!,
-                            query: query,
-                            style: GoogleFonts.lato(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                              height: 1.5,
-                            ),
-                          ),
+                              text: fragmento!,
+                              query: query,
+                              style: GoogleFonts.lato(
+                                  fontSize: 12, color: subColor, height: 1.5)),
                         ),
                     ],
                   ),
@@ -276,21 +258,16 @@ class _HighlightText extends StatelessWidget {
   final String text;
   final String query;
   final TextStyle style;
-
-  const _HighlightText({
-    required this.text,
-    required this.query,
-    required this.style,
-  });
+  const _HighlightText(
+      {required this.text, required this.query, required this.style});
 
   @override
   Widget build(BuildContext context) {
     if (query.isEmpty) return Text(text, style: style);
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final lower = text.toLowerCase();
     final spans = <TextSpan>[];
     int start = 0;
-
     while (true) {
       final idx = lower.indexOf(query, start);
       if (idx == -1) {
@@ -305,12 +282,13 @@ class _HighlightText extends StatelessWidget {
         style: style.copyWith(
           color: const Color(0xFF8B6914),
           fontWeight: FontWeight.bold,
-          backgroundColor: const Color(0xFFFFF3CD),
+          backgroundColor: isDark
+              ? const Color(0xFF8B6914).withValues(alpha: 0.25)
+              : const Color(0xFFFFF3CD),
         ),
       ));
       start = idx + query.length;
     }
-
     return RichText(text: TextSpan(children: spans));
   }
 }

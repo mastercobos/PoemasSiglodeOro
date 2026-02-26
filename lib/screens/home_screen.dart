@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/poema.dart';
+import '../utils/roman.dart';
 import 'autor_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -12,6 +13,9 @@ class HomeScreen extends StatelessWidget {
     for (final p in poemas) {
       mapa.putIfAbsent(p.autor, () => []).add(p);
     }
+    for (final lista in mapa.values) {
+      lista.sort((a, b) => compareTitulos(a.etiqueta, b.etiqueta));
+    }
     return Map.fromEntries(
       mapa.entries.toList()
         ..sort((a, b) => a.key.toLowerCase().compareTo(b.key.toLowerCase())),
@@ -20,11 +24,13 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
     final grupos = _agrupar();
     final autores = grupos.keys.toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF6EC),
+      backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: const Color(0xFF3B2F2F),
         foregroundColor: Colors.white,
@@ -44,15 +50,12 @@ class HomeScreen extends StatelessWidget {
             width: double.infinity,
             color: const Color(0xFF3B2F2F),
             padding: const EdgeInsets.only(top: 4, bottom: 14),
-            child: Text(
-              '— Índice de Autores —',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.lato(
-                color: const Color(0xFFD4AF6A),
-                fontSize: 12,
-                letterSpacing: 2.5,
-              ),
-            ),
+            child: Text('— Índice de Autores —',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.lato(
+                    color: const Color(0xFFD4AF6A),
+                    fontSize: 12,
+                    letterSpacing: 2.5)),
           ),
           Expanded(
             child: ListView.builder(
@@ -60,7 +63,10 @@ class HomeScreen extends StatelessWidget {
               itemCount: autores.length,
               itemBuilder: (context, i) {
                 final autor = autores[i];
-                return _AutorCard(autor: autor, poemas: grupos[autor]!);
+                return _AutorCard(
+                    autor: autor,
+                    poemas: grupos[autor]!,
+                    todosLosPoemas: poemas);
               },
             ),
           ),
@@ -73,19 +79,30 @@ class HomeScreen extends StatelessWidget {
 class _AutorCard extends StatelessWidget {
   final String autor;
   final List<Poema> poemas;
-  const _AutorCard({required this.autor, required this.poemas});
+  final List<Poema> todosLosPoemas;
+  const _AutorCard({
+    required this.autor,
+    required this.poemas,
+    required this.todosLosPoemas,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF2A1F18) : const Color(0xFFFAF0E0);
+    final textColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD4AF6A)),
+        border: Border.all(
+            color: const Color(0xFFD4AF6A)
+                .withValues(alpha: isDark ? 0.5 : 1.0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.brown.withValues(alpha: 0.09),
+            color: Colors.brown.withValues(alpha: isDark ? 0.3 : 0.09),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -94,7 +111,7 @@ class _AutorCard extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Material(
-          color: const Color(0xFFFAF0E0),
+          color: cardColor,
           child: InkWell(
             onTap: () => Navigator.push(
               context,
@@ -102,30 +119,29 @@ class _AutorCard extends StatelessWidget {
                 pageBuilder: (_, __, ___) => AutorScreen(
                     autor: autor,
                     poemas: poemas,
-                    todosLosPoemas: poemas),
+                    todosLosPoemas: todosLosPoemas),
                 transitionsBuilder: (_, animation, __, child) =>
                     FadeTransition(opacity: animation, child: child),
                 transitionDuration: const Duration(milliseconds: 250),
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 14),
               child: Row(
                 children: [
                   Container(
                     width: 46, height: 46,
                     decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFF3B2F2F),
-                    ),
+                        shape: BoxShape.circle,
+                        color: Color(0xFF3B2F2F)),
                     child: Center(
                       child: Text(
                         autor.isNotEmpty ? autor[0].toUpperCase() : '?',
                         style: GoogleFonts.playfairDisplay(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -136,15 +152,15 @@ class _AutorCard extends StatelessWidget {
                       children: [
                         Text(autor,
                             style: GoogleFonts.playfairDisplay(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF3B2F2F),
-                            )),
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: textColor)),
                         const SizedBox(height: 2),
                         Text(
                           '${poemas.length} poema${poemas.length != 1 ? 's' : ''}',
                           style: GoogleFonts.lato(
-                              fontSize: 12, color: const Color(0xFF8B6914)),
+                              fontSize: 12,
+                              color: const Color(0xFF8B6914)),
                         ),
                       ],
                     ),
