@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
 import '../models/poema.dart';
 import '../providers/favoritos_provider.dart';
 import '../widgets/autor_link.dart';
@@ -121,7 +121,17 @@ class PoemaScreen extends StatelessWidget {
               ),
             ],
           ),
-          body: SingleChildScrollView(
+          body: MediaQuery(
+            // Limitamos el escalado de texto en la pantalla del poema.
+            // La estructura visual del verso es parte del significado poético
+            // y no puede romperse en líneas arbitrarias. Permitimos hasta
+            // 1.15× para respetar la accesibilidad visual sin romper la métrica.
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(
+                MediaQuery.of(context).textScaler.scale(1.0).clamp(1.0, 1.15),
+              ),
+            ),
+            child: SingleChildScrollView(
             padding:
                 const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
             child: Column(
@@ -191,6 +201,7 @@ class PoemaScreen extends StatelessWidget {
               ],
             ),
           ),
+          ), // MediaQuery textScaler cap
         );
       },
     );

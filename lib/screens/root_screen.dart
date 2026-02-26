@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/poema.dart';
+import '../widgets/nav_bar_controller.dart';
 import 'inicio_screen.dart';
 import 'home_screen.dart';
 import 'busqueda_screen.dart';
@@ -20,8 +21,6 @@ class _RootScreenState extends State<RootScreen>
   int _tab = 0;
 
   late final AnimationController _navBarController;
-
-  // ValueNotifier: al cambiar, solo reconstruye la píldora, no el IndexedStack
   final ValueNotifier<bool> _navBarVisible = ValueNotifier(true);
 
   double _scrollAccumulator = 0;
@@ -41,7 +40,7 @@ class _RootScreenState extends State<RootScreen>
     _navBarController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
-      value: 0, // 0 = visible, 1 = oculto
+      value: 0,
     );
   }
 
@@ -56,15 +55,12 @@ class _RootScreenState extends State<RootScreen>
     if (n is ScrollUpdateNotification) {
       final delta = n.scrollDelta ?? 0;
       final pixels = n.metrics.pixels;
-
       if (n.metrics.outOfRange || pixels <= 0) {
         _scrollAccumulator = 0;
         _showNavBar();
         return;
       }
-
       _scrollAccumulator += delta;
-
       if (_scrollAccumulator >= _hideThreshold) {
         _scrollAccumulator = 0;
         _hideNavBar();
@@ -80,13 +76,13 @@ class _RootScreenState extends State<RootScreen>
 
   void _hideNavBar() {
     if (!_navBarVisible.value) return;
-    _navBarVisible.value = false;   // sin setState
-    _navBarController.forward();    // anima solo el widget de la píldora
+    _navBarVisible.value = false;
+    _navBarController.forward();
   }
 
   void _showNavBar() {
     if (_navBarVisible.value) return;
-    _navBarVisible.value = true;    // sin setState
+    _navBarVisible.value = true;
     _navBarController.reverse();
   }
 
@@ -94,7 +90,7 @@ class _RootScreenState extends State<RootScreen>
     if (i == _tab) {
       _navigatorKeys[i].currentState?.popUntil((route) => route.isFirst);
     } else {
-      setState(() => _tab = i); // setState solo para cambiar de tab
+      setState(() => _tab = i);
     }
     _showNavBar();
     _scrollAccumulator = 0;
@@ -125,7 +121,7 @@ class _RootScreenState extends State<RootScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final navBgColor =
         isDark ? const Color(0xFF0F0A08) : const Color(0xFF3B2F2F);
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final systemBottomPadding = MediaQuery.of(context).padding.bottom;
 
     return PopScope(
       canPop: false,
@@ -142,50 +138,65 @@ class _RootScreenState extends State<RootScreen>
           statusBarIconBrightness: Brightness.light,
         ),
         child: Scaffold(
+          // extendBody: true permite que el body pase por debajo de la píldora
           extendBody: true,
-          body: NotificationListener<ScrollNotification>(
-            onNotification: (n) {
-              if (n.depth == 0) _onScroll(n);
-              return false;
-            },
-            child: IndexedStack(
-              index: _tab,
-              children: List.generate(4, _buildTab),
-            ),
-          ),
-          // ValueListenableBuilder: reconstruye SOLO la píldora, nunca el body
-          bottomNavigationBar: ValueListenableBuilder<bool>(
-            valueListenable: _navBarVisible,
-            builder: (context, _, __) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  left: 24,
-                  right: 24,
-                  bottom: bottomPadding + 16,
-                ),
-                child: AnimatedBuilder(
-                  animation: _navBarController,
-                  builder: (context, child) {
-                    final t = _navBarController.value;
-                    final offset = Offset(0, t * 1.5);
-                    final opacity = (1.0 - t).clamp(0.0, 1.0);
-                    return FractionalTranslation(
-                      translation: offset,
-                      child: Opacity(
-                        opacity: opacity,
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: _FloatingPill(
-                    selectedIndex: _tab,
-                    onDestinationSelected: _onTabSelected,
-                    backgroundColor: navBgColor,
-                    isDark: isDark,
+          // resizeToAvoidBottomInset: false — el Scaffold NO reacciona al teclado
+          // Esto evita que empuje la píldora cuando sube el IME.
+          // Cada pantalla gestiona su propio padding con viewInsets si lo necesita.
+          resizeToAvoidBottomInset: false,
+          body: NavBarControllerScope(
+            showNavBar: _showNavBar,
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                if (n.depth == 0) _onScroll(n);
+                return false;
+              },
+              child: Stack(
+                children: [
+                  // Contenido de los tabs ocupa todo el espacio
+                  IndexedStack(
+                    index: _tab,
+                    children: List.generate(4, _buildTab),
                   ),
-                ),
-              );
-            },
+                  // Píldora superpuesta sobre el contenido, anclada abajo
+                  // Al estar en el mismo Stack que el body (no en bottomNavigationBar),
+                  // el Scaffold no la incluye en el área que gestiona el IME.
+                  Positioned(
+                    left: 24,
+                    right: 24,
+                    bottom: systemBottomPadding + 16,
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _navBarVisible,
+                      builder: (context, _, __) {
+                        return AnimatedBuilder(
+                          animation: _navBarController,
+                          builder: (context, child) {
+                            final t = _navBarController.value;
+                            return FractionalTranslation(
+                              translation: Offset(0, t * 1.5),
+                              child: Opacity(
+                                opacity: (1.0 - t).clamp(0.0, 1.0),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: MediaQuery(
+                            data: MediaQuery.of(context)
+                                .copyWith(textScaler: TextScaler.noScaling),
+                            child: _FloatingPill(
+                              selectedIndex: _tab,
+                              onDestinationSelected: _onTabSelected,
+                              backgroundColor: navBgColor,
+                              isDark: isDark,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -215,10 +226,21 @@ class _FloatingPill extends StatelessWidget {
     _NavItem(Icons.favorite_border,    Icons.favorite,  'Favoritos', 'Mis poemas favoritos'),
   ];
 
+  static const _shadowsLight = [
+    BoxShadow(color: Color(0x40000000), blurRadius: 20,
+        offset: Offset(0, 6), spreadRadius: -2),
+    BoxShadow(color: Color(0x1A8B6914), blurRadius: 12, offset: Offset(0, 2)),
+  ];
+  static const _shadowsDark = [
+    BoxShadow(color: Color(0x80000000), blurRadius: 20,
+        offset: Offset(0, 6), spreadRadius: -2),
+    BoxShadow(color: Color(0x268B6914), blurRadius: 12, offset: Offset(0, 2)),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(40),
@@ -226,19 +248,7 @@ class _FloatingPill extends StatelessWidget {
           color: const Color(0xFF8B6914).withValues(alpha: 0.6),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.25),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-            spreadRadius: -2,
-          ),
-          BoxShadow(
-            color: const Color(0xFF8B6914).withValues(alpha: isDark ? 0.15 : 0.10),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: isDark ? _shadowsDark : _shadowsLight,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -255,19 +265,17 @@ class _FloatingPill extends StatelessWidget {
                 borderRadius: BorderRadius.circular(40),
                 splashColor: const Color(0xFF8B6914).withValues(alpha: 0.2),
                 highlightColor: const Color(0xFF8B6914).withValues(alpha: 0.1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.easeInOut,
-                        width: isSelected ? 32 : 0,
+                        width: isSelected ? 28 : 0,
                         height: isSelected ? 3 : 0,
-                        margin: const EdgeInsets.only(bottom: 2),
+                        margin: const EdgeInsets.only(bottom: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFD4AF6A),
                           borderRadius: BorderRadius.circular(2),
@@ -282,10 +290,10 @@ class _FloatingPill extends StatelessWidget {
                           size: 22,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       ExcludeSemantics(
-                        child: AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 200),
+                        child: Text(
+                          item.label,
                           style: GoogleFonts.lato(
                             fontSize: 10,
                             fontWeight: isSelected
@@ -295,7 +303,6 @@ class _FloatingPill extends StatelessWidget {
                                 ? const Color(0xFFD4AF6A)
                                 : Colors.white54,
                           ),
-                          child: Text(item.label),
                         ),
                       ),
                     ],
