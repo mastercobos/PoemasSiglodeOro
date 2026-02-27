@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/poema.dart';
@@ -76,32 +77,30 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      // resizeToAvoidBottomInset: true (default) — el sistema Android
-      // anima el teclado de forma nativa y fluida sin que Flutter intervenga.
-      // Solo el ListView se encoge; la SearchBar en el appBar queda fija.
+      // En móvil: false porque keyboard_height gestiona el padding manualmente.
+      // En web: true para que el navegador maneje el teclado virtual de forma nativa.
+      resizeToAvoidBottomInset: kIsWeb,
       appBar: AppBar(
-        // La SearchBar ocupa toda la bottom del AppBar:
-        // así queda FUERA del área que se redimensiona con el teclado
-        // y no provoca ningún rebuild extra al abrirse el IME.
+        backgroundColor: const Color(0xFF3B2F2F),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text('Buscar', style: AppTextStyles.appBarTitle),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(64),
-          child: Container(
-            color: const Color(0xFF3B2F2F),
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
             child: SearchBar(
               controller: _controller,
               focusNode: _focusNode,
               hintText: 'Buscar por título, autor o verso…',
               hintStyle: WidgetStateProperty.all(AppTextStyles.searchHint),
               textStyle: WidgetStateProperty.all(AppTextStyles.searchText),
-              leading:
-                  const Icon(Icons.search, color: Color(0xFFD4AF6A)),
+              leading: const Icon(Icons.search, color: Color(0xFFD4AF6A)),
               trailing: _query.isNotEmpty
                   ? [
                       IconButton(
-                        icon: const Icon(Icons.close,
-                            color: Colors.white54),
+                        icon: const Icon(Icons.close, color: Colors.white54),
                         tooltip: 'Borrar búsqueda',
                         onPressed: () {
                           _controller.clear();
@@ -110,12 +109,10 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                       )
                     ]
                   : null,
-              backgroundColor:
-                  WidgetStateProperty.all(Colors.white10),
-              surfaceTintColor:
-                  WidgetStateProperty.all(Colors.transparent),
-              shadowColor:
-                  WidgetStateProperty.all(Colors.transparent),
+              backgroundColor: WidgetStateProperty.all(Colors.white10),
+              surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
+              shadowColor: WidgetStateProperty.all(Colors.transparent),
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
               shape: WidgetStateProperty.all(RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12))),
               padding: const WidgetStatePropertyAll(
@@ -130,17 +127,21 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
 
   Widget _buildBody(String q, Color textColor, bool isDark) {
     if (q.isEmpty) {
+      // FIX CENTRADO: Center + Column con mainAxisSize.min y crossAxisAlignment.center
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Icon(Icons.search, size: 56, color: Color(0xFFD4AF6A)),
             const SizedBox(height: 16),
             Text('Escribe para buscar',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.playfairDisplay(
                     fontSize: 18, color: textColor)),
             const SizedBox(height: 8),
             Text('Busca por título, autor o cualquier verso',
+                textAlign: TextAlign.center,
                 style: AppTextStyles.poemaCount),
           ],
         ),
@@ -150,6 +151,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     if (_resultados.isEmpty) {
       return Center(
         child: Text('Sin resultados para "$_query"',
+            textAlign: TextAlign.center,
             style: AppTextStyles.poemaCount),
       );
     }
@@ -229,8 +231,8 @@ class _ResultadoCard extends StatelessWidget {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 14, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -317,8 +319,7 @@ class _HighlightText extends StatelessWidget {
         break;
       }
       if (idx > start) {
-        spans.add(
-            TextSpan(text: text.substring(start, idx), style: style));
+        spans.add(TextSpan(text: text.substring(start, idx), style: style));
       }
       spans.add(TextSpan(
         text: text.substring(idx, idx + query.length),

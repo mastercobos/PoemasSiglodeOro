@@ -73,9 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(
                   horizontal: 14, vertical: 14),
               itemCount: _autores.length,
-              // ⚡ itemExtent aproximado elimina el layout de todos los items
-              //    no visibles (reduce trabajo de layout en ~80%)
-              itemExtentBuilder: (i, _) => 90,
               itemBuilder: (context, i) {
                 final autor = _autores[i];
                 return _AutorCard(
@@ -158,7 +155,15 @@ class _AutorCard extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 14),
-                child: Row(
+                child: MediaQuery(
+                  // Limitar escalado en la tarjeta: el avatar y el nombre
+                  // no deben crecer sin límite con letras grandes del sistema
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: TextScaler.linear(
+                      MediaQuery.of(context).textScaler.scale(1).clamp(1.0, 1.3),
+                    ),
+                  ),
+                  child: Row(
                   children: [
                     Container(
                       width: 46, height: 46,
@@ -196,7 +201,8 @@ class _AutorCard extends StatelessWidget {
                     const Icon(Icons.chevron_right,
                         size: 22, color: Color(0xFF8B6914)),
                   ],
-                ),
+                  ),  // Row
+                ),   // MediaQuery
               ),
             ),
           ),

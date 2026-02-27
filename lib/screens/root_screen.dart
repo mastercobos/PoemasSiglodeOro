@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -108,10 +109,16 @@ class _RootScreenState extends State<RootScreen>
   }
 
   Widget _buildTab(int index) {
-    return Navigator(
-      key: _navigatorKeys[index],
-      onGenerateRoute: (settings) => MaterialPageRoute(
-        builder: (_) => _tabContent(index),
+    return TickerMode(
+      enabled: _tab == index,
+      child: ExcludeFocus(
+        excluding: _tab != index,
+        child: Navigator(
+          key: _navigatorKeys[index],
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (_) => _tabContent(index),
+          ),
+        ),
       ),
     );
   }
@@ -138,11 +145,7 @@ class _RootScreenState extends State<RootScreen>
           statusBarIconBrightness: Brightness.light,
         ),
         child: Scaffold(
-          // extendBody: true permite que el body pase por debajo de la píldora
           extendBody: true,
-          // resizeToAvoidBottomInset: false — el Scaffold NO reacciona al teclado
-          // Esto evita que empuje la píldora cuando sube el IME.
-          // Cada pantalla gestiona su propio padding con viewInsets si lo necesita.
           resizeToAvoidBottomInset: false,
           body: NavBarControllerScope(
             showNavBar: _showNavBar,
@@ -153,14 +156,13 @@ class _RootScreenState extends State<RootScreen>
               },
               child: Stack(
                 children: [
-                  // Contenido de los tabs ocupa todo el espacio
                   IndexedStack(
                     index: _tab,
                     children: List.generate(4, _buildTab),
                   ),
-                  // Píldora superpuesta sobre el contenido, anclada abajo
-                  // Al estar en el mismo Stack que el body (no en bottomNavigationBar),
-                  // el Scaffold no la incluye en el área que gestiona el IME.
+                  // IME warmup solo en móvil nativo — no aplica en web
+                  if (!kIsWeb) const _ImeWarmup(),
+                  // Píldora flotante
                   Positioned(
                     left: 24,
                     right: 24,
@@ -323,4 +325,61 @@ class _NavItem {
   final String label;
   final String semanticLabel;
   const _NavItem(this.icon, this.iconSelected, this.label, this.semanticLabel);
+}
+
+// ─── IME Warmup (solo móvil nativo) ──────────────────────────────────────────
+// Abre y cierra la conexión con el IME de Android en el primer frame,
+// forzando la inicialización lazy antes de que el usuario toque nada.
+
+class _ImeWarmup extends StatefulWidget {
+  const _ImeWarmup();
+
+  @override
+  State<_ImeWarmup> createState() => _ImeWarmupState();
+}
+
+class _ImeWarmupState extends State<_ImeWarmup> {
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNode.requestFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _focusNode.unfocus();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // SizedBox.shrink en lugar de Positioned: no necesita Stack como padre
+    // para existir en el árbol. Tamaño 0×0, completamente invisible.
+    return SizedBox.shrink(
+      child: Offstage(
+        child: TextField(
+          focusNode: _focusNode,
+          enableInteractiveSelection: false,
+          // fontSize > 0 requerido por Flutter (assertion)
+          style: const TextStyle(fontSize: 1.0, color: Colors.transparent),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            isCollapsed: true,
+            contentPadding: EdgeInsets.zero,
+          ),
+        ),
+      ),
+    );
+  }
 }

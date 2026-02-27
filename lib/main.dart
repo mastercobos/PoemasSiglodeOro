@@ -135,10 +135,9 @@ class MiApp extends StatelessWidget {
           // ① Edge-to-edge global
           builder: (context, child) {
             return AnnotatedRegion<SystemUiOverlayStyle>(
-              value: SystemUiOverlayStyle(
+              value: const SystemUiOverlayStyle(
                 statusBarColor: Colors.transparent,
-                statusBarIconBrightness:
-                    tema.modo == ThemeMode.dark ? Brightness.light : Brightness.light,
+                statusBarIconBrightness: Brightness.light,
                 systemNavigationBarColor: Colors.transparent,
               ),
               child: child!,
