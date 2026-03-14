@@ -142,30 +142,34 @@ class _InicioScreenState extends State<InicioScreen> {
             const SizedBox(height: 24),
 
             if (destacados.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 40),
-                child: Column(
-                  children: [
-                    const Icon(Icons.sentiment_neutral,
-                        size: 48, color: Color(0xFFD4AF6A)),
-                    const SizedBox(height: 16),
-                    Text('Ningún autor seleccionado',
-                        style: GoogleFonts.playfairDisplay(
-                            fontSize: 18, color: titleColor)),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      icon: const Icon(Icons.tune,
-                          color: Color(0xFF8B6914)),
-                      label: Text('Configurar autores',
-                          style: GoogleFonts.lato(
-                              color: const Color(0xFF8B6914))),
-                      onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) =>
-                                  const AjustesInicioScreen())),
-                    ),
-                  ],
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.sentiment_neutral,
+                          size: 48, color: Color(0xFFD4AF6A)),
+                      const SizedBox(height: 16),
+                      Text('Ningún autor seleccionado',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.playfairDisplay(
+                              fontSize: 18, color: titleColor)),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        icon: const Icon(Icons.tune,
+                            color: Color(0xFF8B6914)),
+                        label: Text('Configurar autores',
+                            style: GoogleFonts.lato(
+                                color: const Color(0xFF8B6914))),
+                        onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const AjustesInicioScreen())),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else
