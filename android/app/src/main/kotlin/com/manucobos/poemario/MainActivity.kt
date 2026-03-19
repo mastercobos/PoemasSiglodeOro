@@ -1,4 +1,4 @@
-package com.example.poemas_siglo_de_oro
+package com.manucobos.poemario
 
 import io.flutter.embedding.android.FlutterActivity
 
