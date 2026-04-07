@@ -1,12 +1,16 @@
+import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/poema.dart';
 import '../providers/favoritos_provider.dart';
 import '../widgets/autor_link.dart';
 
-class PoemaScreen extends StatelessWidget {
+class PoemaScreen extends StatefulWidget {
   final Poema poema;
   final List<Poema> todosLosPoemas;
 
@@ -16,9 +20,18 @@ class PoemaScreen extends StatelessWidget {
     required this.todosLosPoemas,
   });
 
+  @override
+  State<PoemaScreen> createState() => _PoemaScreenState();
+}
+
+class _PoemaScreenState extends State<PoemaScreen> {
   static const _cortesEstrofa = {4, 8, 11};
 
-  List<String> get _versos => poema.texto
+  // Clave para capturar el widget de la tarjeta compartible
+  final _shareKey = GlobalKey();
+  bool _compartiendo = false;
+
+  List<String> get _versos => widget.poema.texto
       .split('\n')
       .map((l) => l.trimRight())
       .where((l) => l.isNotEmpty)
@@ -28,28 +41,104 @@ class PoemaScreen extends StatelessWidget {
     final versos = _versos;
     final widgets = <Widget>[];
     for (int i = 0; i < versos.length; i++) {
-      widgets.add(SelectableText(versos[i],
-          textAlign: TextAlign.center, style: estilo));
+      widgets.add(Text(versos[i], textAlign: TextAlign.center, style: estilo));
       if (_cortesEstrofa.contains(i + 1) && i + 1 < versos.length) {
-        widgets.add(const SizedBox(height: 20));
+        widgets.add(const SizedBox(height: 16));
       }
     }
     return widgets;
   }
 
+  Future<void> _compartirImagen(BuildContext context) async {
+    if (_compartiendo) return;
+    setState(() => _compartiendo = true);
+    HapticFeedback.lightImpact();
+
+    try {
+      // Insertar la tarjeta en un OverlayEntry fuera de pantalla,
+      // esperar un frame para que Flutter la renderice, capturarla
+      // y luego eliminarla del overlay.
+      final completer = Completer<Uint8List?>();
+      late OverlayEntry entry;
+
+      entry = OverlayEntry(
+        builder: (_) => Positioned(
+          left: -10000, // fuera de pantalla pero renderizado
+          top: 0,
+          child: RepaintBoundary(
+            key: _shareKey,
+            child: _ShareCard(
+              poema: widget.poema,
+              isDark: Theme.of(context).brightness == Brightness.dark,
+            ),
+          ),
+        ),
+      );
+
+      Overlay.of(context).insert(entry);
+
+      // Esperar dos frames: uno para layout, otro para pintura
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          try {
+            final boundary = _shareKey.currentContext?.findRenderObject()
+                as RenderRepaintBoundary?;
+            if (boundary == null) {
+              completer.complete(null);
+              return;
+            }
+            final image = await boundary.toImage(pixelRatio: 3.15);
+            final byteData =
+                await image.toByteData(format: ui.ImageByteFormat.png);
+            completer.complete(byteData?.buffer.asUint8List());
+          } catch (e) {
+            completer.complete(null);
+          } finally {
+            entry.remove();
+          }
+        });
+      });
+
+      final bytes = await completer.future;
+
+      if (bytes != null) {
+        await Share.shareXFiles(
+          [
+            XFile.fromData(
+              bytes,
+              name: '${widget.poema.etiqueta}.png',
+              mimeType: 'image/png',
+            ),
+          ],
+          subject: widget.poema.etiqueta,
+          text: '${widget.poema.etiqueta} — ${widget.poema.autor}',
+        );
+      } else {
+        // Fallback: compartir como texto
+        await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
+      }
+    } catch (e) {
+      await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
+    } finally {
+      if (mounted) setState(() => _compartiendo = false);
+    }
+  }
+
+  String _textoPlano() {
+    return '${widget.poema.etiqueta}\n${widget.poema.autor}\n\n'
+        '${widget.poema.texto.trim()}\n\n— Poemario';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final bgColor =
         isDark ? const Color(0xFF1A1210) : const Color(0xFFFDF6EC);
     final titleColor =
         isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
     final versoColor =
         isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
-    // ⑦ Contraste: #666666 sobre crema da 5.35:1 (WCAG AA ✓)
-    final subColor =
-        isDark ? Colors.white38 : const Color(0xFF666666);
+    final subColor = isDark ? Colors.white38 : const Color(0xFF666666);
 
     final estiloVerso = GoogleFonts.lato(
       fontSize: 17,
@@ -60,14 +149,14 @@ class PoemaScreen extends StatelessWidget {
 
     return Consumer<FavoritosProvider>(
       builder: (context, favoritos, _) {
-        final esFav = favoritos.esFavorito(poema);
+        final esFav = favoritos.esFavorito(widget.poema);
         return Scaffold(
           backgroundColor: bgColor,
           appBar: AppBar(
             backgroundColor: const Color(0xFF3B2F2F),
             foregroundColor: Colors.white,
             title: Text(
-              poema.etiqueta,
+              widget.poema.etiqueta,
               style: GoogleFonts.playfairDisplay(
                   fontSize: 17, fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
@@ -79,11 +168,27 @@ class PoemaScreen extends StatelessWidget {
               child: Container(color: const Color(0xFF8B6914), height: 1),
             ),
             actions: [
-              // ③ Semantics: tooltip ya actúa como label para TalkBack
+              // Botón compartir como imagen
+              IconButton(
+                tooltip: 'Compartir: ${widget.poema.etiqueta}',
+                icon: _compartiendo
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white70,
+                        ),
+                      )
+                    : const Icon(Icons.share_outlined, color: Colors.white70),
+                onPressed:
+                    _compartiendo ? null : () => _compartirImagen(context),
+              ),
+              // Botón favorito
               IconButton(
                 tooltip: esFav
-                    ? 'Quitar de favoritos: ${poema.etiqueta}'
-                    : 'Añadir a favoritos: ${poema.etiqueta}',
+                    ? 'Quitar de favoritos: ${widget.poema.etiqueta}'
+                    : 'Añadir a favoritos: ${widget.poema.etiqueta}',
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 250),
                   child: Icon(
@@ -92,16 +197,14 @@ class PoemaScreen extends StatelessWidget {
                     color: esFav
                         ? const Color(0xFFD4AF6A)
                         : Colors.white70,
-                    // ③ semanticLabel para lectores de pantalla
                     semanticLabel: esFav
                         ? 'Guardado en favoritos'
                         : 'No guardado en favoritos',
                   ),
                 ),
                 onPressed: () {
-                  // ⑨ Haptic feedback en acción de favorito
                   HapticFeedback.mediumImpact();
-                  favoritos.toggleFavorito(poema);
+                  favoritos.toggleFavorito(widget.poema);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -122,86 +225,75 @@ class PoemaScreen extends StatelessWidget {
             ],
           ),
           body: MediaQuery(
-            // Limitamos el escalado de texto en la pantalla del poema.
-            // La estructura visual del verso es parte del significado poético
-            // y no puede romperse en líneas arbitrarias. Permitimos hasta
-            // 1.15× para respetar la accesibilidad visual sin romper la métrica.
             data: MediaQuery.of(context).copyWith(
               textScaler: TextScaler.linear(
                 MediaQuery.of(context).textScaler.scale(1.0).clamp(1.0, 1.15),
               ),
             ),
             child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // ③ El ornamento es decorativo — excluir de accesibilidad
-                ExcludeSemantics(child: _ornament()),
-                const SizedBox(height: 28),
-
-                SelectableText(
-                  poema.etiqueta,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: titleColor,
-                    height: 1.25,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ExcludeSemantics(child: _ornament()),
+                  const SizedBox(height: 28),
+                  SelectableText(
+                    widget.poema.etiqueta,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: titleColor,
+                      height: 1.25,
+                    ),
                   ),
-                ),
-
-                if (poema.titulo.isNotEmpty &&
-                    poema.primerVerso.isNotEmpty &&
-                    poema.primerVerso != poema.titulo)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: SelectableText(
-                      '«${poema.primerVerso}»',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.lato(
-                        fontSize: 13,
-                        color: subColor,
-                        fontStyle: FontStyle.italic,
+                  if (widget.poema.titulo.isNotEmpty &&
+                      widget.poema.primerVerso.isNotEmpty &&
+                      widget.poema.primerVerso != widget.poema.titulo)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: SelectableText(
+                        '«${widget.poema.primerVerso}»',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.lato(
+                          fontSize: 13,
+                          color: subColor,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 10),
+                  AutorLink(
+                      autor: widget.poema.autor,
+                      todosLosPoemas: widget.todosLosPoemas),
+                  const SizedBox(height: 30),
+                  ExcludeSemantics(
+                    child: Container(
+                      width: 56, height: 2,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF8B6914),
+                        borderRadius: BorderRadius.circular(1),
                       ),
                     ),
                   ),
-
-                const SizedBox(height: 10),
-                AutorLink(
-                    autor: poema.autor, todosLosPoemas: todosLosPoemas),
-                const SizedBox(height: 30),
-
-                // ③ Separador decorativo
-                ExcludeSemantics(
-                  child: Container(
-                    width: 56, height: 2,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8B6914),
-                      borderRadius: BorderRadius.circular(1),
+                  const SizedBox(height: 34),
+                  Semantics(
+                    label: 'Poema: ${widget.poema.etiqueta}, '
+                        'de ${widget.poema.autor}',
+                    child: Column(
+                      children: _buildCuerpo(estiloVerso),
                     ),
                   ),
-                ),
-                const SizedBox(height: 34),
-
-                // ⑧ El cuerpo del poema: Semantics agrupa título + texto
-                // para que TalkBack lo anuncie como una unidad
-                Semantics(
-                  label:
-                      'Poema: ${poema.etiqueta}, de ${poema.autor}',
-                  child: Column(
-                    children: _buildCuerpo(estiloVerso),
-                  ),
-                ),
-
-                const SizedBox(height: 52),
-                ExcludeSemantics(child: _ornament()),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 52),
+                  ExcludeSemantics(child: _ornament()),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
-          ), // MediaQuery textScaler cap
+          // Tarjeta invisible eliminada — ahora se renderiza
+          // dinámicamente en un Overlay al pulsar compartir
         );
       },
     );
@@ -217,6 +309,188 @@ class PoemaScreen extends StatelessWidget {
             color: Color(0xFF8B6914), size: 18),
         const SizedBox(width: 10),
         Container(width: 44, height: 1, color: const Color(0xFF8B6914)),
+      ],
+    );
+  }
+}
+
+// ─── Tarjeta de imagen para compartir ────────────────────────────────────────
+
+class _ShareCard extends StatelessWidget {
+  final Poema poema;
+  final bool isDark;
+  const _ShareCard({required this.poema, required this.isDark});
+
+  static const _cortesEstrofa = {4, 8, 11};
+  static const double _cardWidth = 1000;
+  static const double _horizontalPadding = 60;
+  // Available width for text = card - left padding - right padding
+  static const double _textWidth = _cardWidth - _horizontalPadding * 2;
+
+  List<String> get _versos => poema.texto
+      .split('\n')
+      .map((l) => l.trimRight())
+      .where((l) => l.isNotEmpty)
+      .toList();
+
+  /// Returns the rendered width of [text] at [fontSize] using [fontBuilder].
+  double _measureText(
+    String text,
+    double fontSize,
+    TextStyle Function(double size) fontBuilder,
+  ) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: fontBuilder(fontSize)),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout(maxWidth: double.infinity);
+    return painter.width;
+  }
+
+  /// Binary-searches the largest font size where ALL versos fit in [maxWidth]
+  /// in a single line. Searches between [minSize] and [maxSize].
+  double _bestFontSize({
+    required List<String> versos,
+    required double maxWidth,
+    required TextStyle Function(double size) fontBuilder,
+    double minSize = 10,
+    double maxSize = 120,
+  }) {
+    // Find the longest verse by pixel width at a reference size
+    const ref = 40.0;
+    final longestVerse = versos.reduce((a, b) =>
+        _measureText(a, ref, fontBuilder) >= _measureText(b, ref, fontBuilder)
+            ? a
+            : b);
+
+    // Binary search: find max fontSize where longestVerse fits in maxWidth
+    double lo = minSize;
+    double hi = maxSize;
+    while (hi - lo > 0.5) {
+      final mid = (lo + hi) / 2;
+      if (_measureText(longestVerse, mid, fontBuilder) <= maxWidth) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    return lo.floorToDouble();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColor =
+        isDark ? const Color(0xFF1A0F0A) : const Color(0xFFFAF0E0);
+    final titleColor =
+        isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final versoColor =
+        isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+
+    final versos = _versos;
+
+    // Calculate max font size so the longest verse fits on one line
+    // Leave a 4% safety margin to avoid floating point edge cases
+    final versoSize = _bestFontSize(
+      versos: versos,
+      maxWidth: _textWidth * 0.96,
+      fontBuilder: (size) => GoogleFonts.lato(
+        fontSize: size,
+        letterSpacing: 0.2,
+      ),
+    );
+
+    // Title and autor scale proportionally to verso size
+    final titleSize = (versoSize * 1.35).roundToDouble();
+    final autorSize = (versoSize * 0.85).roundToDouble();
+    final watermarkSize = (versoSize * 0.5).clamp(16.0, 36.0);
+    final iconSize = (versoSize * 0.7).clamp(20.0, 60.0);
+
+    final estiloVerso = GoogleFonts.lato(
+      fontSize: versoSize,
+      height: 2.0,
+      color: versoColor,
+      letterSpacing: 0.2,
+    );
+
+    final versoWidgets = <Widget>[];
+    for (int i = 0; i < versos.length; i++) {
+      versoWidgets.add(
+        Text(versos[i], textAlign: TextAlign.center, style: estiloVerso),
+      );
+      if (_cortesEstrofa.contains(i + 1) && i + 1 < versos.length) {
+        versoWidgets.add(SizedBox(height: versoSize * 0.8));
+      }
+    }
+
+    return MediaQuery(
+      data: const MediaQueryData(textScaler: TextScaler.noScaling),
+      child: Container(
+        width: _cardWidth,
+        color: bgColor,
+        padding: const EdgeInsets.symmetric(
+            horizontal: _horizontalPadding, vertical: 64),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ornament(iconSize),
+            const SizedBox(height: 40),
+            Text(
+              poema.etiqueta,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: titleSize,
+                fontWeight: FontWeight.bold,
+                color: titleColor,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              poema.autor,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(
+                fontSize: autorSize,
+                color: const Color(0xFF8B6914),
+                fontStyle: FontStyle.italic,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Container(
+              width: 60, height: 2,
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B6914),
+                borderRadius: BorderRadius.circular(1),
+              ),
+            ),
+            const SizedBox(height: 36),
+            ...versoWidgets,
+            const SizedBox(height: 40),
+            _ornament(iconSize),
+            const SizedBox(height: 28),
+            Text(
+              'Poemario · Siglo de Oro',
+              style: GoogleFonts.lato(
+                fontSize: watermarkSize,
+                color: const Color(0xFF8B6914).withValues(alpha: 0.7),
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _ornament(double iconSize) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(width: 60, height: 1, color: const Color(0xFF8B6914)),
+        const SizedBox(width: 12),
+        Icon(Icons.auto_stories, color: const Color(0xFF8B6914), size: iconSize),
+        const SizedBox(width: 12),
+        Container(width: 60, height: 1, color: const Color(0xFF8B6914)),
       ],
     );
   }
