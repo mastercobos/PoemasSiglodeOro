@@ -315,6 +315,8 @@ class _PoemaScreenState extends State<PoemaScreen> {
 }
 
 // ─── Tarjeta de imagen para compartir ────────────────────────────────────────
+// Se renderiza off-screen y se captura como PNG.
+// Diseño fijo 800×1200 para que quede bien en cualquier red social.
 
 class _ShareCard extends StatelessWidget {
   final Poema poema;
@@ -322,10 +324,6 @@ class _ShareCard extends StatelessWidget {
   const _ShareCard({required this.poema, required this.isDark});
 
   static const _cortesEstrofa = {4, 8, 11};
-  static const double _cardWidth = 1000;
-  static const double _horizontalPadding = 60;
-  // Available width for text = card - left padding - right padding
-  static const double _textWidth = _cardWidth - _horizontalPadding * 2;
 
   List<String> get _versos => poema.texto
       .split('\n')
@@ -333,52 +331,9 @@ class _ShareCard extends StatelessWidget {
       .where((l) => l.isNotEmpty)
       .toList();
 
-  /// Returns the rendered width of [text] at [fontSize] using [fontBuilder].
-  double _measureText(
-    String text,
-    double fontSize,
-    TextStyle Function(double size) fontBuilder,
-  ) {
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: fontBuilder(fontSize)),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-    )..layout(maxWidth: double.infinity);
-    return painter.width;
-  }
-
-  /// Binary-searches the largest font size where ALL versos fit in [maxWidth]
-  /// in a single line. Searches between [minSize] and [maxSize].
-  double _bestFontSize({
-    required List<String> versos,
-    required double maxWidth,
-    required TextStyle Function(double size) fontBuilder,
-    double minSize = 10,
-    double maxSize = 120,
-  }) {
-    // Find the longest verse by pixel width at a reference size
-    const ref = 40.0;
-    final longestVerse = versos.reduce((a, b) =>
-        _measureText(a, ref, fontBuilder) >= _measureText(b, ref, fontBuilder)
-            ? a
-            : b);
-
-    // Binary search: find max fontSize where longestVerse fits in maxWidth
-    double lo = minSize;
-    double hi = maxSize;
-    while (hi - lo > 0.5) {
-      final mid = (lo + hi) / 2;
-      if (_measureText(longestVerse, mid, fontBuilder) <= maxWidth) {
-        lo = mid;
-      } else {
-        hi = mid;
-      }
-    }
-    return lo.floorToDouble();
-  }
-
   @override
   Widget build(BuildContext context) {
+    // Colores según el tema del usuario
     final bgColor =
         isDark ? const Color(0xFF1A0F0A) : const Color(0xFFFAF0E0);
     final titleColor =
@@ -387,26 +342,8 @@ class _ShareCard extends StatelessWidget {
         isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
 
     final versos = _versos;
-
-    // Calculate max font size so the longest verse fits on one line
-    // Leave a 4% safety margin to avoid floating point edge cases
-    final versoSize = _bestFontSize(
-      versos: versos,
-      maxWidth: _textWidth * 0.96,
-      fontBuilder: (size) => GoogleFonts.lato(
-        fontSize: size,
-        letterSpacing: 0.2,
-      ),
-    );
-
-    // Title and autor scale proportionally to verso size
-    final titleSize = (versoSize * 1.35).roundToDouble();
-    final autorSize = (versoSize * 0.85).roundToDouble();
-    final watermarkSize = (versoSize * 0.5).clamp(16.0, 36.0);
-    final iconSize = (versoSize * 0.7).clamp(20.0, 60.0);
-
     final estiloVerso = GoogleFonts.lato(
-      fontSize: versoSize,
+      fontSize: 22,
       height: 2.0,
       color: versoColor,
       letterSpacing: 0.2,
@@ -418,27 +355,26 @@ class _ShareCard extends StatelessWidget {
         Text(versos[i], textAlign: TextAlign.center, style: estiloVerso),
       );
       if (_cortesEstrofa.contains(i + 1) && i + 1 < versos.length) {
-        versoWidgets.add(SizedBox(height: versoSize * 0.8));
+        versoWidgets.add(const SizedBox(height: 18));
       }
     }
 
     return MediaQuery(
       data: const MediaQueryData(textScaler: TextScaler.noScaling),
       child: Container(
-        width: _cardWidth,
+        width: 800,
         color: bgColor,
-        padding: const EdgeInsets.symmetric(
-            horizontal: _horizontalPadding, vertical: 64),
+        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 64),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _ornament(iconSize),
+            _ornament(),
             const SizedBox(height: 40),
             Text(
               poema.etiqueta,
               textAlign: TextAlign.center,
               style: GoogleFonts.playfairDisplay(
-                fontSize: titleSize,
+                fontSize: 36,
                 fontWeight: FontWeight.bold,
                 color: titleColor,
                 height: 1.3,
@@ -449,7 +385,7 @@ class _ShareCard extends StatelessWidget {
               poema.autor,
               textAlign: TextAlign.center,
               style: GoogleFonts.lato(
-                fontSize: autorSize,
+                fontSize: 22,
                 color: const Color(0xFF8B6914),
                 fontStyle: FontStyle.italic,
                 letterSpacing: 0.5,
@@ -466,12 +402,12 @@ class _ShareCard extends StatelessWidget {
             const SizedBox(height: 36),
             ...versoWidgets,
             const SizedBox(height: 40),
-            _ornament(iconSize),
+            _ornament(),
             const SizedBox(height: 28),
             Text(
               'Poemario · Siglo de Oro',
               style: GoogleFonts.lato(
-                fontSize: watermarkSize,
+                fontSize: 18,
                 color: const Color(0xFF8B6914).withValues(alpha: 0.7),
                 letterSpacing: 1.2,
               ),
@@ -482,13 +418,13 @@ class _ShareCard extends StatelessWidget {
     );
   }
 
-  Widget _ornament(double iconSize) {
+  Widget _ornament() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(width: 60, height: 1, color: const Color(0xFF8B6914)),
         const SizedBox(width: 12),
-        Icon(Icons.auto_stories, color: const Color(0xFF8B6914), size: iconSize),
+        const Icon(Icons.auto_stories, color: Color(0xFF8B6914), size: 20),
         const SizedBox(width: 12),
         Container(width: 60, height: 1, color: const Color(0xFF8B6914)),
       ],
