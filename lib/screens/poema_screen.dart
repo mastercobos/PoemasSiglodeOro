@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/poema.dart';
@@ -102,14 +104,11 @@ class _PoemaScreenState extends State<PoemaScreen> {
       final bytes = await completer.future;
 
       if (bytes != null) {
+        final dir = await getTemporaryDirectory();
+        final file = File('${dir.path}/${_nombreArchivo()}.png');
+        await file.writeAsBytes(bytes);
         await Share.shareXFiles(
-          [
-            XFile.fromData(
-              bytes,
-              name: '${widget.poema.etiqueta}.png',
-              mimeType: 'image/png',
-            ),
-          ],
+          [XFile(file.path, mimeType: 'image/png')],
           subject: widget.poema.etiqueta,
           text: '${widget.poema.etiqueta} — ${widget.poema.autor}',
         );
@@ -118,10 +117,48 @@ class _PoemaScreenState extends State<PoemaScreen> {
         await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
       }
     } catch (e) {
-      await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
+      debugPrint('Error al compartir: $e');
+      try {
+        await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
+      } catch (e2) {
+        debugPrint('Error en fallback de compartir: $e2');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('No se pudo compartir: $e2',
+                  style: GoogleFonts.lato()),
+              backgroundColor: const Color(0xFF3B2F2F),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
     } finally {
       if (mounted) setState(() => _compartiendo = false);
     }
+  }
+
+  String _sanitize(String text) {
+    String s = text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[áàäâã]'), 'a')
+        .replaceAll(RegExp(r'[éèëê]'), 'e')
+        .replaceAll(RegExp(r'[íìïî]'), 'i')
+        .replaceAll(RegExp(r'[óòöôõ]'), 'o')
+        .replaceAll(RegExp(r'[úùüû]'), 'u')
+        .replaceAll(RegExp(r'ñ'), 'n')
+        .replaceAll(RegExp(r'[^a-z0-9]'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
+    while (s.startsWith('_')) s = s.substring(1);
+    while (s.endsWith('_')) s = s.substring(0, s.length - 1);
+    return s;
+  }
+
+  String _nombreArchivo() {
+    final autor = _sanitize(widget.poema.autor);
+    final words = widget.poema.etiqueta.trim().split(RegExp(r'\s+'));
+    final titulo = _sanitize(words.take(10).join(' '));
+    return '${autor}_${titulo.isEmpty ? 'poema' : titulo}';
   }
 
   String _textoPlano() {
