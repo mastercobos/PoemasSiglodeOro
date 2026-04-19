@@ -39,16 +39,21 @@ class _PoemaScreenState extends State<PoemaScreen> {
       .where((l) => l.isNotEmpty)
       .toList();
 
-  List<Widget> _buildCuerpo(TextStyle estilo) {
+  Widget _buildCuerpo(TextStyle estilo) {
     final versos = _versos;
-    final widgets = <Widget>[];
+    final spans = <TextSpan>[];
     for (int i = 0; i < versos.length; i++) {
-      widgets.add(Text(versos[i], textAlign: TextAlign.center, style: estilo));
-      if (_cortesEstrofa.contains(i + 1) && i + 1 < versos.length) {
-        widgets.add(const SizedBox(height: 16));
+      spans.add(TextSpan(text: versos[i]));
+      if (i + 1 < versos.length) {
+        // Stanza break: two newlines for extra spacing, one for normal line
+        final extraSpace = _cortesEstrofa.contains(i + 1) ? '\n\n' : '\n';
+        spans.add(TextSpan(text: extraSpace));
       }
     }
-    return widgets;
+    return SelectableText.rich(
+      TextSpan(children: spans, style: estilo),
+      textAlign: TextAlign.center,
+    );
   }
 
   Future<void> _compartirImagen(BuildContext context) async {
@@ -157,7 +162,7 @@ class _PoemaScreenState extends State<PoemaScreen> {
   String _nombreArchivo() {
     final autor = _sanitize(widget.poema.autor);
     final words = widget.poema.etiqueta.trim().split(RegExp(r'\s+'));
-    final titulo = _sanitize(words.take(10).join(' '));
+    final titulo = _sanitize(words.take(4).join(' '));
     return '${autor}_${titulo.isEmpty ? 'poema' : titulo}';
   }
 
@@ -318,9 +323,7 @@ class _PoemaScreenState extends State<PoemaScreen> {
                   Semantics(
                     label: 'Poema: ${widget.poema.etiqueta}, '
                         'de ${widget.poema.autor}',
-                    child: Column(
-                      children: _buildCuerpo(estiloVerso),
-                    ),
+                    child: _buildCuerpo(estiloVerso),
                   ),
                   const SizedBox(height: 52),
                   ExcludeSemantics(child: _ornament()),
