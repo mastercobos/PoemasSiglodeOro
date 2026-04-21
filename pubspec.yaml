@@ -1,7 +1,7 @@
 name: poemas_app
 description: Antología poética con índice por autor.
 publish_to: 'none'
-version: 1.0.1+1 
+version: 1.0.4+5 
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -28,10 +28,10 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/gafas_bigote.png"
+  image_path: "assets/icon/gafas_bigote_splash.png"
   min_sdk_android: 21
   adaptive_icon_background: "#150e0e"
-  adaptive_icon_foreground: "assets/icon/gafas_bigote.png"
+  adaptive_icon_foreground: "assets/icon/gafas_bigote_splash.png"
   android_notification_icon: false
 
 flutter_native_splash:
