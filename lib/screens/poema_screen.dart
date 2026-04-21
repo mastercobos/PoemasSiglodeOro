@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -29,7 +28,6 @@ class PoemaScreen extends StatefulWidget {
 class _PoemaScreenState extends State<PoemaScreen> {
   static const _cortesEstrofa = {4, 8, 11};
 
-  // Clave para capturar el widget de la tarjeta compartible
   final _shareKey = GlobalKey();
   bool _compartiendo = false;
 
@@ -45,7 +43,6 @@ class _PoemaScreenState extends State<PoemaScreen> {
     for (int i = 0; i < versos.length; i++) {
       spans.add(TextSpan(text: versos[i]));
       if (i + 1 < versos.length) {
-        // Stanza break: two newlines for extra spacing, one for normal line
         final extraSpace = _cortesEstrofa.contains(i + 1) ? '\n\n' : '\n';
         spans.add(TextSpan(text: extraSpace));
       }
@@ -62,53 +59,31 @@ class _PoemaScreenState extends State<PoemaScreen> {
     HapticFeedback.lightImpact();
 
     try {
-      // Insertar la tarjeta en un OverlayEntry fuera de pantalla,
-      // esperar un frame para que Flutter la renderice, capturarla
-      // y luego eliminarla del overlay.
-      final completer = Completer<Uint8List?>();
-      late OverlayEntry entry;
+      // Wait for the card to finish painting. We poll debugNeedsPaint
+      // with a small delay rather than assuming a fixed timeout.
+      RenderRepaintBoundary? boundary;
+      for (int i = 0; i < 10; i++) {
+        await Future.delayed(const Duration(milliseconds: 50));
+        boundary = _shareKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
+        if (boundary != null && !boundary.debugNeedsPaint) break;
+      }
 
-      entry = OverlayEntry(
-        builder: (_) => Positioned(
-          left: -10000, // fuera de pantalla pero renderizado
-          top: 0,
-          child: RepaintBoundary(
-            key: _shareKey,
-            child: _ShareCard(
-              poema: widget.poema,
-              isDark: Theme.of(context).brightness == Brightness.dark,
-            ),
-          ),
-        ),
-      );
+      debugPrint('[Share] boundary: $boundary  needsPaint: ${boundary?.debugNeedsPaint}');
 
-      Overlay.of(context).insert(entry);
+      Uint8List? bytes;
+      if (boundary != null && !boundary.debugNeedsPaint) {
+        final image = await boundary.toImage(pixelRatio: 3.15);
+        debugPrint('[Share] image: ${image.width}x${image.height}');
+        final byteData =
+            await image.toByteData(format: ui.ImageByteFormat.png);
+        bytes = byteData?.buffer.asUint8List();
+        debugPrint('[Share] bytes: ${bytes?.length}');
+      } else {
+        debugPrint('[Share] boundary never finished painting');
+      }
 
-      // Esperar dos frames: uno para layout, otro para pintura
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          try {
-            final boundary = _shareKey.currentContext?.findRenderObject()
-                as RenderRepaintBoundary?;
-            if (boundary == null) {
-              completer.complete(null);
-              return;
-            }
-            final image = await boundary.toImage(pixelRatio: 3.15);
-            final byteData =
-                await image.toByteData(format: ui.ImageByteFormat.png);
-            completer.complete(byteData?.buffer.asUint8List());
-          } catch (e) {
-            completer.complete(null);
-          } finally {
-            entry.remove();
-          }
-        });
-      });
-
-      final bytes = await completer.future;
-
-      if (bytes != null) {
+      if (bytes != null && bytes.isNotEmpty) {
         final dir = await getTemporaryDirectory();
         final file = File('${dir.path}/${_nombreArchivo()}.png');
         await file.writeAsBytes(bytes);
@@ -118,15 +93,13 @@ class _PoemaScreenState extends State<PoemaScreen> {
           text: '${widget.poema.etiqueta} — ${widget.poema.autor}',
         );
       } else {
-        // Fallback: compartir como texto
         await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
       }
-    } catch (e) {
-      debugPrint('Error al compartir: $e');
+    } catch (e, st) {
+      debugPrint('[Share] error: $e\n$st');
       try {
         await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
       } catch (e2) {
-        debugPrint('Error en fallback de compartir: $e2');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -210,7 +183,6 @@ class _PoemaScreenState extends State<PoemaScreen> {
               child: Container(color: const Color(0xFF8B6914), height: 1),
             ),
             actions: [
-              // Botón compartir como imagen
               IconButton(
                 tooltip: 'Compartir: ${widget.poema.etiqueta}',
                 icon: _compartiendo
@@ -226,7 +198,6 @@ class _PoemaScreenState extends State<PoemaScreen> {
                 onPressed:
                     _compartiendo ? null : () => _compartirImagen(context),
               ),
-              // Botón favorito
               IconButton(
                 tooltip: esFav
                     ? 'Quitar de favoritos: ${widget.poema.etiqueta}'
@@ -236,9 +207,8 @@ class _PoemaScreenState extends State<PoemaScreen> {
                   child: Icon(
                     esFav ? Icons.favorite : Icons.favorite_border,
                     key: ValueKey(esFav),
-                    color: esFav
-                        ? const Color(0xFFD4AF6A)
-                        : Colors.white70,
+                    color:
+                        esFav ? const Color(0xFFD4AF6A) : Colors.white70,
                     semanticLabel: esFav
                         ? 'Guardado en favoritos'
                         : 'No guardado en favoritos',
@@ -266,74 +236,106 @@ class _PoemaScreenState extends State<PoemaScreen> {
               ),
             ],
           ),
-          body: MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(
-                MediaQuery.of(context).textScaler.scale(1.0).clamp(1.0, 1.15),
-              ),
-            ),
-            child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ExcludeSemantics(child: _ornament()),
-                  const SizedBox(height: 28),
-                  SelectableText(
-                    widget.poema.etiqueta,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: titleColor,
-                      height: 1.25,
+          body: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // ── Main scrollable content ──────────────────────────────────
+              Positioned.fill(
+                child: MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: TextScaler.linear(
+                      MediaQuery.of(context)
+                          .textScaler
+                          .scale(1.0)
+                          .clamp(1.0, 1.15),
                     ),
                   ),
-                  if (widget.poema.titulo.isNotEmpty &&
-                      widget.poema.primerVerso.isNotEmpty &&
-                      widget.poema.primerVerso != widget.poema.titulo)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: SelectableText(
-                        '«${widget.poema.primerVerso}»',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.lato(
-                          fontSize: 13,
-                          color: subColor,
-                          fontStyle: FontStyle.italic,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 36),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ExcludeSemantics(child: _ornament()),
+                        const SizedBox(height: 28),
+                        SelectableText(
+                          widget.poema.etiqueta,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: titleColor,
+                            height: 1.25,
+                          ),
                         ),
-                      ),
-                    ),
-                  const SizedBox(height: 10),
-                  AutorLink(
-                      autor: widget.poema.autor,
-                      todosLosPoemas: widget.todosLosPoemas),
-                  const SizedBox(height: 30),
-                  ExcludeSemantics(
-                    child: Container(
-                      width: 56, height: 2,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8B6914),
-                        borderRadius: BorderRadius.circular(1),
-                      ),
+                        if (widget.poema.titulo.isNotEmpty &&
+                            widget.poema.primerVerso.isNotEmpty &&
+                            widget.poema.primerVerso != widget.poema.titulo)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: SelectableText(
+                              '«${widget.poema.primerVerso}»',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.lato(
+                                fontSize: 13,
+                                color: subColor,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 10),
+                        AutorLink(
+                            autor: widget.poema.autor,
+                            todosLosPoemas: widget.todosLosPoemas),
+                        const SizedBox(height: 30),
+                        ExcludeSemantics(
+                          child: Container(
+                            width: 56,
+                            height: 2,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF8B6914),
+                              borderRadius: BorderRadius.circular(1),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 34),
+                        Semantics(
+                          label: 'Poema: ${widget.poema.etiqueta}, '
+                              'de ${widget.poema.autor}',
+                          child: _buildCuerpo(estiloVerso),
+                        ),
+                        const SizedBox(height: 52),
+                        ExcludeSemantics(child: _ornament()),
+                        const SizedBox(height: 16),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 34),
-                  Semantics(
-                    label: 'Poema: ${widget.poema.etiqueta}, '
-                        'de ${widget.poema.autor}',
-                    child: _buildCuerpo(estiloVerso),
-                  ),
-                  const SizedBox(height: 52),
-                  ExcludeSemantics(child: _ornament()),
-                  const SizedBox(height: 16),
-                ],
+                ),
               ),
-            ),
+
+              // ── Hidden share card ────────────────────────────────────────
+              // Positioned far off-screen (left: -9000) so the user never
+              // sees it, but Flutter still performs a full layout + paint
+              // pass — which is required before toImage() can be called.
+              // SizedBox(0,0) and Opacity(0) both suppress painting; we
+              // must give the card real unconstrained space instead.
+              Positioned(
+                left: -9000,
+                top: 0,
+                child: IgnorePointer(
+                  child: ExcludeSemantics(
+                    child: RepaintBoundary(
+                      key: _shareKey,
+                      child: _ShareCard(
+                        poema: widget.poema,
+                        isDark: isDark,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          // Tarjeta invisible eliminada — ahora se renderiza
-          // dinámicamente en un Overlay al pulsar compartir
         );
       },
     );
@@ -354,9 +356,10 @@ class _PoemaScreenState extends State<PoemaScreen> {
   }
 }
 
-// ─── Tarjeta de imagen para compartir ────────────────────────────────────────
-// Se renderiza off-screen y se captura como PNG.
-// Diseño fijo 800×1200 para que quede bien en cualquier red social.
+// ─── Shareable image card ─────────────────────────────────────────────────────
+// Rendered off-screen (left: -9000) so Flutter fully lays it out and paints it.
+// Captured as PNG via RepaintBoundary when the user taps share.
+// Fixed 800 px wide — looks good on any social network.
 
 class _ShareCard extends StatelessWidget {
   final Poema poema;
@@ -373,7 +376,6 @@ class _ShareCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colores según el tema del usuario
     final bgColor =
         isDark ? const Color(0xFF1A0F0A) : const Color(0xFFFAF0E0);
     final titleColor =
@@ -404,7 +406,8 @@ class _ShareCard extends StatelessWidget {
       child: Container(
         width: 800,
         color: bgColor,
-        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 64),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 60, vertical: 64),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -433,7 +436,8 @@ class _ShareCard extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Container(
-              width: 60, height: 2,
+              width: 60,
+              height: 2,
               decoration: BoxDecoration(
                 color: const Color(0xFF8B6914),
                 borderRadius: BorderRadius.circular(1),
