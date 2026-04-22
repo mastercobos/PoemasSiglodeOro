@@ -29,6 +29,10 @@ class _PoemaScreenState extends State<PoemaScreen> {
   static const _cortesEstrofa = {4, 8, 11};
 
   final _shareKey = GlobalKey();
+
+  // Key on the share IconButton — used to read its screen rect for iPad
+  final _shareButtonKey = GlobalKey();
+
   bool _compartiendo = false;
 
   List<String> get _versos => widget.poema.texto
@@ -53,16 +57,29 @@ class _PoemaScreenState extends State<PoemaScreen> {
     );
   }
 
+  /// Returns the screen rect of the share button to anchor the iPad popover.
+  /// Falls back to the top-right corner if the key hasn't resolved yet.
+  Rect _shareButtonRect() {
+    final box =
+        _shareButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box != null && box.hasSize) {
+      return box.localToGlobal(Offset.zero) & box.size;
+    }
+    // Safe fallback: top-right corner of the screen
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final size = view.physicalSize / view.devicePixelRatio;
+    return Rect.fromLTWH(size.width - 60, 0, 60, 60);
+  }
+
   Future<void> _compartirImagen(BuildContext context) async {
     if (_compartiendo) return;
     setState(() => _compartiendo = true);
     HapticFeedback.lightImpact();
 
     try {
-      // Wait for the card to finish painting. We poll debugNeedsPaint
-      // with a small delay rather than assuming a fixed timeout.
+      // Poll until the off-screen card has been fully painted
       RenderRepaintBoundary? boundary;
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 20; i++) {
         await Future.delayed(const Duration(milliseconds: 50));
         boundary = _shareKey.currentContext?.findRenderObject()
             as RenderRepaintBoundary?;
@@ -79,27 +96,47 @@ class _PoemaScreenState extends State<PoemaScreen> {
             await image.toByteData(format: ui.ImageByteFormat.png);
         bytes = byteData?.buffer.asUint8List();
         debugPrint('[Share] bytes: ${bytes?.length}');
-      } else {
-        debugPrint('[Share] boundary never finished painting');
       }
+
+      final rect = _shareButtonRect();
+      debugPrint('[Share] sharePositionOrigin: $rect');
 
       if (bytes != null && bytes.isNotEmpty) {
         final dir = await getTemporaryDirectory();
         final file = File('${dir.path}/${_nombreArchivo()}.png');
         await file.writeAsBytes(bytes);
-        await Share.shareXFiles(
-          [XFile(file.path, mimeType: 'image/png')],
-          subject: widget.poema.etiqueta,
-          text: '${widget.poema.etiqueta} — ${widget.poema.autor}',
+
+        // Use the new non-deprecated API with ShareParams
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [XFile(file.path, mimeType: 'image/png')],
+            subject: widget.poema.etiqueta,
+            text: '${widget.poema.etiqueta} — ${widget.poema.autor}',
+            sharePositionOrigin: rect,
+          ),
         );
       } else {
-        await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
+        debugPrint('[Share] falling back to plain text');
+        await SharePlus.instance.share(
+          ShareParams(
+            text: _textoPlano(),
+            subject: widget.poema.etiqueta,
+            sharePositionOrigin: rect,
+          ),
+        );
       }
     } catch (e, st) {
       debugPrint('[Share] error: $e\n$st');
       try {
-        await Share.share(_textoPlano(), subject: widget.poema.etiqueta);
+        await SharePlus.instance.share(
+          ShareParams(
+            text: _textoPlano(),
+            subject: widget.poema.etiqueta,
+            sharePositionOrigin: _shareButtonRect(),
+          ),
+        );
       } catch (e2) {
+        debugPrint('[Share] fallback error: $e2');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -183,7 +220,9 @@ class _PoemaScreenState extends State<PoemaScreen> {
               child: Container(color: const Color(0xFF8B6914), height: 1),
             ),
             actions: [
+              // Share button — keyed so we can read its position for iPad
               IconButton(
+                key: _shareButtonKey,
                 tooltip: 'Compartir: ${widget.poema.etiqueta}',
                 icon: _compartiendo
                     ? const SizedBox(
@@ -198,6 +237,7 @@ class _PoemaScreenState extends State<PoemaScreen> {
                 onPressed:
                     _compartiendo ? null : () => _compartirImagen(context),
               ),
+              // Favourite button
               IconButton(
                 tooltip: esFav
                     ? 'Quitar de favoritos: ${widget.poema.etiqueta}'
@@ -314,11 +354,8 @@ class _PoemaScreenState extends State<PoemaScreen> {
               ),
 
               // ── Hidden share card ────────────────────────────────────────
-              // Positioned far off-screen (left: -9000) so the user never
-              // sees it, but Flutter still performs a full layout + paint
-              // pass — which is required before toImage() can be called.
-              // SizedBox(0,0) and Opacity(0) both suppress painting; we
-              // must give the card real unconstrained space instead.
+              // Positioned far off-screen so Flutter performs a full paint
+              // pass (required for toImage). Not visible to the user.
               Positioned(
                 left: -9000,
                 top: 0,
@@ -357,7 +394,7 @@ class _PoemaScreenState extends State<PoemaScreen> {
 }
 
 // ─── Shareable image card ─────────────────────────────────────────────────────
-// Rendered off-screen (left: -9000) so Flutter fully lays it out and paints it.
+// Positioned at left:-9000 so Flutter paints it fully off-screen.
 // Captured as PNG via RepaintBoundary when the user taps share.
 // Fixed 800 px wide — looks good on any social network.
 

@@ -9,10 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.1.0
+  google_fonts: ^8.0.2
   shared_preferences: ^2.3.0
   provider: ^6.1.2
-  share_plus: ^10.1.4
+  share_plus: ^13.1.0
   path_provider: ^2.1.0
 
 flutter:
@@ -21,7 +21,7 @@ flutter:
     - assets/poemas.json
 
 dev_dependencies:
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.0
   flutter_native_splash: ^2.3.0
 
