@@ -28,20 +28,22 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/gafas_bigote_splash.png"
+  image_path: "assets/icon/gafas_bigote_splash_mini.png"
   min_sdk_android: 21
   adaptive_icon_background: "#150e0e"
-  adaptive_icon_foreground: "assets/icon/gafas_bigote_splash.png"
+  adaptive_icon_foreground: "assets/icon/gafas_bigote_splash_mini.png"
   android_notification_icon: false
+  image_fill_color: "#150e0e"  # fills transparent areas before generating
+  remove_alpha_ios: true  
 
 flutter_native_splash:
   color: "#150e0e"
-  image: assets/icon/gafas_bigote_splash.png
+  image: assets/icon/gafas_bigote_splash_mini.png
 
   android: true
   ios: true
 
   android_12:
     color: "#150e0e"
-    image: assets/icon/gafas_bigote_splash.png
+    image: assets/icon/gafas_bigote_splash_mini.png
     icon_background_color: "#150e0e"
