@@ -357,15 +357,18 @@ class _PoemaScreenState extends State<PoemaScreen> {
               // Positioned far off-screen so Flutter performs a full paint
               // pass (required for toImage). Not visible to the user.
               Positioned(
-                left: -9000,
+                left: 0,
                 top: 0,
-                child: IgnorePointer(
-                  child: ExcludeSemantics(
-                    child: RepaintBoundary(
-                      key: _shareKey,
-                      child: _ShareCard(
-                        poema: widget.poema,
-                        isDark: isDark,
+                child: Opacity(
+                  opacity: 0.0,
+                  child: IgnorePointer(
+                    child: ExcludeSemantics(
+                      child: RepaintBoundary(
+                        key: _shareKey,
+                        child: _ShareCard(
+                          poema: widget.poema,
+                          isDark: isDark,
+                        ),
                       ),
                     ),
                   ),
