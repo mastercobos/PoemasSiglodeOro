@@ -1,7 +1,7 @@
 name: poemas_app
 description: Antología poética con índice por autor.
 publish_to: 'none'
-version: 1.0.4+6
+version: 1.0.5+7
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
