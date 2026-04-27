@@ -28,8 +28,6 @@ class PoemaScreen extends StatefulWidget {
 class _PoemaScreenState extends State<PoemaScreen> {
   static const _cortesEstrofa = {4, 8, 11};
 
-  final _shareKey = GlobalKey();
-
   // Key on the share IconButton — used to read its screen rect for iPad
   final _shareButtonKey = GlobalKey();
 
@@ -77,36 +75,14 @@ class _PoemaScreenState extends State<PoemaScreen> {
     HapticFeedback.lightImpact();
 
     try {
-      // Poll until the off-screen card has been fully painted
-      RenderRepaintBoundary? boundary;
-      for (int i = 0; i < 20; i++) {
-        await Future.delayed(const Duration(milliseconds: 50));
-        boundary = _shareKey.currentContext?.findRenderObject()
-            as RenderRepaintBoundary?;
-        if (boundary != null && !boundary.debugNeedsPaint) break;
-      }
-
-      debugPrint('[Share] boundary: $boundary  needsPaint: ${boundary?.debugNeedsPaint}');
-
-      Uint8List? bytes;
-      if (boundary != null && !boundary.debugNeedsPaint) {
-        final image = await boundary.toImage(pixelRatio: 3.15);
-        debugPrint('[Share] image: ${image.width}x${image.height}');
-        final byteData =
-            await image.toByteData(format: ui.ImageByteFormat.png);
-        bytes = byteData?.buffer.asUint8List();
-        debugPrint('[Share] bytes: ${bytes?.length}');
-      }
-
+      final bytes = await _renderShareCard();
       final rect = _shareButtonRect();
-      debugPrint('[Share] sharePositionOrigin: $rect');
 
       if (bytes != null && bytes.isNotEmpty) {
         final dir = await getTemporaryDirectory();
         final file = File('${dir.path}/${_nombreArchivo()}.png');
         await file.writeAsBytes(bytes);
 
-        // Use the new non-deprecated API with ShareParams
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path, mimeType: 'image/png')],
@@ -116,7 +92,6 @@ class _PoemaScreenState extends State<PoemaScreen> {
           ),
         );
       } else {
-        debugPrint('[Share] falling back to plain text');
         await SharePlus.instance.share(
           ShareParams(
             text: _textoPlano(),
@@ -125,8 +100,7 @@ class _PoemaScreenState extends State<PoemaScreen> {
           ),
         );
       }
-    } catch (e, st) {
-      debugPrint('[Share] error: $e\n$st');
+    } catch (e) {
       try {
         await SharePlus.instance.share(
           ShareParams(
@@ -136,7 +110,6 @@ class _PoemaScreenState extends State<PoemaScreen> {
           ),
         );
       } catch (e2) {
-        debugPrint('[Share] fallback error: $e2');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -151,6 +124,222 @@ class _PoemaScreenState extends State<PoemaScreen> {
     } finally {
       if (mounted) setState(() => _compartiendo = false);
     }
+  }
+
+  Future<Uint8List?> _renderShareCard() async {
+    const double cardWidth = 800;
+    const double pixelRatio = 3.15;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = isDark ? const Color(0xFF1A0F0A) : const Color(0xFFFAF0E0);
+    final titleColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final versoColor = isDark ? const Color(0xFFF5E6C8) : const Color(0xFF3B2F2F);
+    final goldColor = const Color(0xFF8B6914);
+
+    final versos = widget.poema.texto
+        .split('\n')
+        .map((l) => l.trimRight())
+        .where((l) => l.isNotEmpty)
+        .toList();
+
+    const cortesEstrofa = {4, 8, 11};
+    const double hPad = 60;
+    const double vPad = 64;
+    const double innerWidth = cardWidth - hPad * 2;
+
+    // ── measure all text elements ──────────────────────────────────────
+
+    double measureHeight(TextPainter tp) {
+      tp.layout(maxWidth: innerWidth);
+      return tp.height;
+    }
+
+    final titlePainter = TextPainter(
+      text: TextSpan(
+        text: widget.poema.etiqueta,
+        style: GoogleFonts.playfairDisplay(
+          fontSize: 36,
+          fontWeight: FontWeight.bold,
+          color: titleColor,
+          height: 1.3,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    final autorPainter = TextPainter(
+      text: TextSpan(
+        text: widget.poema.autor,
+        style: GoogleFonts.lato(
+          fontSize: 22,
+          color: goldColor,
+          fontStyle: FontStyle.italic,
+          letterSpacing: 0.5,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    final appTagPainter = TextPainter(
+      text: TextSpan(
+        text: 'Poemario · Siglo de Oro',
+        style: GoogleFonts.lato(
+          fontSize: 18,
+          color: goldColor.withValues(alpha: 0.7),
+          letterSpacing: 1.2,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    final versoPainters = <TextPainter>[];
+    for (final verso in versos) {
+      final tp = TextPainter(
+        text: TextSpan(
+          text: verso,
+          style: GoogleFonts.lato(
+            fontSize: 22,
+            height: 2.0,
+            color: versoColor,
+            letterSpacing: 0.2,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      versoPainters.add(tp);
+    }
+
+    // ── calculate total height ─────────────────────────────────────────
+
+    double totalHeight = vPad * 2;
+    const double ornamentH = 20; // icon + lines height
+    totalHeight += ornamentH + 40; // top ornament + gap
+    totalHeight += measureHeight(titlePainter) + 8;
+    totalHeight += measureHeight(autorPainter) + 32;
+    totalHeight += 2 + 36; // divider + gap
+    for (int i = 0; i < versoPainters.length; i++) {
+      totalHeight += measureHeight(versoPainters[i]);
+      if (cortesEstrofa.contains(i + 1) && i + 1 < versoPainters.length) {
+        totalHeight += 18;
+      }
+    }
+    totalHeight += 40 + ornamentH + 28; // gap + bottom ornament + gap
+    totalHeight += measureHeight(appTagPainter);
+
+    // ── draw ───────────────────────────────────────────────────────────
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(0, 0, cardWidth * pixelRatio, totalHeight * pixelRatio),
+    );
+    canvas.scale(pixelRatio);
+
+    // Background
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, cardWidth, totalHeight),
+      Paint()..color = bgColor,
+    );
+
+    double y = vPad;
+
+    void drawOrnament(double atY) {
+      const lineW = 60.0;
+      const iconSize = 20.0;
+      const gap = 12.0;
+      final totalW = lineW * 2 + iconSize + gap * 2;
+      final startX = (cardWidth - totalW) / 2;
+
+      canvas.drawRect(
+        Rect.fromLTWH(startX, atY + ornamentH / 2 - 0.5, lineW, 1),
+        Paint()..color = goldColor,
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(startX + lineW + gap + iconSize + gap,
+            atY + ornamentH / 2 - 0.5, lineW, 1),
+        Paint()..color = goldColor,
+      );
+
+      // Draw a simple book-like rectangle as icon placeholder
+      final iconPaint = Paint()
+        ..color = goldColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      final iconX = startX + lineW + gap;
+      final iconY = atY + (ornamentH - iconSize) / 2;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(iconX, iconY, iconSize, iconSize),
+          const Radius.circular(2),
+        ),
+        iconPaint,
+      );
+      canvas.drawLine(
+        Offset(iconX + iconSize / 2, iconY),
+        Offset(iconX + iconSize / 2, iconY + iconSize),
+        iconPaint,
+      );
+    }
+
+    void drawCenteredPainter(TextPainter tp, double atY) {
+      tp.layout(maxWidth: innerWidth);
+      final x = (cardWidth - tp.width) / 2;
+      tp.paint(canvas, Offset(x, atY));
+    }
+
+    // Top ornament
+    drawOrnament(y);
+    y += ornamentH + 40;
+
+    // Title
+    drawCenteredPainter(titlePainter, y);
+    y += titlePainter.height + 8;
+
+    // Author
+    drawCenteredPainter(autorPainter, y);
+    y += autorPainter.height + 32;
+
+    // Divider
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH((cardWidth - 60) / 2, y, 60, 2),
+        const Radius.circular(1),
+      ),
+      Paint()..color = goldColor,
+    );
+    y += 2 + 36;
+
+    // Verses
+    for (int i = 0; i < versoPainters.length; i++) {
+      drawCenteredPainter(versoPainters[i], y);
+      y += versoPainters[i].height;
+      if (cortesEstrofa.contains(i + 1) && i + 1 < versoPainters.length) {
+        y += 18;
+      }
+    }
+
+    y += 40;
+
+    // Bottom ornament
+    drawOrnament(y);
+    y += ornamentH + 28;
+
+    // App tag
+    drawCenteredPainter(appTagPainter, y);
+
+    // ── encode ─────────────────────────────────────────────────────────
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(
+      (cardWidth * pixelRatio).round(),
+      (totalHeight * pixelRatio).round(),
+    );
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    return byteData?.buffer.asUint8List();
   }
 
   String _sanitize(String text) {
@@ -348,28 +537,6 @@ class _PoemaScreenState extends State<PoemaScreen> {
                         ExcludeSemantics(child: _ornament()),
                         const SizedBox(height: 16),
                       ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── Hidden share card ────────────────────────────────────────
-              // Positioned far off-screen so Flutter performs a full paint
-              // pass (required for toImage). Not visible to the user.
-              Positioned(
-                left: 0,
-                top: 0,
-                child: Opacity(
-                  opacity: 0.0,
-                  child: IgnorePointer(
-                    child: ExcludeSemantics(
-                      child: RepaintBoundary(
-                        key: _shareKey,
-                        child: _ShareCard(
-                          poema: widget.poema,
-                          isDark: isDark,
-                        ),
-                      ),
                     ),
                   ),
                 ),
