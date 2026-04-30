@@ -5,7 +5,9 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>es</string>
 		<key>CFBundleLocalizations</key>
-    	<string>es</string>
+    	<array>
+	    <string>es</string>
+		</array>
 		<key>CFBundleDisplayName</key>
 		<string>Poemario - Siglo De Oro</string>
 		<key>CFBundleExecutable</key>
