@@ -1,0 +1,23 @@
+name: poemario
+
+packages:
+  - packages/**
+  - apps/**
+
+command:
+  bootstrap:
+    runPubGetInParallel: true
+
+scripts:
+  analyze:
+    run: melos exec -- flutter analyze
+    description: Static analysis across core and every app.
+  test:
+    run: melos exec --dir-exists=test -- flutter test
+    description: Run unit tests (they all live in poemario_core).
+  l10n:
+    run: melos exec --scope=poemario_core -- flutter gen-l10n
+    description: Regenerate localisation delegates after editing the .arb files.
+  icons:
+    run: melos exec --scope="app_*" -- dart run flutter_launcher_icons
+    description: Regenerate launcher icons for every app.

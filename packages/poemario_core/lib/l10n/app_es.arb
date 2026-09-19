@@ -1,0 +1,109 @@
+{
+  "@@locale": "es",
+
+  "tabInicio": "Inicio",
+  "tabIndice": "Índice",
+  "tabBuscar": "Buscar",
+  "tabFavoritos": "Favoritos",
+
+  "semTabInicio": "Inicio, poemas del día",
+  "semTabIndice": "Índice de autores",
+  "semTabBuscar": "Buscar poemas",
+  "semTabFavoritos": "Mis poemas favoritos",
+
+  "indiceTitulo": "Índice",
+  "indiceSubtitulo": "— Índice de Autores —",
+
+  "poemasContador": "{n, plural, =0{Sin poemas} =1{1 poema} other{{n} poemas}}",
+  "@poemasContador": {
+    "description": "Poem count under an author's name.",
+    "placeholders": { "n": { "type": "int" } }
+  },
+
+  "inicioPoemasDelDia": "Poemas del día",
+  "inicioTodosLosAutores": "Todos los autores",
+  "inicioAutoresSeleccionados": "{n, plural, =0{Ningún autor seleccionado} =1{1 autor seleccionado} other{{n} autores seleccionados}}",
+  "@inicioAutoresSeleccionados": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "inicioSinAutores": "Ningún autor seleccionado",
+  "inicioConfigurarAutores": "Configurar autores",
+  "inicioLeerCompleto": "Leer poema completo",
+  "inicioFiltrarAutores": "Filtrar autores del día",
+
+  "buscarTitulo": "Buscar",
+  "buscarPista": "Buscar por título, autor o verso…",
+  "buscarVacioTitulo": "Escribe para buscar",
+  "buscarVacioSubtitulo": "Busca por título, autor o cualquier verso",
+  "buscarSinResultados": "Sin resultados para «{consulta}»",
+  "@buscarSinResultados": {
+    "placeholders": { "consulta": { "type": "String" } }
+  },
+  "buscarBorrar": "Borrar búsqueda",
+
+  "favoritosTitulo": "Favoritos",
+  "favoritosVacioTitulo": "Aún no tienes favoritos",
+  "favoritosVacioSubtitulo": "Pulsa el corazón al leer un poema para guardarlo aquí.",
+  "favoritosGuardados": "{n, plural, =1{— 1 poema guardado —} other{— {n} poemas guardados —}}",
+  "@favoritosGuardados": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+  "favoritosAnadido": "Añadido a favoritos",
+  "favoritosEliminado": "Eliminado de favoritos",
+  "favoritosAnadir": "Añadir a favoritos: {titulo}",
+  "@favoritosAnadir": {
+    "placeholders": { "titulo": { "type": "String" } }
+  },
+  "favoritosQuitar": "Quitar de favoritos: {titulo}",
+  "@favoritosQuitar": {
+    "placeholders": { "titulo": { "type": "String" } }
+  },
+  "favoritosGuardado": "Guardado en favoritos",
+  "favoritosNoGuardado": "No guardado en favoritos",
+
+  "ajustesTitulo": "Ajustes",
+  "ajustesApariencia": "Apariencia",
+  "ajustesTemaAuto": "Automático",
+  "ajustesTemaAutoSub": "Sigue la configuración del sistema",
+  "ajustesTemaClaro": "Claro",
+  "ajustesTemaClaroSub": "Fondo crema, texto oscuro",
+  "ajustesTemaOscuro": "Oscuro",
+  "ajustesTemaOscuroSub": "Fondo negro, menos fatiga ocular",
+  "ajustesPoemasDelDia": "Poemas del día",
+  "ajustesDeAutores": "{activos} de {total} autores",
+  "@ajustesDeAutores": {
+    "placeholders": { "activos": { "type": "int" }, "total": { "type": "int" } }
+  },
+  "ajustesTodos": "Todos",
+  "ajustesNinguno": "Ninguno",
+
+  "ajustesRecordatorio": "Recordatorio diario",
+  "ajustesRecordatorioActivar": "Avisarme cada día",
+  "ajustesRecordatorioSub": "Un aviso con los poemas del día",
+  "ajustesRecordatorioHora": "Hora del aviso",
+  "ajustesRecordatorioPermiso": "Activa las notificaciones en los ajustes del sistema para recibir el aviso diario.",
+  "ajustesAbrirAjustesSistema": "Abrir ajustes",
+
+  "notifTitulo": "Poema del día",
+  "notifCuerpo": "{titulo} — {autor}",
+  "@notifCuerpo": {
+    "placeholders": { "titulo": { "type": "String" }, "autor": { "type": "String" } }
+  },
+  "notifCuerpoGenerico": "Hay poemas nuevos esperándote",
+  "notifCanalNombre": "Poema del día",
+  "notifCanalDescripcion": "Un recordatorio diario con los poemas seleccionados para hoy",
+
+  "compartirTitulo": "Compartir: {titulo}",
+  "@compartirTitulo": {
+    "placeholders": { "titulo": { "type": "String" } }
+  },
+  "compartirError": "No se pudo compartir",
+  "semPoema": "Poema: {titulo}, de {autor}",
+  "@semPoema": {
+    "placeholders": { "titulo": { "type": "String" }, "autor": { "type": "String" } }
+  },
+
+  "errorCargaTitulo": "No se pudo cargar la antología",
+  "errorCargaSubtitulo": "Vuelve a abrir la aplicación. Si el problema continúa, reinstálala.",
+  "reintentar": "Reintentar"
+}

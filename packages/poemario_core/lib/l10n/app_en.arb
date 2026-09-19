@@ -1,0 +1,77 @@
+{
+  "@@locale": "en",
+
+  "tabInicio": "Today",
+  "tabIndice": "Index",
+  "tabBuscar": "Search",
+  "tabFavoritos": "Saved",
+
+  "semTabInicio": "Today's poems",
+  "semTabIndice": "Index of poets",
+  "semTabBuscar": "Search poems",
+  "semTabFavoritos": "My saved poems",
+
+  "indiceTitulo": "Index",
+  "indiceSubtitulo": "— Index of Poets —",
+
+  "poemasContador": "{n, plural, =0{No poems} =1{1 poem} other{{n} poems}}",
+  "inicioPoemasDelDia": "Poems of the day",
+  "inicioTodosLosAutores": "All poets",
+  "inicioAutoresSeleccionados": "{n, plural, =0{No poets selected} =1{1 poet selected} other{{n} poets selected}}",
+  "inicioSinAutores": "No poets selected",
+  "inicioConfigurarAutores": "Choose poets",
+  "inicioLeerCompleto": "Read the full poem",
+  "inicioFiltrarAutores": "Filter today's poets",
+
+  "buscarTitulo": "Search",
+  "buscarPista": "Search by title, poet or line…",
+  "buscarVacioTitulo": "Type to search",
+  "buscarVacioSubtitulo": "Search by title, poet or any line",
+  "buscarSinResultados": "No results for “{consulta}”",
+  "buscarBorrar": "Clear search",
+
+  "favoritosTitulo": "Saved",
+  "favoritosVacioTitulo": "Nothing saved yet",
+  "favoritosVacioSubtitulo": "Tap the heart while reading a poem to keep it here.",
+  "favoritosGuardados": "{n, plural, =1{— 1 poem saved —} other{— {n} poems saved —}}",
+  "favoritosAnadido": "Saved",
+  "favoritosEliminado": "Removed from saved",
+  "favoritosAnadir": "Save {titulo}",
+  "favoritosQuitar": "Remove {titulo} from saved",
+  "favoritosGuardado": "Saved",
+  "favoritosNoGuardado": "Not saved",
+
+  "ajustesTitulo": "Settings",
+  "ajustesApariencia": "Appearance",
+  "ajustesTemaAuto": "Automatic",
+  "ajustesTemaAutoSub": "Follow the system setting",
+  "ajustesTemaClaro": "Light",
+  "ajustesTemaClaroSub": "Cream background, dark text",
+  "ajustesTemaOscuro": "Dark",
+  "ajustesTemaOscuroSub": "Dark background, easier on the eyes",
+  "ajustesPoemasDelDia": "Poems of the day",
+  "ajustesDeAutores": "{activos} of {total} poets",
+  "ajustesTodos": "All",
+  "ajustesNinguno": "None",
+
+  "ajustesRecordatorio": "Daily reminder",
+  "ajustesRecordatorioActivar": "Remind me every day",
+  "ajustesRecordatorioSub": "A notification with the poems of the day",
+  "ajustesRecordatorioHora": "Reminder time",
+  "ajustesRecordatorioPermiso": "Turn on notifications in system settings to get the daily reminder.",
+  "ajustesAbrirAjustesSistema": "Open settings",
+
+  "notifTitulo": "Poem of the day",
+  "notifCuerpo": "{titulo} — {autor}",
+  "notifCuerpoGenerico": "New poems are waiting for you",
+  "notifCanalNombre": "Poem of the day",
+  "notifCanalDescripcion": "A daily reminder with the poems chosen for today",
+
+  "compartirTitulo": "Share: {titulo}",
+  "compartirError": "Couldn't share",
+  "semPoema": "Poem: {titulo}, by {autor}",
+
+  "errorCargaTitulo": "Couldn't load the anthology",
+  "errorCargaSubtitulo": "Please reopen the app. If it keeps happening, reinstall it.",
+  "reintentar": "Try again"
+}
