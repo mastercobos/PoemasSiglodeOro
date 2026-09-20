@@ -26,36 +26,36 @@ flutter:
   # Fonts are bundled, not downloaded. This removes google_fonts, which
   # fetched Playfair and Lato over the network on first launch — so an
   # offline first run rendered the whole anthology in Roboto.
-  fonts:
-    - family: EBGaramond
-      fonts:
-        - asset: assets/fonts/EBGaramond-Regular.ttf
-        - asset: assets/fonts/EBGaramond-Bold.ttf
-          weight: 700
-    - family: SourceSans3
-      fonts:
-        - asset: assets/fonts/SourceSans3-Regular.ttf
-        - asset: assets/fonts/SourceSans3-Italic.ttf
-          style: italic
-        - asset: assets/fonts/SourceSans3-Bold.ttf
-          weight: 700
+  # TEMP-FONTS (font files missing) fonts:
+  # TEMP-FONTS (font files missing)   - family: EBGaramond
+  # TEMP-FONTS (font files missing)     fonts:
+  # TEMP-FONTS (font files missing)       - asset: assets/fonts/EBGaramond-Regular.ttf
+  # TEMP-FONTS (font files missing)       - asset: assets/fonts/EBGaramond-Bold.ttf
+  # TEMP-FONTS (font files missing)         weight: 700
+  # TEMP-FONTS (font files missing)   - family: SourceSans3
+  # TEMP-FONTS (font files missing)     fonts:
+  # TEMP-FONTS (font files missing)       - asset: assets/fonts/SourceSans3-Regular.ttf
+  # TEMP-FONTS (font files missing)       - asset: assets/fonts/SourceSans3-Italic.ttf
+  # TEMP-FONTS (font files missing)         style: italic
+  # TEMP-FONTS (font files missing)       - asset: assets/fonts/SourceSans3-Bold.ttf
+  # TEMP-FONTS (font files missing)         weight: 700
 
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/quill_icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#10141c"
+  adaptive_icon_background: "#1A1114"
   adaptive_icon_foreground: "assets/icon/quill_icon.png"
-  image_fill_color: "#10141c"
+  image_fill_color: "#1A1114"
   remove_alpha_ios: true
 
 flutter_native_splash:
-  color: "#10141c"
+  color: "#1A1114"
   image: assets/icon/quill_icon.png
   android: true
   ios: true
   android_12:
-    color: "#10141c"
+    color: "#1A1114"
     image: assets/icon/quill_icon.png
-    icon_background_color: "#10141c"
+    icon_background_color: "#1A1114"
