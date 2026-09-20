@@ -15,13 +15,12 @@ void main() {
       nombreApp: 'Antología Poética',
       firmaCompartir: 'Poemario · Siglo de Oro',
       assetPoemas: 'assets/poemas.json',
+      assetOrnamento: 'assets/icon/gafas_bigote_splash_mini.png',
       // The "- XIV -" numbering convention only makes sense for this corpus.
       ordenTitulos: EstrategiaOrden.romanosPrimero,
       fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
       coloresClaro: PoemaColors.claroPorDefecto,
       coloresOscuro: PoemaColors.oscuroPorDefecto,
-      canalNotificaciones: 'poema_diario_es',
-      horaNotificacionPorDefecto: TimeOfDay(hour: 9, minute: 0),
       // Must match the consumable products created in Play Console and App
       // Store Connect. Ids that don't exist yet are skipped.
       idsPropinas: {'propina_cafe_1', 'propina_cafe_3', 'propina_cafe_5'},

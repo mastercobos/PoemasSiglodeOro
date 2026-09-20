@@ -46,9 +46,18 @@ class CompartirPoema {
     final messenger = ScaffoldMessenger.of(context);
     final overlay = Overlay.of(context, rootOverlay: true);
 
+    // The card is captured two frames after mounting, which is not enough for
+    // an image to load and decode; without this the emblem would be missing
+    // from the shared PNG. A failure just means the fallback glyph is used.
+    final asset = config.assetOrnamento;
+    final precarga = asset == null
+        ? Future<void>.value()
+        : precacheImage(AssetImage(asset), context).catchError((_) {});
+
     final textoPlano = _textoPlano(poema, config.firmaCompartir);
 
     try {
+      await precarga;
       final bytes = await _capturar(
         overlay: overlay,
         tema: tema,

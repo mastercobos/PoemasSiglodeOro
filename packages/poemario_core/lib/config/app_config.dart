@@ -29,20 +29,17 @@ class AppConfig {
   /// Asset path of this app's anthology, declared in the app's own pubspec.
   final String assetPoemas;
 
+  /// Asset path of the image drawn between the gold rules above and below a
+  /// poem and on the share card — normally the app's own icon. Must be
+  /// declared in the app's pubspec. Null falls back to a generic book glyph.
+  final String? assetOrnamento;
+
   final PoemaColors coloresClaro;
   final PoemaColors coloresOscuro;
   final FontPair fuentes;
 
   /// See [EstrategiaOrden].
   final EstrategiaOrden ordenTitulos;
-
-  /// Android notification channel id. Must be stable for the life of the app:
-  /// changing it orphans the user's per-channel settings.
-  final String canalNotificaciones;
-
-  /// Default reminder time offered the first time the user enables
-  /// notifications. They can change it afterwards.
-  final TimeOfDay horaNotificacionPorDefecto;
 
   /// Namespace for `SharedPreferences` keys. Each app has its own sandbox, so
   /// this only matters if you ever merge two anthologies into one binary —
@@ -63,9 +60,8 @@ class AppConfig {
     required this.coloresOscuro,
     required this.fuentes,
     this.assetPoemas = 'assets/poemas.json',
+    this.assetOrnamento,
     this.ordenTitulos = EstrategiaOrden.alfabetico,
-    this.canalNotificaciones = 'poema_diario',
-    this.horaNotificacionPorDefecto = const TimeOfDay(hour: 9, minute: 0),
     this.prefijoPreferencias = '',
     this.idsPropinas = const {},
   });

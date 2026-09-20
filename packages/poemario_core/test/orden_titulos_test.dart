@@ -35,6 +35,50 @@ void main() {
     });
   });
 
+  group('plegarParaOrden equivalence', () {
+    // The original per-rune implementation, kept as the reference the
+    // optimised one must match exactly: it drives sort order and the search
+    // index, so any drift silently reorders authors or breaks matches.
+    String referencia(String s) {
+      final b = StringBuffer();
+      for (final r in s.toLowerCase().runes) {
+        b.write(switch (String.fromCharCode(r)) {
+          'á' || 'à' || 'ä' || 'â' || 'ã' || 'å' => 'a',
+          'é' || 'è' || 'ë' || 'ê' => 'e',
+          'í' || 'ì' || 'ï' || 'î' => 'i',
+          'ó' || 'ò' || 'ö' || 'ô' || 'õ' => 'o',
+          'ú' || 'ù' || 'ü' || 'û' => 'u',
+          'ç' => 'c',
+          'ñ' => 'n~',
+          final otro => otro,
+        });
+      }
+      return b.toString();
+    }
+
+    test('matches the reference for every single BMP code unit', () {
+      for (var c = 0; c <= 0xFFFF; c++) {
+        final s = String.fromCharCode(c);
+        expect(plegarParaOrden(s), referencia(s), reason: 'U+${c.toRadixString(16)}');
+      }
+    });
+
+    test('matches the reference on mixed strings', () {
+      const casos = [
+        '',
+        'sin cambios',
+        'ÁÉÍÓÚ Ñandú Ç àèìòù äëïöü âêîôû ãõ å',
+        'ñ al principio y al final ñ',
+        'a\u{1F600}ñ\u{1F600}b',
+        'İstanbul ǅ ẞ',
+        'Volverán las oscuras golondrinas — Bécquer',
+      ];
+      for (final s in casos) {
+        expect(plegarParaOrden(s), referencia(s), reason: s);
+      }
+    });
+  });
+
   group('plegarParaOrden', () {
     test('folds diacritics so accented names sort in place', () {
       final nombres = ['Zorrilla', 'Ángel', 'Antonio']

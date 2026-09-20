@@ -69,7 +69,6 @@ Future<void> bootstrap(
   // has to be read before the first frame or the deep link is lost.
   final solicitudes = SolicitudDePoema();
   final avisos = ServicioAvisos(
-    canalId: config.canalNotificaciones,
     canalNombre: config.nombreApp,
     canalDescripcion: config.nombreApp,
     solicitudes: solicitudes,
@@ -170,7 +169,7 @@ class _AppPoemario extends StatelessWidget {
             prefs: prefs,
             servicio: avisos,
             diario: ctx.read<PoemaDelDiaProvider>(),
-            horaPorDefecto: config.horaNotificacionPorDefecto,
+            horaPorDefecto: NotificacionesProvider.horaPorDefecto,
             // Resolved lazily against the navigator's context, so the strings
             // follow the app's locale without the provider holding a context.
             textos: () => textosAviso(_claveNavegador.currentContext!),

@@ -15,6 +15,10 @@ class NotificacionesProvider extends ChangeNotifier with WidgetsBindingObserver 
   static const _claveActivo = 'aviso_activo';
   static const _claveHora = 'aviso_hora'; // minutes since midnight
 
+  /// Reminder time offered the first time the user enables notifications,
+  /// the same in every app. They can change it afterwards.
+  static const horaPorDefecto = TimeOfDay(hour: 9, minute: 0);
+
   final Preferencias _prefs;
   final AgendaAvisos _servicio;
   final PoemaDelDiaProvider _diario;

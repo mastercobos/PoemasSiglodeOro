@@ -16,14 +16,17 @@ export 'agenda_avisos.dart' show EstadoPermisoAviso, SolicitudDePoema;
 /// Talks to the platform. Everything decidable without the OS lives in
 /// [PlanificadorAvisos]; this class only dispatches.
 class ServicioAvisos implements AgendaAvisos {
+  /// Android notification channel id, the same in every app (channels are
+  /// per-install, so apps cannot collide). Must never change: doing so orphans
+  /// the user's per-channel settings.
+  static const canalId = 'poema_diario';
+
   ServicioAvisos({
-    required this.canalId,
     required this.canalNombre,
     required this.canalDescripcion,
     required this.solicitudes,
   });
 
-  final String canalId;
   final String canalNombre;
   final String canalDescripcion;
 

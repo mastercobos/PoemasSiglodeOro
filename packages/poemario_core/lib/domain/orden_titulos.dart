@@ -56,20 +56,32 @@ int? numeroDeTitulo(String titulo) {
 /// 'ñ' maps to 'n~' so that it sorts immediately after every 'n' word, which
 /// is what Spanish alphabetisation expects, without needing a full collator.
 String plegarParaOrden(String s) {
-  final b = StringBuffer();
-  for (final r in s.toLowerCase().runes) {
-    b.write(switch (String.fromCharCode(r)) {
-      'á' || 'à' || 'ä' || 'â' || 'ã' || 'å' => 'a',
-      'é' || 'è' || 'ë' || 'ê' => 'e',
-      'í' || 'ì' || 'ï' || 'î' => 'i',
-      'ó' || 'ò' || 'ö' || 'ô' || 'õ' => 'o',
-      'ú' || 'ù' || 'ü' || 'û' => 'u',
-      'ç' => 'c',
-      'ñ' => 'n~',
-      final otro => otro,
-    });
+  final minusculas = s.toLowerCase();
+  // This runs over the full text of every poem at startup, so it scans code
+  // units and copies the untouched stretches between replacements in bulk
+  // rather than building a String per character. Every mapped character is in
+  // the BMP, so surrogate halves pass through unchanged.
+  StringBuffer? b;
+  var desde = 0;
+  for (var i = 0; i < minusculas.length; i++) {
+    final String? reemplazo = switch (minusculas.codeUnitAt(i)) {
+      0xE1 || 0xE0 || 0xE4 || 0xE2 || 0xE3 || 0xE5 => 'a', // á à ä â ã å
+      0xE9 || 0xE8 || 0xEB || 0xEA => 'e', // é è ë ê
+      0xED || 0xEC || 0xEF || 0xEE => 'i', // í ì ï î
+      0xF3 || 0xF2 || 0xF6 || 0xF4 || 0xF5 => 'o', // ó ò ö ô õ
+      0xFA || 0xF9 || 0xFC || 0xFB => 'u', // ú ù ü û
+      0xE7 => 'c', // ç
+      0xF1 => 'n~', // ñ
+      _ => null,
+    };
+    if (reemplazo == null) continue;
+    (b ??= StringBuffer())
+      ..write(minusculas.substring(desde, i))
+      ..write(reemplazo);
+    desde = i + 1;
   }
-  return b.toString();
+  if (b == null) return minusculas;
+  return (b..write(minusculas.substring(desde))).toString();
 }
 
 /// How an app orders poem titles within an author.

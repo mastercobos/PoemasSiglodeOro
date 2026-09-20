@@ -19,6 +19,7 @@ void main() {
       nombreApp: 'English Verse',
       firmaCompartir: 'English Verse · A daily anthology',
       assetPoemas: 'assets/poemas.json',
+      assetOrnamento: 'assets/icon/quill_icon.png',
       // No roman-numeral convention in this corpus: plain alphabetical.
       ordenTitulos: EstrategiaOrden.alfabetico,
       fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
@@ -46,8 +47,6 @@ void main() {
         fondoCompartir: Color(0xFF120A0D),
         sombra: Color(0x4D000000),
       ),
-      canalNotificaciones: 'daily_poem_en',
-      horaNotificacionPorDefecto: TimeOfDay(hour: 8, minute: 0),
     ),
     home: (_) => const RootScreen(),
   );
