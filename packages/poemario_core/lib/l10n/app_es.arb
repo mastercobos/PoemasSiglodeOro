@@ -105,5 +105,10 @@
 
   "errorCargaTitulo": "No se pudo cargar la antología",
   "errorCargaSubtitulo": "Vuelve a abrir la aplicación. Si el problema continúa, reinstálala.",
-  "reintentar": "Reintentar"
+  "reintentar": "Reintentar",
+
+  "propinasTitulo": "Apoya la antología",
+  "propinasTexto": "La aplicación es gratuita y no tiene anuncios. Si te gusta, puedes invitarnos a un café. Es solo un gesto de agradecimiento: no desbloquea nada.",
+  "propinasGracias": "¡Gracias por tu apoyo!",
+  "propinasError": "No se pudo completar el pago. No se ha hecho ningún cargo."
 }

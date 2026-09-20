@@ -60,26 +60,30 @@ class PoemaColors extends ThemeExtension<PoemaColors> {
   /// The palette shipped by the Spanish anthology, kept as a convenient
   /// starting point for new apps. Override what you need with [copyWith].
   static const claroPorDefecto = PoemaColors(
-    oro: Color(0xFF8B6914),
+    // A shade darker than the original #8B6914 so it keeps 4.5:1 on the
+    // deeper cream below.
+    oro: Color(0xFF7A5A0F),
     oroClaro: Color(0xFFD4AF6A),
     sepia: Color(0xFF3B2F2F),
-    fondo: Color(0xFFFDF6EC),
-    tarjeta: Colors.white,
+    fondo: Color(0xFFF5EBD9),
+    tarjeta: Color(0xFFFBF5E8),
     texto: Color(0xFF3B2F2F),
-    textoSuave: Color(0xFF666666),
+    textoSuave: Color(0xFF5C5347),
     sobreSepia: Colors.white,
     fondoCompartir: Color(0xFFFAF0E0),
     sombra: Color(0x17795548),
   );
 
   static const oscuroPorDefecto = PoemaColors(
-    oro: Color(0xFF8B6914),
+    // Lighter than the light palette's gold: #8B6914 is only 3.2:1 on the
+    // dark card, and this is the colour of every header and value.
+    oro: Color(0xFFC9A24D),
     oroClaro: Color(0xFFD4AF6A),
     sepia: Color(0xFF0F0A08),
     fondo: Color(0xFF1A1210),
     tarjeta: Color(0xFF2A1F18),
     texto: Color(0xFFF5E6C8),
-    textoSuave: Colors.white38,
+    textoSuave: Color(0xFFB8A98F),
     sobreSepia: Colors.white,
     fondoCompartir: Color(0xFF1A0F0A),
     sombra: Color(0x4D000000),

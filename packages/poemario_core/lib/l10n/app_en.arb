@@ -73,5 +73,10 @@
 
   "errorCargaTitulo": "Couldn't load the anthology",
   "errorCargaSubtitulo": "Please reopen the app. If it keeps happening, reinstall it.",
-  "reintentar": "Try again"
+  "reintentar": "Try again",
+
+  "propinasTitulo": "Support the anthology",
+  "propinasTexto": "The app is free and has no ads. If you enjoy it, you can buy us a coffee. It's just a thank-you: it doesn't unlock anything.",
+  "propinasGracias": "Thank you for your support!",
+  "propinasError": "The payment couldn't be completed. You have not been charged."
 }

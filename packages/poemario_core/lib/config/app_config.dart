@@ -49,6 +49,12 @@ class AppConfig {
   /// but it costs nothing now and is painful to retrofit later.
   final String prefijoPreferencias;
 
+  /// Store product ids of the tip-jar amounts (consumables, created in Play
+  /// Console and App Store Connect). Empty means the app has no tip jar.
+  /// Ids the store doesn't know are skipped, so listing one before it exists
+  /// is harmless.
+  final Set<String> idsPropinas;
+
   const AppConfig({
     required this.locale,
     required this.nombreApp,
@@ -61,6 +67,7 @@ class AppConfig {
     this.canalNotificaciones = 'poema_diario',
     this.horaNotificacionPorDefecto = const TimeOfDay(hour: 9, minute: 0),
     this.prefijoPreferencias = '',
+    this.idsPropinas = const {},
   });
 
   /// Comparator derived from [ordenTitulos]. Built once per config rather than

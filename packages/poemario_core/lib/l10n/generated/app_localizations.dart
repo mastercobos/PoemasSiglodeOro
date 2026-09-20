@@ -474,6 +474,30 @@ abstract class L10n {
   /// In es, this message translates to:
   /// **'Reintentar'**
   String get reintentar;
+
+  /// No description provided for @propinasTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Apoya la antología'**
+  String get propinasTitulo;
+
+  /// No description provided for @propinasTexto.
+  ///
+  /// In es, this message translates to:
+  /// **'La aplicación es gratuita y no tiene anuncios. Si te gusta, puedes invitarnos a un café. Es solo un gesto de agradecimiento: no desbloquea nada.'**
+  String get propinasTexto;
+
+  /// No description provided for @propinasGracias.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Gracias por tu apoyo!'**
+  String get propinasGracias;
+
+  /// No description provided for @propinasError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo completar el pago. No se ha hecho ningún cargo.'**
+  String get propinasError;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

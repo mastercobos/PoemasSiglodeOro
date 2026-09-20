@@ -241,4 +241,18 @@ class L10nEn extends L10n {
 
   @override
   String get reintentar => 'Try again';
+
+  @override
+  String get propinasTitulo => 'Support the anthology';
+
+  @override
+  String get propinasTexto =>
+      'The app is free and has no ads. If you enjoy it, you can buy us a coffee. It\'s just a thank-you: it doesn\'t unlock anything.';
+
+  @override
+  String get propinasGracias => 'Thank you for your support!';
+
+  @override
+  String get propinasError =>
+      'The payment couldn\'t be completed. You have not been charged.';
 }

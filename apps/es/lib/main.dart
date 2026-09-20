@@ -22,6 +22,9 @@ void main() {
       coloresOscuro: PoemaColors.oscuroPorDefecto,
       canalNotificaciones: 'poema_diario_es',
       horaNotificacionPorDefecto: TimeOfDay(hour: 9, minute: 0),
+      // Must match the consumable products created in Play Console and App
+      // Store Connect. Ids that don't exist yet are skipped.
+      idsPropinas: {'propina_cafe_1', 'propina_cafe_3', 'propina_cafe_5'},
     ),
     home: (_) => const RootScreen(),
   );

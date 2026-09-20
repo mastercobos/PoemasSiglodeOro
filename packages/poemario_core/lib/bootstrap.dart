@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -6,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'config/app_config.dart';
 import 'data/poema_repository.dart';
 import 'data/preferencias.dart';
+import 'donaciones/servicio_propinas.dart';
+import 'donaciones/tienda_propinas.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'notifications/planificador_avisos.dart';
 import 'notifications/servicio_avisos.dart';
@@ -13,6 +17,7 @@ import 'providers/ajustes_provider.dart';
 import 'providers/notificaciones_provider.dart';
 import 'providers/favoritos_provider.dart';
 import 'providers/poema_del_dia_provider.dart';
+import 'providers/propinas_provider.dart';
 import 'providers/tema_provider.dart';
 
 /// Starts an anthology app.
@@ -20,7 +25,14 @@ import 'providers/tema_provider.dart';
 /// Every app package's `main()` is a call to this with its own [AppConfig].
 /// Nothing app-specific may be added here — if a new app needs something
 /// different, it becomes a field on [AppConfig].
-Future<void> bootstrap(AppConfig config, {required WidgetBuilder home}) async {
+///
+/// [tiendaPropinas] exists so a preview or test can run the real app without
+/// the store; production leaves it null.
+Future<void> bootstrap(
+  AppConfig config, {
+  required WidgetBuilder home,
+  TiendaPropinas? tiendaPropinas,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Edge-to-edge. `setEnabledSystemUIMode` is the part the original was
@@ -64,12 +76,22 @@ Future<void> bootstrap(AppConfig config, {required WidgetBuilder home}) async {
   );
   await avisos.iniciar();
 
+  // Not awaited: the store query can take seconds and the tip jar is optional.
+  // Started now rather than when settings opens, because an interrupted
+  // purchase is delivered at launch and has to be completed.
+  final propinas = PropinasProvider(
+    tienda: tiendaPropinas ?? ServicioPropinas(),
+    ids: config.idsPropinas,
+  );
+  unawaited(propinas.iniciar());
+
   runApp(_AppPoemario(
     config: config,
     anthology: anthology,
     prefs: prefs,
     avisos: avisos,
     solicitudes: solicitudes,
+    propinas: propinas,
     home: home,
   ));
 }
@@ -94,6 +116,7 @@ class _AppPoemario extends StatelessWidget {
   final Preferencias prefs;
   final ServicioAvisos avisos;
   final SolicitudDePoema solicitudes;
+  final PropinasProvider propinas;
   final WidgetBuilder home;
 
   const _AppPoemario({
@@ -102,6 +125,7 @@ class _AppPoemario extends StatelessWidget {
     required this.prefs,
     required this.avisos,
     required this.solicitudes,
+    required this.propinas,
     required this.home,
   });
 
@@ -116,7 +140,10 @@ class _AppPoemario extends StatelessWidget {
         Provider<Anthology>.value(value: anthology),
         Provider<Preferencias>.value(value: prefs),
         Provider<ServicioAvisos>.value(value: avisos),
-        Provider<SolicitudDePoema>.value(value: solicitudes),
+        // A Listenable, so plain Provider.value trips a debug assertion.
+        // Consumers `read` it and attach their own listener.
+        ListenableProvider<SolicitudDePoema>.value(value: solicitudes),
+        ChangeNotifierProvider<PropinasProvider>.value(value: propinas),
         ChangeNotifierProvider(
           create: (_) => TemaProvider(prefs),
         ),

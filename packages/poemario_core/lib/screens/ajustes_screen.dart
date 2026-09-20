@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import '../data/poema_repository.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../providers/ajustes_provider.dart';
+import '../donaciones/tienda_propinas.dart';
 import '../providers/notificaciones_provider.dart';
+import '../providers/propinas_provider.dart';
 import '../providers/tema_provider.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
@@ -42,6 +44,7 @@ class AjustesScreen extends StatelessWidget {
           const SliverToBoxAdapter(child: _SeccionTema()),
           SliverToBoxAdapter(child: _Encabezado(l10n.ajustesRecordatorio)),
           const SliverToBoxAdapter(child: _SeccionRecordatorio()),
+          const SliverToBoxAdapter(child: _SeccionPropinas()),
           SliverToBoxAdapter(
             child: Column(
               children: [
@@ -100,37 +103,54 @@ class _SeccionTema extends StatelessWidget {
     final l10n = L10n.of(context);
     final tema = context.watch<TemaProvider>();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
+    // A Material rather than a decorated Container, so the tiles' ink splashes
+    // paint above the card colour instead of underneath it.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      child: Material(
         color: c.tarjeta,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.oroClaro.withValues(alpha: 0.6)),
-      ),
-      child: Column(
-        children: [
-          for (final opcion in [
-            (ThemeMode.system, l10n.ajustesTemaAuto, l10n.ajustesTemaAutoSub,
-                Icons.brightness_auto),
-            (ThemeMode.light, l10n.ajustesTemaClaro, l10n.ajustesTemaClaroSub,
-                Icons.wb_sunny_outlined),
-            (ThemeMode.dark, l10n.ajustesTemaOscuro, l10n.ajustesTemaOscuroSub,
-                Icons.nightlight_outlined),
-          ]) ...[
-            if (opcion.$1 != ThemeMode.system)
-              Divider(
-                  height: 1,
-                  indent: 56,
-                  color: c.oroClaro.withValues(alpha: 0.3)),
-            _OpcionTema(
-              modo: opcion.$1,
-              titulo: opcion.$2,
-              subtitulo: opcion.$3,
-              icono: opcion.$4,
-              seleccionado: tema.modo == opcion.$1,
-            ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: c.oroClaro.withValues(alpha: 0.6)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            for (final opcion in [
+              (
+                ThemeMode.system,
+                l10n.ajustesTemaAuto,
+                l10n.ajustesTemaAutoSub,
+                Icons.brightness_auto
+              ),
+              (
+                ThemeMode.light,
+                l10n.ajustesTemaClaro,
+                l10n.ajustesTemaClaroSub,
+                Icons.wb_sunny_outlined
+              ),
+              (
+                ThemeMode.dark,
+                l10n.ajustesTemaOscuro,
+                l10n.ajustesTemaOscuroSub,
+                Icons.nightlight_outlined
+              ),
+            ]) ...[
+              if (opcion.$1 != ThemeMode.system)
+                Divider(
+                    height: 1,
+                    indent: 56,
+                    color: c.oroClaro.withValues(alpha: 0.3)),
+              _OpcionTema(
+                modo: opcion.$1,
+                titulo: opcion.$2,
+                subtitulo: opcion.$3,
+                icono: opcion.$4,
+                seleccionado: tema.modo == opcion.$1,
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -194,8 +214,8 @@ class _BarraAcciones extends StatelessWidget {
             child: Text(
               l10n.ajustesDeAutores(
                   ajustes.totalActivos, ajustes.todosLosAutores.length),
-              style: context.tipos.cuerpoPequeno
-                  .copyWith(fontSize: 13, color: c.oro, fontWeight: FontWeight.w600),
+              style: context.tipos.cuerpoPequeno.copyWith(
+                  fontSize: 13, color: c.oro, fontWeight: FontWeight.w600),
             ),
           ),
           TextButton(
@@ -239,13 +259,13 @@ class _FilaAutor extends StatelessWidget {
       trailing: ExcludeSemantics(
         child: Switch(
           value: activo,
-          onChanged: (_) => context.read<AjustesProvider>().alternarAutor(autor),
+          onChanged: (_) =>
+              context.read<AjustesProvider>().alternarAutor(autor),
         ),
       ),
     );
   }
 }
-
 
 /// Daily reminder: on/off and the hour.
 class _SeccionRecordatorio extends StatelessWidget {
@@ -258,79 +278,175 @@ class _SeccionRecordatorio extends StatelessWidget {
     final l10n = L10n.of(context);
     final avisos = context.watch<NotificacionesProvider>();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
+    // See _SeccionTema: Material so ink splashes stay visible.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      child: Material(
         color: c.tarjeta,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.oroClaro.withValues(alpha: 0.6)),
-      ),
-      child: Column(
-        children: [
-          SwitchListTile(
-            value: avisos.activo,
-            onChanged: (quiere) => quiere
-                ? context.read<NotificacionesProvider>().activar()
-                : context.read<NotificacionesProvider>().desactivar(),
-            secondary: Icon(Icons.notifications_none,
-                color: avisos.activo ? c.oro : Theme.of(context).disabledColor),
-            title: Text(l10n.ajustesRecordatorioActivar,
-                style: t.cuerpo.copyWith(color: c.texto)),
-            subtitle: Text(l10n.ajustesRecordatorioSub,
-                style: t.cuerpoPequeno.copyWith(color: c.textoSuave)),
-          ),
-          // Only shown when reminders are on: an hour picker above a switch
-          // that is off invites the reader to set something that never fires.
-          if (avisos.activo) ...[
-            Divider(
-                height: 1,
-                indent: 56,
-                color: c.oroClaro.withValues(alpha: 0.3)),
-            ListTile(
-              leading: Icon(Icons.schedule, color: c.oro),
-              title: Text(l10n.ajustesRecordatorioHora,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: c.oroClaro.withValues(alpha: 0.6)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            SwitchListTile(
+              value: avisos.activo,
+              onChanged: (quiere) => quiere
+                  ? context.read<NotificacionesProvider>().activar()
+                  : context.read<NotificacionesProvider>().desactivar(),
+              secondary: Icon(Icons.notifications_none,
+                  color:
+                      avisos.activo ? c.oro : Theme.of(context).disabledColor),
+              title: Text(l10n.ajustesRecordatorioActivar,
                   style: t.cuerpo.copyWith(color: c.texto)),
-              trailing: Text(
-                // Formatted by MaterialLocalizations, so it follows the
-                // locale's 12/24-hour convention and the device setting.
-                MaterialLocalizations.of(context).formatTimeOfDay(
-                  avisos.hora,
-                  alwaysUse24HourFormat:
-                      MediaQuery.alwaysUse24HourFormatOf(context),
-                ),
-                style: t.cuerpo
-                    .copyWith(color: c.oro, fontWeight: FontWeight.w600),
-              ),
-              onTap: () async {
-                final elegida = await showTimePicker(
-                  context: context,
-                  initialTime: avisos.hora,
-                );
-                if (elegida != null && context.mounted) {
-                  await context
-                      .read<NotificacionesProvider>()
-                      .establecerHora(elegida);
-                }
-              },
+              subtitle: Text(l10n.ajustesRecordatorioSub,
+                  style: t.cuerpoPequeno.copyWith(color: c.textoSuave)),
             ),
+            // Only shown when reminders are on: an hour picker above a switch
+            // that is off invites the reader to set something that never fires.
+            if (avisos.activo) ...[
+              Divider(
+                  height: 1,
+                  indent: 56,
+                  color: c.oroClaro.withValues(alpha: 0.3)),
+              ListTile(
+                leading: Icon(Icons.schedule, color: c.oro),
+                title: Text(l10n.ajustesRecordatorioHora,
+                    style: t.cuerpo.copyWith(color: c.texto)),
+                trailing: Text(
+                  // Formatted by MaterialLocalizations, so it follows the
+                  // locale's 12/24-hour convention and the device setting.
+                  MaterialLocalizations.of(context).formatTimeOfDay(
+                    avisos.hora,
+                    alwaysUse24HourFormat:
+                        MediaQuery.alwaysUse24HourFormatOf(context),
+                  ),
+                  style: t.cuerpo
+                      .copyWith(color: c.oro, fontWeight: FontWeight.w600),
+                ),
+                onTap: () async {
+                  final elegida = await showTimePicker(
+                    context: context,
+                    initialTime: avisos.hora,
+                  );
+                  if (elegida != null && context.mounted) {
+                    await context
+                        .read<NotificacionesProvider>()
+                        .establecerHora(elegida);
+                  }
+                },
+              ),
+            ],
+            // Permission can be revoked in system settings long after the switch
+            // was turned on, which would otherwise leave the UI lying.
+            if (avisos.permisoDenegado)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, size: 18, color: c.oro),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(l10n.ajustesRecordatorioPermiso,
+                          style: t.cuerpoPequeno.copyWith(color: c.textoSuave)),
+                    ),
+                  ],
+                ),
+              ),
           ],
-          // Permission can be revoked in system settings long after the switch
-          // was turned on, which would otherwise leave the UI lying.
-          if (avisos.permisoDenegado)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Row(
+        ),
+      ),
+    );
+  }
+}
+
+/// Tip jar. Renders nothing until the store has confirmed there is something
+/// to offer, so an app whose products aren't set up shows no dead section.
+class _SeccionPropinas extends StatelessWidget {
+  const _SeccionPropinas();
+
+  @override
+  Widget build(BuildContext context) {
+    final propinas = context.watch<PropinasProvider>();
+    if (propinas.estado != EstadoPropinas.lista) {
+      return const SizedBox.shrink();
+    }
+
+    final c = context.colores;
+    final t = context.tipos;
+    final l10n = L10n.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Encabezado(l10n.propinasTitulo),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          child: Material(
+            color: c.tarjeta,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: c.oroClaro.withValues(alpha: 0.6)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, size: 18, color: c.oro),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(l10n.ajustesRecordatorioPermiso,
-                        style: t.cuerpoPequeno.copyWith(color: c.textoSuave)),
+                  Text(l10n.propinasTexto,
+                      style: t.cuerpoPequeno.copyWith(color: c.textoSuave)),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: [
+                      for (final p in propinas.propinas)
+                        OutlinedButton.icon(
+                          onPressed: propinas.comprando
+                              ? null
+                              : () => context
+                                  .read<PropinasProvider>()
+                                  .comprar(p),
+                          icon: const Icon(Icons.coffee_outlined, size: 18),
+                          label: Text(p.precio),
+                        ),
+                    ],
                   ),
+                  // Cancelling is the user's own choice, so it gets no message.
+                  if (propinas.resultado == ResultadoPropina.completada)
+                    _MensajePropina(l10n.propinasGracias, Icons.favorite),
+                  if (propinas.resultado == ResultadoPropina.fallida)
+                    _MensajePropina(l10n.propinasError, Icons.info_outline),
                 ],
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MensajePropina extends StatelessWidget {
+  final String texto;
+  final IconData icono;
+  const _MensajePropina(this.texto, this.icono);
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colores;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          Icon(icono, size: 18, color: c.oro),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(texto,
+                style: context.tipos.cuerpoPequeno.copyWith(color: c.texto)),
+          ),
         ],
       ),
     );

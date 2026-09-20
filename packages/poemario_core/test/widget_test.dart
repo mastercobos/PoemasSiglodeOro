@@ -138,7 +138,7 @@ void main() {
       // Two stanzas in the fixture, joined by a blank line — not by a break
       // after line 4 as the old hardcoded sonnet rule would have done.
       expect(
-        find.textContaining('primer verso de a00\nsegundo verso\n\nsegunda'),
+        find.textContaining('primer verso de 00\nsegundo verso\n\nsegunda'),
         findsOneWidget,
       );
     });
@@ -237,7 +237,15 @@ void main() {
       await montar(tester, const AjustesScreen());
 
       expect(find.text('4 de 4 autores'), findsOneWidget);
-      await tester.tap(find.byType(Switch).first);
+      // The reminder card above the list has a Switch of its own, so aim at the
+      // one inside the first author's row.
+      final interruptor = find.descendant(
+        of: find.widgetWithText(ListTile, 'Autor 0'),
+        matching: find.byType(Switch),
+      );
+      await tester.ensureVisible(interruptor);
+      await tester.pumpAndSettle();
+      await tester.tap(interruptor);
       await tester.pumpAndSettle();
       expect(find.text('3 de 4 autores'), findsOneWidget);
     });

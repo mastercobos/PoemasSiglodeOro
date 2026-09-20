@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -143,13 +142,17 @@ void main() {
   });
 
   test('every string in app_es.arb exists in app_en.arb', () {
-    final es = File('lib/l10n/app_es.arb').readAsStringSync();
-    final en = File('lib/l10n/app_en.arb').readAsStringSync();
-    final claves = RegExp(r'"(\w+)"\s*:').allMatches(es).map((m) => m.group(1)!);
+    // Top-level keys only. A regex over the raw text also picks up the keys
+    // nested in each "@message" metadata block (description, placeholders,
+    // type, placeholder names), which are not strings to translate.
+    Map<String, dynamic> leer(String ruta) =>
+        jsonDecode(File(ruta).readAsStringSync()) as Map<String, dynamic>;
+    final es = leer('lib/l10n/app_es.arb');
+    final en = leer('lib/l10n/app_en.arb');
 
     final faltan = [
-      for (final k in claves)
-        if (!k.startsWith('@') && !en.contains('"$k"')) k,
+      for (final k in es.keys)
+        if (!k.startsWith('@') && !en.containsKey(k)) k,
     ];
 
     expect(faltan, isEmpty,

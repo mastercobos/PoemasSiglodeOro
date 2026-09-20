@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:poemario_core/config/app_config.dart';
 import 'package:poemario_core/data/poema.dart';
 import 'package:poemario_core/data/poema_repository.dart';
 import 'package:poemario_core/data/preferencias.dart';
 import 'package:poemario_core/domain/orden_titulos.dart';
+import 'package:poemario_core/donaciones/tienda_propinas.dart';
 import 'package:poemario_core/l10n/generated/app_localizations.dart';
 import 'package:poemario_core/notifications/agenda_avisos.dart';
 import 'package:poemario_core/notifications/planificador_avisos.dart';
@@ -12,6 +16,7 @@ import 'package:poemario_core/providers/ajustes_provider.dart';
 import 'package:poemario_core/providers/favoritos_provider.dart';
 import 'package:poemario_core/providers/notificaciones_provider.dart';
 import 'package:poemario_core/providers/poema_del_dia_provider.dart';
+import 'package:poemario_core/providers/propinas_provider.dart';
 import 'package:poemario_core/providers/tema_provider.dart';
 import 'package:poemario_core/theme/poema_colors.dart';
 import 'package:poemario_core/theme/poema_theme.dart';
@@ -63,7 +68,12 @@ Future<Anthology> cargarDesdeAssetFalso(
   String ruta = 'assets/poemas.json',
 }) async {
   registrarAsset(ruta, comoJson(json));
-  return PoemaRepository(assetPath: ruta, compararTitulos: comparador).cargar();
+  final repo = PoemaRepository(assetPath: ruta, compararTitulos: comparador);
+  // The repository parses with `compute`, which needs a real isolate and the
+  // real event loop. Inside a testWidgets body (FakeAsync) that await never
+  // completes, so run it outside the fake zone.
+  final binding = TestWidgetsFlutterBinding.ensureInitialized();
+  return (await binding.runAsync(repo.cargar))!;
 }
 
 /// A [Preferencias] backed by mock shared_preferences.
@@ -109,6 +119,44 @@ class AgendaFalsa implements AgendaAvisos {
   Future<void> cancelarTodo() async => cancelaciones++;
 }
 
+/// Store double: returns [catalogo] and lets a test fire purchase outcomes.
+class TiendaFalsa implements TiendaPropinas {
+  bool disponible = true;
+  bool fallaAlConsultar = false;
+  bool fallaAlComprar = false;
+  List<Propina> catalogo;
+  final compradas = <String>[];
+  final _controlador = StreamController<ResultadoPropina>.broadcast();
+
+  TiendaFalsa([this.catalogo = const []]);
+
+  void emitir(ResultadoPropina r) => _controlador.add(r);
+
+  @override
+  Future<bool> iniciar() async => disponible;
+
+  @override
+  Future<List<Propina>> consultar(Set<String> ids) async {
+    if (fallaAlConsultar) throw StateError('offline');
+    return [
+      for (final p in catalogo)
+        if (ids.contains(p.id)) p,
+    ];
+  }
+
+  @override
+  Future<void> comprar(Propina propina) async {
+    if (fallaAlComprar) throw StateError('no arranca');
+    compradas.add(propina.id);
+  }
+
+  @override
+  Stream<ResultadoPropina> get resultados => _controlador.stream;
+
+  @override
+  Future<void> cerrar() async {}
+}
+
 /// Wraps [child] in the full provider stack and a localised [MaterialApp],
 /// so a screen can be pumped exactly as it runs in the app.
 class AppDePrueba extends StatelessWidget {
@@ -117,6 +165,7 @@ class AppDePrueba extends StatelessWidget {
   final Preferencias prefs;
   final SolicitudDePoema solicitudes;
   final AgendaFalsa agenda;
+  final PropinasProvider? propinas;
 
   const AppDePrueba({
     super.key,
@@ -125,6 +174,7 @@ class AppDePrueba extends StatelessWidget {
     required this.prefs,
     required this.solicitudes,
     required this.agenda,
+    this.propinas,
   });
 
   @override
@@ -134,7 +184,11 @@ class AppDePrueba extends StatelessWidget {
         Provider<AppConfig>.value(value: configPrueba),
         Provider<Anthology>.value(value: anthology),
         Provider<Preferencias>.value(value: prefs),
-        Provider<SolicitudDePoema>.value(value: solicitudes),
+        ListenableProvider<SolicitudDePoema>.value(value: solicitudes),
+        ChangeNotifierProvider<PropinasProvider>.value(
+          value: propinas ??
+              PropinasProvider(tienda: TiendaFalsa(), ids: const {}),
+        ),
         ChangeNotifierProvider(create: (_) => TemaProvider(prefs)),
         ChangeNotifierProvider(
           create: (_) =>

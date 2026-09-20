@@ -47,7 +47,7 @@ class ServicioAvisos implements AgendaAvisos {
 
     await _plugin.initialize(
       const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('ic_notification'),
         iOS: DarwinInitializationSettings(
           // Asked for explicitly later, from the settings screen, so the
           // system prompt arrives with context instead of on first launch.
