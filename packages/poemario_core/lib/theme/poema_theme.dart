@@ -78,8 +78,12 @@ class PoemaTextStyles {
           height: 1.25),
       tituloTarjeta: TextStyle(
           fontFamily: display, fontSize: 18, fontWeight: FontWeight.bold),
+      // Sans, not the display serif: this repeats down a scrolling list
+      // (índice, ajustes, favoritos), where the serif's thin strokes get
+      // hard to read at this size. The display face stays for one-off
+      // headings like poem titles.
       autorTarjeta: TextStyle(
-          fontFamily: display, fontSize: 17, fontWeight: FontWeight.bold),
+          fontFamily: body, fontSize: 17, fontWeight: FontWeight.bold),
       avatarInicial: TextStyle(
           fontFamily: display, fontSize: 20, fontWeight: FontWeight.bold),
       verso: TextStyle(
