@@ -27,10 +27,19 @@ flutter:
   # Fonts are bundled, not downloaded. This removes google_fonts, which
   # fetched Playfair and Lato over the network on first launch — so an
   # offline first run rendered the whole anthology in Roboto.
+  #
+  # These are the exact files google_fonts 8.0.2 downloaded in release 1.0.7
+  # (same SHA-256 from fonts.gstatic.com), so the text looks identical to what
+  # existing users already see. Do not swap in newer builds of the families:
+  # Lato 2.x, for one, is redrawn and has different spacing.
   fonts:
     - family: PlayfairDisplay
       fonts:
-        - asset: assets/fonts/PlayfairDisplay-Variable.ttf
+        - asset: assets/fonts/PlayfairDisplay-Regular.ttf
+        - asset: assets/fonts/PlayfairDisplay-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/PlayfairDisplay-Bold.ttf
+          weight: 700
     - family: Lato
       fonts:
         - asset: assets/fonts/Lato-Regular.ttf

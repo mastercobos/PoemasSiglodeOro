@@ -46,3 +46,6 @@ app.*.map.json
 
 # Build output in any package/app
 **/build/
+**/key.properties
+**/*.jks
+**/*.keystore

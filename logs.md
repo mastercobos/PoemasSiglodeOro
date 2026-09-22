@@ -160,3 +160,8 @@ date only. From entry 4 on, times are taken from the system clock.
 - `apps/en/lib/main.dart` now picks `numeralesNaturales` instead of `alfabetico`.
 - Added 6 new tests to `orden_titulos_test.dart` (inline numeral order, grouped-by-prefix, nested numerals, prefix-vs-longer-title, word-that-looks-like-a-numeral, and confirmed it also handles the Spanish `"- N -"` shape correctly as a bonus). All 115 tests pass (109 + 6), both packages analyze clean.
 - Re-ran in Chrome: loads clean, no errors at all this time (not even the earlier harmless `MissingPluginException`, since nothing triggered a share this run).
+
+### 25. 2026-09-23 01:04 — Committed the Spanish app's fonts; stopped tracking build output
+- Session resumed after a closed session. Found the font work from the 2026-09-20 session (exact google_fonts 8.0.2 Lato 1.x + static Playfair Display files, pubspec pointing at them) plus `.gitignore` keystore patterns still uncommitted. Re-verified all six font files against the SHA-256 hashes in google_fonts 8.0.2's own tables; `flutter analyze` clean on `apps/es`.
+- Why it mattered: HEAD's pubspec referenced `PlayfairDisplay-Variable.ttf`, which was never tracked, and the new Playfair files were untracked, so a build from the repo (e.g. Codemagic) would not have matched the tested `1.1.0+10` device build.
+- Committed fonts + pubspec + `.gitignore`. Separately ran `git rm -r --cached` on the 30 `build/` files tracked under `apps/es/build` and `packages/poemario_core/build` despite `**/build/` being ignored (files stay on disk).
