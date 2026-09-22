@@ -1,0 +1,545 @@
+<title>Store Launch Tracker</title>
+<style>
+  :root {
+    --oro: #7A5A0F;
+    --oro-claro: #D4AF6A;
+    --sepia: #3B2F2F;
+    --fondo: #F5EBD9;
+    --tarjeta: #FBF5E8;
+    --texto: #3B2F2F;
+    --texto-suave: #5C5347;
+    --borde: rgba(59, 47, 47, 0.14);
+    --sombra: rgba(59, 47, 47, 0.10);
+    --check-fg: #FBF5E8;
+    --done-fondo: rgba(122, 90, 15, 0.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --oro: #C9A24D;
+      --oro-claro: #D4AF6A;
+      --sepia: #0F0A08;
+      --fondo: #1A1210;
+      --tarjeta: #2A1F18;
+      --texto: #F5E6C8;
+      --texto-suave: #B8A98F;
+      --borde: rgba(245, 230, 200, 0.14);
+      --sombra: rgba(0, 0, 0, 0.35);
+      --check-fg: #1A1210;
+      --done-fondo: rgba(201, 162, 77, 0.08);
+    }
+  }
+  :root[data-theme="dark"] {
+    --oro: #C9A24D;
+    --oro-claro: #D4AF6A;
+    --sepia: #0F0A08;
+    --fondo: #1A1210;
+    --tarjeta: #2A1F18;
+    --texto: #F5E6C8;
+    --texto-suave: #B8A98F;
+    --borde: rgba(245, 230, 200, 0.14);
+    --sombra: rgba(0, 0, 0, 0.35);
+    --check-fg: #1A1210;
+    --done-fondo: rgba(201, 162, 77, 0.08);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--fondo);
+    color: var(--texto);
+    font-family: 'Lato', -apple-system, sans-serif;
+    margin: 0;
+    padding-inline: 16px;
+    padding-block: 32px 64px;
+  }
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(28px, 6vw, 38px);
+    font-weight: 700;
+    margin: 0 0 6px;
+    text-wrap: balance;
+    letter-spacing: 0.2px;
+  }
+  .sub {
+    color: var(--texto-suave);
+    font-size: 15px;
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+  .progress-shell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--borde);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--oro);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: var(--texto-suave);
+    white-space: nowrap;
+  }
+
+  section.grupo { margin-bottom: 30px; }
+  .grupo-cabecera {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .grupo-titulo {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 19px;
+  }
+  .badge {
+    font-size: 10.5px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--oro);
+    border: 1px solid var(--oro-claro);
+    border-radius: 20px;
+    padding: 2px 9px;
+    white-space: nowrap;
+  }
+  .grupo-nota {
+    color: var(--texto-suave);
+    font-size: 13.5px;
+    margin: -4px 0 12px;
+    line-height: 1.5;
+  }
+
+  .lista {
+    background: var(--tarjeta);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px var(--sombra);
+    overflow: hidden;
+  }
+  .item {
+    display: flex;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--borde);
+    align-items: flex-start;
+  }
+  .item:last-child { border-bottom: none; }
+  .item.done { background: var(--done-fondo); }
+
+  .check {
+    appearance: none;
+    -webkit-appearance: none;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    border-radius: 5px;
+    border: 1.6px solid var(--oro-claro);
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+  }
+  .check:checked { background: var(--oro); border-color: var(--oro); }
+  .check:checked::after {
+    content: "";
+    width: 5px;
+    height: 9px;
+    border-right: 2px solid var(--check-fg);
+    border-bottom: 2px solid var(--check-fg);
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+  .check:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+
+  .item-texto { flex: 1; min-width: 0; }
+  .item-label { font-size: 15px; line-height: 1.45; cursor: pointer; }
+  .item.done .item-label {
+    color: var(--texto-suave);
+    text-decoration: line-through;
+    text-decoration-color: var(--oro-claro);
+  }
+  .item-nota {
+    font-size: 12.5px;
+    color: var(--texto-suave);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .item.done .item-nota { opacity: 0.75; }
+  code { font-size: 0.92em; background: var(--borde); padding: 1px 5px; border-radius: 4px; }
+
+  footer {
+    margin-top: 40px;
+    font-size: 12.5px;
+    color: var(--texto-suave);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) { .progress-fill { transition: none; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;600;700&display=swap">
+
+<div class="page">
+  <h1>Store Launch Tracker</h1>
+  <p class="sub">Antología Poética (Spanish) and English Verse — everything left before both apps are live on Play Store and the App Store. No dates; order reflects dependencies. Tap a box to check it off — it saves for next time.</p>
+
+  <div class="progress-shell">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div id="grupos">
+
+    <section class="grupo">
+      <div class="grupo-cabecera"><span class="grupo-titulo">Both apps — prerequisites</span><span class="badge">shared</span></div>
+      <p class="grupo-nota">Gate everything iOS-side below.</p>
+      <div class="lista">
+        <div class="item" data-item="s1">
+          <input type="checkbox" class="check" id="chk-s1">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-s1" for="chk-s1">Confirm the <code>mi-clave.jks</code> keystore fingerprint matches what Play Console has registered for <code>com.manucobos.poemario</code></label>
+            <div class="item-nota">SHA1/SHA256 recorded in logs.md entry 15. Upload is rejected outright on a mismatch.</div>
+          </div>
+        </div>
+        <div class="item done" data-item="s2">
+          <input type="checkbox" class="check" id="chk-s2" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-s2" for="chk-s2">Enrol in the Apple Developer Program</label>
+            <div class="item-nota">Needed before any iOS signing or submission, for either app.</div>
+          </div>
+        </div>
+        <div class="item done" data-item="s3">
+          <input type="checkbox" class="check" id="chk-s3" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-s3" for="chk-s3">iOS builds go through Codemagic, not local Xcode</label>
+            <div class="item-nota">Confirmed — certs/provisioning are managed at the Codemagic account level, tied to the Apple Developer account and the bundle id, independent of the repo's file layout. Xcode was only ever needed for the one-time initial setup, already done. See <code>docs/codemagic.md</code>.</div>
+          </div>
+        </div>
+        <div class="item" data-item="s4">
+          <input type="checkbox" class="check" id="chk-s4">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-s4" for="chk-s4">Write and host a privacy policy</label>
+            <div class="item-nota">Play Console requires a URL once an app requests notifications; the App Store's privacy questionnaire needs the same answers. None exists in the repo yet.</div>
+          </div>
+        </div>
+        <div class="item" data-item="s5">
+          <input type="checkbox" class="check" id="chk-s5">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-s5" for="chk-s5">Accept the pending Apple Developer agreement</label>
+            <div class="item-nota">Found live: a Codemagic build failed fetching signing files with <code>403 A required agreement is missing or has expired</code> — Apple blocks all App Store Connect API access account-wide until the Account Holder re-accepts it in the web dashboard (likely the Paid Applications Agreement, since the app has IAP tips). Log into appstoreconnect.apple.com, accept it, then retry the build. Unrelated to the monorepo restructure.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grupo">
+      <div class="grupo-cabecera"><span class="grupo-titulo">Antología Poética — Android</span><span class="badge">Play Store · update</span></div>
+      <p class="grupo-nota">Live today at 1.0.7+9. This week's session fixed and verified the release build for 1.1.0+10.</p>
+      <div class="lista">
+        <div class="item done" data-item="ea1">
+          <input type="checkbox" class="check" id="chk-ea1" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea1" for="chk-ea1">Author-name readability fix (Índice / Ajustes / Favoritos)</label>
+            <div class="item-nota">Committed 7fc31af.</div>
+          </div>
+        </div>
+        <div class="item done" data-item="ea2">
+          <input type="checkbox" class="check" id="chk-ea2" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea2" for="chk-ea2">Notification icon stripped by the release resource shrinker — fixed</label>
+            <div class="item-nota">Committed ed885d1; confirmed firing correctly on a real device.</div>
+          </div>
+        </div>
+        <div class="item done" data-item="ea3">
+          <input type="checkbox" class="check" id="chk-ea3" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea3" for="chk-ea3"><code>key.properties</code> misplaced, breaking <code>signReleaseBundle</code> — fixed</label>
+            <div class="item-nota">Committed b80c9b1.</div>
+          </div>
+        </div>
+        <div class="item done" data-item="ea4">
+          <input type="checkbox" class="check" id="chk-ea4" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea4" for="chk-ea4">Verified on a real device: release build launches, notifications fire on schedule with correct content, v1→v2 favourites migration works against real pre-restructure data</label>
+          </div>
+        </div>
+        <div class="item" data-item="ea5">
+          <input type="checkbox" class="check" id="chk-ea5">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea5" for="chk-ea5">Decide whether more UI/feature work is wanted before upload, or ship 1.1.0 as-is</label>
+          </div>
+        </div>
+        <div class="item" data-item="ea6">
+          <input type="checkbox" class="check" id="chk-ea6">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea6" for="chk-ea6">Write release notes for 1.1.0+10</label>
+            <div class="item-nota">vs. 1.0.7+9: tips, notification fixes, app icon, font swap, author-name readability.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ea7">
+          <input type="checkbox" class="check" id="chk-ea7">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea7" for="chk-ea7">Build the final signed <code>.aab</code></label>
+            <div class="item-nota"><code>flutter build appbundle --release</code></div>
+          </div>
+        </div>
+        <div class="item" data-item="ea8">
+          <input type="checkbox" class="check" id="chk-ea8">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea8" for="chk-ea8">Upload to Play Console — internal or closed testing track first</label>
+          </div>
+        </div>
+        <div class="item" data-item="ea9">
+          <input type="checkbox" class="check" id="chk-ea9">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea9" for="chk-ea9">If keeping tips, confirm <code>propina_cafe_1/3/5</code> consumables exist and are active in Play Console</label>
+          </div>
+        </div>
+        <div class="item" data-item="ea10">
+          <input type="checkbox" class="check" id="chk-ea10">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea10" for="chk-ea10">Promote to production</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grupo">
+      <div class="grupo-cabecera"><span class="grupo-titulo">Antología Poética — iOS</span><span class="badge">App Store · update</span></div>
+      <p class="grupo-nota">Already live — builds and TestFlight/App Store uploads go through Codemagic, not local Xcode (see <code>docs/codemagic.md</code>). Codemagic's app entry almost certainly still points at the repo root, where the Flutter project used to live before the restructure moved it to <code>apps/es</code>.</p>
+      <div class="lista">
+        <div class="item done" data-item="ei1">
+          <input type="checkbox" class="check" id="chk-ei1" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ei1" for="chk-ei1">Add the missing <code>UNUserNotificationCenter</code> delegate registration to <code>apps/es/ios/Runner/AppDelegate.swift</code></label>
+            <div class="item-nota">Done — matches the docs/notificaciones.md snippet and apps/en's already-correct version. Not compiled/verified (no Xcode/macOS available here).</div>
+          </div>
+        </div>
+        <div class="item" data-item="ei2">
+          <input type="checkbox" class="check" id="chk-ei2">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ei2" for="chk-ei2">Point Codemagic's workflow at <code>apps/es</code> instead of the repo root</label>
+            <div class="item-nota">Workflow settings → working/project directory. Signing itself needs no recovery — it's managed at the Codemagic/Apple-Developer account level, keyed to the bundle id, independent of the repo's file layout.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ei3">
+          <input type="checkbox" class="check" id="chk-ei3">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ei3" for="chk-ei3">Trigger a build to confirm the re-pointed project builds and signs correctly</label>
+            <div class="item-nota">Attempted — Codemagic correctly resolved the project and called Apple's API for <code>com.manucobos.poemario</code>, so the path/detection side looks fine. It hit the pending-agreement 403 (see the prerequisites group) before reaching real signing — retry once that's accepted.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ei4">
+          <input type="checkbox" class="check" id="chk-ei4">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ei4" for="chk-ei4">TestFlight the build and walk docs/notificaciones.md's "Verifying" checklist on a real device</label>
+            <div class="item-nota">Especially: does the notification actually arrive and open the right poem, now that the delegate fix is in.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ei5">
+          <input type="checkbox" class="check" id="chk-ei5">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ei5" for="chk-ei5">If keeping tips, confirm the matching consumable IAP products still exist in App Store Connect</label>
+          </div>
+        </div>
+        <div class="item" data-item="ei6">
+          <input type="checkbox" class="check" id="chk-ei6">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ei6" for="chk-ei6">Update store listing / screenshots if the UI changed enough to warrant it</label>
+            <div class="item-nota">Icon, font swap, author-name readability — same "what's new" list as the Android update.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ei7">
+          <input type="checkbox" class="check" id="chk-ei7">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ei7" for="chk-ei7">Submit the update for review</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grupo">
+      <div class="grupo-cabecera"><span class="grupo-titulo">English Verse — content &amp; branding</span><span class="badge">blocks everything below</span></div>
+      <p class="grupo-nota">The biggest gap by far, and independent of any code work.</p>
+      <div class="lista">
+        <div class="item" data-item="ec1">
+          <input type="checkbox" class="check" id="chk-ec1">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ec1" for="chk-ec1">Source and curate a real English-language anthology</label>
+            <div class="item-nota"><code>apps/en/assets/poemas.json</code> currently holds 8 placeholder poems (Shakespeare, Blake ×2, Dickinson ×2, Wordsworth) against the Spanish app's ~1,000+. Not a shippable anthology yet.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ec2">
+          <input type="checkbox" class="check" id="chk-ec2">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ec2" for="chk-ec2">Add the actual EBGaramond and SourceSans3 font files</label>
+            <div class="item-nota"><code>AppConfig</code> already references them, but <code>apps/en/assets/fonts/</code> is empty and the pubspec font block is entirely commented out as <code># TEMP-FONTS (font files missing)</code> — the app currently renders in Flutter's fallback font, not its intended type at all.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ec3">
+          <input type="checkbox" class="check" id="chk-ec3">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ec3" for="chk-ec3">Re-run <code>flutter analyze</code> / <code>flutter test</code> and a real device check once content and fonts are in</label>
+            <div class="item-nota">Same rigor applied to the Spanish app this week — release-mode testing catches things debug mode and the test suite don't.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grupo">
+      <div class="grupo-cabecera"><span class="grupo-titulo">English Verse — Android</span><span class="badge">Play Store · first release</span></div>
+      <div class="lista">
+        <div class="item" data-item="ana1">
+          <input type="checkbox" class="check" id="chk-ana1">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ana1" for="chk-ana1">Generate a new release keystore for <code>com.manucobos.englishverse</code></label>
+            <div class="item-nota">No <code>key.properties</code> or <code>.jks</code> exists yet.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ana2">
+          <input type="checkbox" class="check" id="chk-ana2">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ana2" for="chk-ana2">Build and device-test a signed release <code>.aab</code></label>
+            <div class="item-nota">Fresh install only — first release, so there's no migration path to test.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ana3">
+          <input type="checkbox" class="check" id="chk-ana3">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ana3" for="chk-ana3">Create the app entry in Play Console and write its own store listing</label>
+            <div class="item-nota">Separate from the Spanish app's listing.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ana4">
+          <input type="checkbox" class="check" id="chk-ana4">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ana4" for="chk-ana4">Upload, internal test, promote to production</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grupo">
+      <div class="grupo-cabecera"><span class="grupo-titulo">English Verse — iOS</span><span class="badge">App Store · first release</span></div>
+      <div class="lista">
+        <div class="item done" data-item="eni1">
+          <input type="checkbox" class="check" id="chk-eni1" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-eni1" for="chk-eni1"><code>UNUserNotificationCenter</code> delegate already registered in AppDelegate.swift</label>
+            <div class="item-nota">Nothing to fix here, unlike the Spanish app.</div>
+          </div>
+        </div>
+        <div class="item" data-item="eni2">
+          <input type="checkbox" class="check" id="chk-eni2">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-eni2" for="chk-eni2">Code signing in Xcode</label>
+            <div class="item-nota">Same DEVELOPMENT_TEAM prerequisite as the Spanish app.</div>
+          </div>
+        </div>
+        <div class="item" data-item="eni3">
+          <input type="checkbox" class="check" id="chk-eni3">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-eni3" for="chk-eni3">Build and test on a simulator/device</label>
+          </div>
+        </div>
+        <div class="item" data-item="eni4">
+          <input type="checkbox" class="check" id="chk-eni4">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-eni4" for="chk-eni4">Create the app in App Store Connect and write its listing</label>
+            <div class="item-nota">Bundle id <code>com.manucobos.englishverse</code>.</div>
+          </div>
+        </div>
+        <div class="item" data-item="eni5">
+          <input type="checkbox" class="check" id="chk-eni5">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-eni5" for="chk-eni5">Submit for review</label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer>Built from a direct audit of the repo on 2026&#8209;09&#8209;22 &mdash; not from CLAUDE.md's own "known open items" list, which had gone stale on several points.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var LOGIC_SOURCE = document.currentScript.textContent;
+
+  var progressFill = document.getElementById("progressFill");
+  var progressLabel = document.getElementById("progressLabel");
+  var checks = Array.prototype.slice.call(document.querySelectorAll(".check"));
+
+  function renderProgress() {
+    var total = checks.length;
+    var done = checks.filter(function (c) { return c.checked; }).length;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    progressFill.style.width = pct + "%";
+    progressLabel.textContent = done + " / " + total;
+  }
+
+  function onToggle(e) {
+    var el = e.target;
+    // Keep the HTML attribute in sync with the property: outerHTML only
+    // serializes the attribute, and that attribute is what a republish saves.
+    if (el.checked) el.setAttribute("checked", "");
+    else el.removeAttribute("checked");
+    var row = el.closest(".item");
+    if (row) row.classList.toggle("done", el.checked);
+    renderProgress();
+    schedulePublish();
+  }
+
+  var publishTimer = null;
+  function schedulePublish() {
+    if (publishTimer) clearTimeout(publishTimer);
+    publishTimer = setTimeout(doPublish, 500);
+  }
+
+  function doPublish() {
+    if (!window.claude || !window.claude.use) return;
+    window.claude.use("artifact").then(function (artifact) {
+      if (!artifact) return;
+      return artifact.publish(fullDocument());
+    }).catch(function () {
+      // conflict / not_writer / offline: routine, local view stays correct.
+    });
+  }
+
+  function fullDocument() {
+    var styleTag = document.querySelector("style").outerHTML;
+    var fontLink = document.querySelector('link[href*="fonts.googleapis"]').outerHTML;
+    var pageHtml = document.querySelector(".page").outerHTML;
+    return (
+      "<!doctype html>\n<html><head><meta charset=\"utf-8\">" +
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">" +
+      "<title>Store Launch Tracker</title>" + styleTag + fontLink +
+      "</head><body>" + pageHtml +
+      "<script>" + LOGIC_SOURCE + "<" + "/script>" +
+      "</body></html>"
+    );
+  }
+
+  checks.forEach(function (c) { c.addEventListener("change", onToggle); });
+  renderProgress();
+})();
+</script>
