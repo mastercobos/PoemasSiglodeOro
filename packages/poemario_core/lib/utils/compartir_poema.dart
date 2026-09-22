@@ -185,11 +185,35 @@ class CompartirPoema {
 
 /// The card that becomes the shared PNG. Fixed 800 px wide, height driven by
 /// the poem, stanza breaks taken from the data.
+///
+/// A poem beyond [_umbralVersos] lines is previewed rather than shown whole —
+/// the card has no scrolling and nothing capped its height before this, so a
+/// long poem produced an arbitrarily tall PNG (untested territory: every poem
+/// the shipping Spanish app has ever had is under the threshold). The preview
+/// is a feature, not a fallback: a short, beautiful card plus the app's own
+/// signature is a better invitation to open the app than a giant image or a
+/// wall of shared plain text would be.
 class TarjetaCompartir extends StatelessWidget {
   final Poema poema;
   final String firma;
 
   const TarjetaCompartir({super.key, required this.poema, required this.firma});
+
+  /// Above this many verses, the card previews instead of showing the poem
+  /// whole. Every poem the shipping Spanish app has ever had fits under it.
+  static const _umbralVersos = 14;
+
+  /// Stanzas to draw: the whole poem when it's short, otherwise the first
+  /// stanza (if that alone is a reasonable preview) or the first four verses.
+  List<List<String>> get _estrofasTarjeta {
+    final estrofas = poema.estrofas;
+    if (poema.versos.length <= _umbralVersos) return estrofas;
+    final primera = estrofas.isNotEmpty ? estrofas.first : const <String>[];
+    if (primera.isNotEmpty && primera.length <= 8) return [primera];
+    return [poema.versos.take(4).toList()];
+  }
+
+  bool get _esPreview => poema.versos.length > _umbralVersos;
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +226,7 @@ class TarjetaCompartir extends StatelessWidget {
       color: c.texto,
       letterSpacing: 0.2,
     );
+    final estrofasTarjeta = _estrofasTarjeta;
 
     return Container(
       width: CompartirPoema._ancho,
@@ -228,10 +253,16 @@ class TarjetaCompartir extends StatelessWidget {
           const SizedBox(height: 32),
           const Filete(ancho: 60),
           const SizedBox(height: 36),
-          for (var i = 0; i < poema.estrofas.length; i++) ...[
+          for (var i = 0; i < estrofasTarjeta.length; i++) ...[
             if (i > 0) const SizedBox(height: 18),
-            for (final verso in poema.estrofas[i])
+            for (final verso in estrofasTarjeta[i])
               Text(verso, textAlign: TextAlign.center, style: estiloVerso),
+          ],
+          if (_esPreview) ...[
+            const SizedBox(height: 18),
+            Text('…',
+                textAlign: TextAlign.center,
+                style: estiloVerso.copyWith(color: c.oro)),
           ],
           const SizedBox(height: 40),
           const Ornamento(anchoLinea: 60, tamanoIcono: 20),
