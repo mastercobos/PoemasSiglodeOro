@@ -93,6 +93,84 @@ enum EstrategiaOrden {
   /// Plain alphabetical. Sensible default for anthologies that don't number
   /// their poems.
   alfabetico,
+
+  /// A numeral anywhere in the title sorts by value, not as text — `"Sonnet
+  /// IX"` before `"Sonnet V"`, not after, and a two-part title like `"Canto
+  /// IV III"` compares each part in turn. The English anthology's rule: it
+  /// numbers sequences inline (`"Sonnet I"`, `"Sonnets from the Portuguese,
+  /// I"`) rather than with the Spanish corpus's leading `"- N -"`, and often
+  /// nests a second numeral for a sequence's own sub-parts.
+  numeralesNaturales,
+}
+
+/// True for an ASCII or accented Latin letter — enough to tell a numeral
+/// token from being glued to a word on either side, e.g. the "I" in "Vivian"
+/// or the "X" in "Máximo" must never be read as a numeral.
+bool _esLetra(int unidad) {
+  if (unidad >= 0x41 && unidad <= 0x5A) return true; // A-Z
+  if (unidad >= 0x61 && unidad <= 0x7A) return true; // a-z
+  return unidad >= 0xC0 && unidad <= 0x24F; // accented Latin blocks
+}
+
+final _tokenNumeral = RegExp(r'[MDCLXVImdclxvi]+');
+
+/// Splits a title into a sequence of text and numeral tokens, so a natural
+/// (not lexical) comparison can walk them pairwise. `"Sonnet IX"` becomes
+/// `["Sonnet ", 9]`; `"Canto IV III"` becomes `["Canto ", 4, " ", 3]`. A run
+/// of roman-numeral letters only becomes a numeral token when it is a whole
+/// word (not part of a longer one) *and* parses as well-formed — otherwise
+/// it stays text, so "Maud", "Vivian" and "Mix" are never misread.
+List<Object> _tokenizarTitulo(String titulo) {
+  final tokens = <Object>[];
+  final texto = StringBuffer();
+  var i = 0;
+  while (i < titulo.length) {
+    final match = _tokenNumeral.matchAsPrefix(titulo, i);
+    final limiteAntes = i == 0 || !_esLetra(titulo.codeUnitAt(i - 1));
+    int? valor;
+    if (match != null && limiteAntes) {
+      final fin = match.end;
+      final limiteDespues = fin >= titulo.length || !_esLetra(titulo.codeUnitAt(fin));
+      if (limiteDespues) valor = romanoAEntero(match.group(0)!);
+    }
+    if (valor != null) {
+      if (texto.isNotEmpty) {
+        tokens.add(texto.toString());
+        texto.clear();
+      }
+      tokens.add(valor);
+      i = match!.end;
+    } else {
+      texto.writeCharCode(titulo.codeUnitAt(i));
+      i++;
+    }
+  }
+  if (texto.isNotEmpty) tokens.add(texto.toString());
+  return tokens;
+}
+
+/// Compares two titles token by token: text against text folds and compares
+/// as text, numeral against numeral compares by value. A numeral token
+/// always sorts before a text token at the same position (so `"Sonnet I"`
+/// comes before `"Sonnet Interlude"`), and once every token up to the
+/// shorter title matches, the shorter one comes first (`"Part I"` before
+/// `"Part I, Section I"`).
+int _compararNatural(String a, String b) {
+  final ta = _tokenizarTitulo(a);
+  final tb = _tokenizarTitulo(b);
+  final n = ta.length < tb.length ? ta.length : tb.length;
+  for (var i = 0; i < n; i++) {
+    final xa = ta[i], xb = tb[i];
+    if (xa is int && xb is int) {
+      if (xa != xb) return xa.compareTo(xb);
+    } else if (xa is String && xb is String) {
+      final fa = plegarParaOrden(xa), fb = plegarParaOrden(xb);
+      if (fa != fb) return fa.compareTo(fb);
+    } else {
+      return xa is int ? -1 : 1;
+    }
+  }
+  return ta.length.compareTo(tb.length);
 }
 
 /// Comparator for two display labels. Always returns a *total* order: ties on
@@ -101,13 +179,18 @@ enum EstrategiaOrden {
 /// drift between launches).
 int Function(String, String) comparadorDeTitulos(EstrategiaOrden estrategia) {
   return (a, b) {
-    if (estrategia == EstrategiaOrden.romanosPrimero) {
-      final nA = numeroDeTitulo(a);
-      final nB = numeroDeTitulo(b);
-      if (nA != null && nB != null && nA != nB) return nA.compareTo(nB);
-      if (nA != null && nB == null) return -1;
-      if (nA == null && nB != null) return 1;
+    switch (estrategia) {
+      case EstrategiaOrden.romanosPrimero:
+        final nA = numeroDeTitulo(a);
+        final nB = numeroDeTitulo(b);
+        if (nA != null && nB != null && nA != nB) return nA.compareTo(nB);
+        if (nA != null && nB == null) return -1;
+        if (nA == null && nB != null) return 1;
+        return plegarParaOrden(a).compareTo(plegarParaOrden(b));
+      case EstrategiaOrden.numeralesNaturales:
+        return _compararNatural(a, b);
+      case EstrategiaOrden.alfabetico:
+        return plegarParaOrden(a).compareTo(plegarParaOrden(b));
     }
-    return plegarParaOrden(a).compareTo(plegarParaOrden(b));
   };
 }

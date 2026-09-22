@@ -20,8 +20,12 @@ void main() {
       firmaCompartir: 'English Verse · A daily anthology',
       assetPoemas: 'assets/poemas.json',
       assetOrnamento: 'assets/icon/quill_icon.png',
-      // No roman-numeral convention in this corpus: plain alphabetical.
-      ordenTitulos: EstrategiaOrden.alfabetico,
+      // Sequences are numbered inline ("Sonnet I", "Sonnets from the
+      // Portuguese, I") rather than with the Spanish corpus's leading
+      // "- N -", so romanosPrimero doesn't apply — but the numerals still
+      // need to sort as numbers, not as text ("Sonnet IX" before "Sonnet V"
+      // is wrong).
+      ordenTitulos: EstrategiaOrden.numeralesNaturales,
       fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
       coloresClaro: PoemaColors(
         oro: Color(0xFF8C2F45),

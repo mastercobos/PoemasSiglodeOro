@@ -114,5 +114,46 @@ void main() {
       expect(titulos.first, '- X -'); // sorts as punctuation, not as 10
       expect(titulos.sublist(1), ['Adonais', 'Ozymandias']);
     });
+
+    test('numeralesNaturales: an inline numeral sorts by value', () {
+      final cmp = comparadorDeTitulos(EstrategiaOrden.numeralesNaturales);
+      final titulos = ['Sonnet IX', 'Sonnet II', 'Sonnet V', 'Sonnet I']
+        ..sort(cmp);
+      // Lexically "IX" < "V", which is wrong; by value 1 < 2 < 5 < 9.
+      expect(titulos, ['Sonnet I', 'Sonnet II', 'Sonnet V', 'Sonnet IX']);
+    });
+
+    test('numeralesNaturales: different prefixes stay grouped and ordered', () {
+      final cmp = comparadorDeTitulos(EstrategiaOrden.numeralesNaturales);
+      final titulos = ['Canto II', 'Canto I', 'Sonnet II', 'Sonnet I']
+        ..sort(cmp);
+      expect(titulos, ['Canto I', 'Canto II', 'Sonnet I', 'Sonnet II']);
+    });
+
+    test('numeralesNaturales: a second, nested numeral compares in turn', () {
+      final cmp = comparadorDeTitulos(EstrategiaOrden.numeralesNaturales);
+      final titulos = ['Canto IV IX', 'Canto IV II', 'Canto II I']..sort(cmp);
+      expect(titulos, ['Canto II I', 'Canto IV II', 'Canto IV IX']);
+    });
+
+    test('numeralesNaturales: a shorter title sorts before a longer one that '
+        'starts the same way', () {
+      final cmp = comparadorDeTitulos(EstrategiaOrden.numeralesNaturales);
+      final titulos = ['Part I, Section I', 'Part I']..sort(cmp);
+      expect(titulos, ['Part I', 'Part I, Section I']);
+    });
+
+    test('numeralesNaturales: a word that only looks like a numeral stays '
+        'text', () {
+      final cmp = comparadorDeTitulos(EstrategiaOrden.numeralesNaturales);
+      // "Maud" is not "M" + "aud": the letters aren't a whole-word numeral.
+      final titulos = ['Maud', 'Dover Beach']..sort(cmp);
+      expect(titulos, ['Dover Beach', 'Maud']);
+    });
+
+    test('numeralesNaturales: matches romanosPrimero-style titles too', () {
+      final cmp = comparadorDeTitulos(EstrategiaOrden.numeralesNaturales);
+      expect(cmp('- IX -', '- V -'), greaterThan(0));
+    });
   });
 }
