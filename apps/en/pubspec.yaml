@@ -27,19 +27,19 @@ flutter:
   # Fonts are bundled, not downloaded. This removes google_fonts, which
   # fetched Playfair and Lato over the network on first launch — so an
   # offline first run rendered the whole anthology in Roboto.
-  # TEMP-FONTS (font files missing) fonts:
-  # TEMP-FONTS (font files missing)   - family: EBGaramond
-  # TEMP-FONTS (font files missing)     fonts:
-  # TEMP-FONTS (font files missing)       - asset: assets/fonts/EBGaramond-Regular.ttf
-  # TEMP-FONTS (font files missing)       - asset: assets/fonts/EBGaramond-Bold.ttf
-  # TEMP-FONTS (font files missing)         weight: 700
-  # TEMP-FONTS (font files missing)   - family: SourceSans3
-  # TEMP-FONTS (font files missing)     fonts:
-  # TEMP-FONTS (font files missing)       - asset: assets/fonts/SourceSans3-Regular.ttf
-  # TEMP-FONTS (font files missing)       - asset: assets/fonts/SourceSans3-Italic.ttf
-  # TEMP-FONTS (font files missing)         style: italic
-  # TEMP-FONTS (font files missing)       - asset: assets/fonts/SourceSans3-Bold.ttf
-  # TEMP-FONTS (font files missing)         weight: 700
+  fonts:
+    - family: EBGaramond
+      fonts:
+        - asset: assets/fonts/EBGaramond-Regular.ttf
+        - asset: assets/fonts/EBGaramond-Bold.ttf
+          weight: 700
+    - family: SourceSans3
+      fonts:
+        - asset: assets/fonts/SourceSans3-Regular.ttf
+        - asset: assets/fonts/SourceSans3-Italic.ttf
+          style: italic
+        - asset: assets/fonts/SourceSans3-Bold.ttf
+          weight: 700
 
 flutter_launcher_icons:
   android: true
