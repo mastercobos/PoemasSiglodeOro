@@ -27,6 +27,10 @@ import '../widgets/ornamento.dart';
 /// line-breaking and font fallback are the framework's job rather than ours.
 class CompartirPoema {
   static const _ancho = 800.0;
+
+  /// 4:5, Instagram's portrait feed ratio: the tallest a post can be before
+  /// the feed crops it, and a comfortable fit for a sonnet.
+  static const _alto = 1000.0;
   static const _pixelRatio = 3.0;
 
   /// Shares a PNG of the poem, falling back to plain text if the capture
@@ -183,14 +187,19 @@ class CompartirPoema {
       .replaceAll(RegExp(r'^_+|_+$'), '');
 }
 
-/// The card that becomes the shared PNG. Fixed 800 px wide, height driven by
-/// the poem, stanza breaks taken from the data.
+/// The card that becomes the shared PNG: a fixed 800×1000 (4:5) frame, so
+/// every shared poem is the same shape whatever its length.
 ///
-/// A poem beyond [_umbralVersos] lines is previewed rather than shown whole —
-/// the card has no scrolling and nothing capped its height before this, so a
-/// long poem produced an arbitrarily tall PNG (untested territory: every poem
-/// the shipping Spanish app has ever had is under the threshold). The preview
-/// is a feature, not a fallback: a short, beautiful card plus the app's own
+/// What goes in the frame:
+///
+/// * A poem of up to [_umbralVersos] verses — a sonnet, which is nearly the
+///   whole Spanish anthology — is always shown whole. If a long title leaves
+///   it short of room it is scaled down slightly rather than losing a verse.
+/// * A longer poem fills the frame with as many verses as fit, then "…".
+///   The cut falls at a stanza break when that keeps most of what would fit
+///   (see [seleccionarVersos]), so the preview reads as a complete thought.
+///
+/// The preview is a feature, not a fallback: a card plus the app's own
 /// signature is a better invitation to open the app than a giant image or a
 /// wall of shared plain text would be.
 class TarjetaCompartir extends StatelessWidget {
@@ -199,21 +208,10 @@ class TarjetaCompartir extends StatelessWidget {
 
   const TarjetaCompartir({super.key, required this.poema, required this.firma});
 
-  /// Above this many verses, the card previews instead of showing the poem
-  /// whole. Every poem the shipping Spanish app has ever had fits under it.
+  /// Poems this short are never cut, only scaled down if they must be.
   static const _umbralVersos = 14;
 
-  /// Stanzas to draw: the whole poem when it's short, otherwise the first
-  /// stanza (if that alone is a reasonable preview) or the first four verses.
-  List<List<String>> get _estrofasTarjeta {
-    final estrofas = poema.estrofas;
-    if (poema.versos.length <= _umbralVersos) return estrofas;
-    final primera = estrofas.isNotEmpty ? estrofas.first : const <String>[];
-    if (primera.isNotEmpty && primera.length <= 8) return [primera];
-    return [poema.versos.take(4).toList()];
-  }
-
-  bool get _esPreview => poema.versos.length > _umbralVersos;
+  static const _huecoEstrofa = 16.0;
 
   @override
   Widget build(BuildContext context) {
@@ -222,51 +220,52 @@ class TarjetaCompartir extends StatelessWidget {
 
     final estiloVerso = t.verso.copyWith(
       fontSize: 22,
-      height: 2.0,
+      height: 1.65,
       color: c.texto,
       letterSpacing: 0.2,
     );
-    final estrofasTarjeta = _estrofasTarjeta;
 
     return Container(
       width: CompartirPoema._ancho,
+      height: CompartirPoema._alto,
       color: c.fondoCompartir,
-      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 64),
+      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 56),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           const Ornamento(anchoLinea: 60, tamanoIcono: 20),
-          const SizedBox(height: 40),
+          const SizedBox(height: 32),
           Text(
             poema.etiqueta,
             textAlign: TextAlign.center,
-            style: t.tituloPoema.copyWith(
-                fontSize: 36, height: 1.3, color: c.texto),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: t.tituloPoema
+                .copyWith(fontSize: 36, height: 1.3, color: c.texto),
           ),
           const SizedBox(height: 8),
           Text(
             poema.autor,
             textAlign: TextAlign.center,
-            style: t.autorCursiva.copyWith(
-                fontSize: 22, color: c.oro, letterSpacing: 0.5),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: t.autorCursiva
+                .copyWith(fontSize: 22, color: c.oro, letterSpacing: 0.5),
+          ),
+          const SizedBox(height: 28),
+          const Filete(ancho: 60),
+          const SizedBox(height: 32),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, restricciones) => _versos(
+                context,
+                restricciones,
+                estiloVerso,
+              ),
+            ),
           ),
           const SizedBox(height: 32),
-          const Filete(ancho: 60),
-          const SizedBox(height: 36),
-          for (var i = 0; i < estrofasTarjeta.length; i++) ...[
-            if (i > 0) const SizedBox(height: 18),
-            for (final verso in estrofasTarjeta[i])
-              Text(verso, textAlign: TextAlign.center, style: estiloVerso),
-          ],
-          if (_esPreview) ...[
-            const SizedBox(height: 18),
-            Text('…',
-                textAlign: TextAlign.center,
-                style: estiloVerso.copyWith(color: c.oro)),
-          ],
-          const SizedBox(height: 40),
           const Ornamento(anchoLinea: 60, tamanoIcono: 20),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
           Text(
             firma,
             style: t.cuerpoPequeno
@@ -275,5 +274,111 @@ class TarjetaCompartir extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _versos(
+    BuildContext context,
+    BoxConstraints restricciones,
+    TextStyle estilo,
+  ) {
+    final escalado = MediaQuery.textScalerOf(context);
+    final direccion = Directionality.of(context);
+    double alto(String verso) {
+      final pintor = TextPainter(
+        text: TextSpan(text: verso, style: estilo),
+        textAlign: TextAlign.center,
+        textDirection: direccion,
+        textScaler: escalado,
+      )..layout(maxWidth: restricciones.maxWidth);
+      final h = pintor.height;
+      pintor.dispose();
+      return h;
+    }
+
+    final estrofas = poema.versos.length <= _umbralVersos
+        ? poema.estrofas
+        : seleccionarVersos(
+            estrofas: poema.estrofas,
+            altoVerso: alto,
+            altoDisponible: restricciones.maxHeight,
+            huecoEstrofa: _huecoEstrofa,
+            altoPuntos: _huecoEstrofa + alto('…'),
+          );
+    final esPreview =
+        estrofas.fold<int>(0, (n, e) => n + e.length) < poema.versos.length;
+
+    final bloque = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < estrofas.length; i++) ...[
+          if (i > 0) const SizedBox(height: _huecoEstrofa),
+          for (final verso in estrofas[i])
+            Text(verso, textAlign: TextAlign.center, style: estilo),
+        ],
+        if (esPreview) ...[
+          const SizedBox(height: _huecoEstrofa),
+          Text('…',
+              textAlign: TextAlign.center,
+              style: estilo.copyWith(color: context.colores.oro)),
+        ],
+      ],
+    );
+
+    // Only a whole short poem can overflow; scaleDown leaves anything that
+    // fits at its natural size.
+    return Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: SizedBox(width: restricciones.maxWidth, child: bloque),
+      ),
+    );
+  }
+
+  /// The leading verses of [estrofas] that fit in [altoDisponible], stanza
+  /// structure preserved, leaving room for the "…" line ([altoPuntos]).
+  ///
+  /// Cuts at the last stanza break that fits when that keeps at least three
+  /// quarters of the verses that would fit; otherwise mid-stanza, since one
+  /// huge stanza (a romance, a long blank-verse passage) would leave a nearly
+  /// empty card.
+  /// Always keeps at least one verse.
+  @visibleForTesting
+  static List<List<String>> seleccionarVersos({
+    required List<List<String>> estrofas,
+    required double Function(String verso) altoVerso,
+    required double altoDisponible,
+    required double huecoEstrofa,
+    required double altoPuntos,
+  }) {
+    final limite = altoDisponible - altoPuntos;
+    final resultado = <List<String>>[];
+    var usado = 0.0;
+    var versos = 0;
+    var versosEnCorte = 0; // verses kept if we cut at the last stanza break
+
+    fuera:
+    for (final estrofa in estrofas) {
+      final actual = <String>[];
+      for (final verso in estrofa) {
+        final hueco = actual.isEmpty && resultado.isNotEmpty ? huecoEstrofa : 0;
+        final h = altoVerso(verso) + hueco;
+        if (usado + h > limite && versos > 0) {
+          if (actual.isNotEmpty) resultado.add(actual);
+          break fuera;
+        }
+        usado += h;
+        versos++;
+        actual.add(verso);
+      }
+      resultado.add(actual);
+      versosEnCorte = versos;
+    }
+
+    final completas = resultado.length -
+        (versosEnCorte == versos ? 0 : 1); // stanzas that fit entirely
+    if (versosEnCorte != versos && versosEnCorte * 4 >= versos * 3) {
+      return resultado.sublist(0, completas);
+    }
+    return resultado;
   }
 }
