@@ -279,25 +279,39 @@
             <label class="item-label" id="lbl-ea4" for="chk-ea4">Verified on a real device: release build launches, notifications fire on schedule with correct content, v1→v2 favourites migration works against real pre-restructure data</label>
           </div>
         </div>
-        <div class="item" data-item="ea11">
-          <input type="checkbox" class="check" id="chk-ea11">
+        <div class="item done" data-item="ea11">
+          <input type="checkbox" class="check" id="chk-ea11" checked>
           <div class="item-texto">
             <label class="item-label" id="lbl-ea11" for="chk-ea11">Restore stanza breaks in the Spanish anthology — <strong>before the update</strong></label>
-            <div class="item-nota">Almost every poem is a sonnet, so the 4-4-3-3 structure matters. The core now takes stanzas from blank lines in the data, but the Spanish <code>poemas.json</code> has none, so each sonnet shows as one 14-line block. 1.0.7 hard-coded breaks after lines 4, 8 and 11, so this would be a visible regression in 1.1.0.</div>
+            <div class="item-nota">Done 2026-09-23 in the data, not the code: blank lines added to <code>apps/es/assets/poemas.json</code> (4-4-3-3, estrambotes as their own stanza, a few odd poems by rhyme) by <code>apps/es/tools/insertar_estrofas.py</code>. Only blank lines changed, so ids, favourites and file order are untouched. Three poems are missing a verse in the source (Garcilaso VIII, Figueroa "Bendito seas, Amor", Litala XV).</div>
           </div>
         </div>
         <div class="item" data-item="ea12">
           <input type="checkbox" class="check" id="chk-ea12">
           <div class="item-texto">
             <label class="item-label" id="lbl-ea12" for="chk-ea12">Test the new fixed 4:5 share card on a real device</label>
-            <div class="item-nota">Share a sonnet, a sonnet with a long title, and one of the ~26 poems over 14 verses. Check the image in Instagram/WhatsApp. Applies to both apps.</div>
+            <div class="item-nota">Share a sonnet, a sonnet with a long title, and one of the ~26 poems over 14 verses. Check the image in Instagram/WhatsApp. Rendered off-device with the new stanza breaks (sonnets fit whole, even under the longest title); a real-device share is still to do.</div>
           </div>
         </div>
-        <div class="item" data-item="ea13">
-          <input type="checkbox" class="check" id="chk-ea13">
+        <div class="item done" data-item="ea13">
+          <input type="checkbox" class="check" id="chk-ea13" checked>
           <div class="item-texto">
             <label class="item-label" id="lbl-ea13" for="chk-ea13">Search bar in the Índice view to find an author</label>
-            <div class="item-nota">Filters the author list. Shared core feature, so the English app gets it too.</div>
+            <div class="item-nota">Done 2026-09-23 in the shared core, so both apps get it on Android and iOS: filters as you type, ignoring case and accents.</div>
+          </div>
+        </div>
+        <div class="item done" data-item="ea14">
+          <input type="checkbox" class="check" id="chk-ea14" checked>
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea14" for="chk-ea14">Fix: the notification named different poems from the ones the app showed</label>
+            <div class="item-nota">Done 2026-09-23. Every reschedule after the home screen was seen recomputed today while avoiding today's own authors. The stored history is now the one in force at the start of the day, days the app wasn't opened are replayed, and a v2→v3 migration rewinds 1.1.0's saved history. Also fixed: day stepping repeated 25 October (DST).</div>
+          </div>
+        </div>
+        <div class="item" data-item="ea15">
+          <input type="checkbox" class="check" id="chk-ea15">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea15" for="chk-ea15">One notification a day, naming both poems, opening Home — verify on a device</label>
+            <div class="item-nota">Code done 2026-09-23: "Hoy hay poemas nuevos" with one line per poem (title — author: first verse); a tap opens Home. The old daily-repeating backstop (which fired alongside the named one, hence two a day) is gone and cancelled on upgrade. Check the second line shows when the notification is expanded on Android.</div>
           </div>
         </div>
         <div class="item" data-item="ea5">
@@ -403,21 +417,21 @@
           <input type="checkbox" class="check" id="chk-ec1">
           <div class="item-texto">
             <label class="item-label" id="lbl-ec1" for="chk-ec1">Source and curate a real English-language anthology</label>
-            <div class="item-nota"><code>apps/en/assets/poemas.json</code> currently holds 8 placeholder poems (Shakespeare, Blake ×2, Dickinson ×2, Wordsworth) against the Spanish app's ~1,000+. Not a shippable anthology yet.</div>
+            <div class="item-nota">Extracted from the Laurel corpus (public-domain texts). What remains is choosing the cut — see the item below.</div>
           </div>
         </div>
-        <div class="item" data-item="ec2">
-          <input type="checkbox" class="check" id="chk-ec2">
+        <div class="item done" data-item="ec2">
+          <input type="checkbox" class="check" id="chk-ec2" checked>
           <div class="item-texto">
             <label class="item-label" id="lbl-ec2" for="chk-ec2">Add the actual EBGaramond and SourceSans3 font files</label>
-            <div class="item-nota"><code>AppConfig</code> already references them, but <code>apps/en/assets/fonts/</code> is empty and the pubspec font block is entirely commented out as <code># TEMP-FONTS (font files missing)</code> — the app currently renders in Flutter's fallback font, not its intended type at all.</div>
+            <div class="item-nota">Done 2026-09-23 (logs.md entry 23): files downloaded byte-identical to google_fonts 8.0.2 and the pubspec block restored.</div>
           </div>
         </div>
         <div class="item" data-item="ec4">
           <input type="checkbox" class="check" id="chk-ec4">
           <div class="item-texto">
             <label class="item-label" id="lbl-ec4" for="chk-ec4">Change the English poem selection: best-known authors first</label>
-            <div class="item-nota">Include every poem by the major authors whatever its length, instead of the current 60-verse cap. Then count the total, decide what to cut, and check load time and scrolling with the bigger anthology.</div>
+            <div class="item-nota">In progress 2026-09-23: <code>apps/en/poems_extraction/seleccionar.py</code> ranks authors (canon tier first, then Wikipedia page views) and keeps every poem, no cap: 12,846 poems, 277 authors, 31 MB, ~620 ms to parse on desktop. <code>ranking.md</code> has running totals by rank. Next: choose the cut, then check load time on a phone.</div>
           </div>
         </div>
         <div class="item" data-item="ec3">
