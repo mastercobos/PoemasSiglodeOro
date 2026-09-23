@@ -39,6 +39,14 @@ class L10nEn extends L10n {
   String get indiceSubtitulo => '— Index of Poets —';
 
   @override
+  String get indiceBuscarPista => 'Search poets…';
+
+  @override
+  String indiceSinResultados(String consulta) {
+    return 'No poet matches “$consulta”';
+  }
+
+  @override
   String poemasContador(int n) {
     String _temp0 = intl.Intl.pluralLogic(
       n,

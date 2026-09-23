@@ -4,6 +4,7 @@ import 'package:poemario_core/notifications/agenda_avisos.dart';
 import 'package:poemario_core/screens/ajustes_screen.dart';
 import 'package:poemario_core/screens/busqueda_screen.dart';
 import 'package:poemario_core/screens/favoritos_screen.dart';
+import 'package:poemario_core/screens/indice_screen.dart';
 import 'package:poemario_core/screens/poema_screen.dart';
 import 'package:poemario_core/screens/root_screen.dart';
 
@@ -200,6 +201,27 @@ void main() {
       await tester.enterText(find.byType(SearchBar), '');
       await tester.pumpAndSettle();
       expect(find.text('Escribe para buscar'), findsOneWidget);
+    });
+  });
+
+  group('IndiceScreen', () {
+    testWidgets('filters authors as you type, ignoring case', (tester) async {
+      await montar(tester, const IndiceScreen(), autores: 12);
+
+      await tester.enterText(find.byType(SearchBar), 'AUTOR 1');
+      await tester.pumpAndSettle();
+      expect(find.text('Autor 1'), findsOneWidget);
+      expect(find.text('Autor 10'), findsOneWidget);
+      expect(find.text('Autor 11'), findsOneWidget);
+      expect(find.text('Autor 2'), findsNothing);
+
+      await tester.enterText(find.byType(SearchBar), 'Quevedo');
+      await tester.pumpAndSettle();
+      expect(find.text('Ningún autor coincide con «Quevedo»'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Borrar búsqueda'));
+      await tester.pumpAndSettle();
+      expect(find.text('Autor 0'), findsOneWidget);
     });
   });
 

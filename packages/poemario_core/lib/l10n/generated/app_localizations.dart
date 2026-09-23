@@ -157,6 +157,18 @@ abstract class L10n {
   /// **'— Índice de Autores —'**
   String get indiceSubtitulo;
 
+  /// No description provided for @indiceBuscarPista.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar autor…'**
+  String get indiceBuscarPista;
+
+  /// No description provided for @indiceSinResultados.
+  ///
+  /// In es, this message translates to:
+  /// **'Ningún autor coincide con «{consulta}»'**
+  String indiceSinResultados(String consulta);
+
   /// Poem count under an author's name.
   ///
   /// In es, this message translates to:

@@ -39,6 +39,14 @@ class L10nEs extends L10n {
   String get indiceSubtitulo => '— Índice de Autores —';
 
   @override
+  String get indiceBuscarPista => 'Buscar autor…';
+
+  @override
+  String indiceSinResultados(String consulta) {
+    return 'Ningún autor coincide con «$consulta»';
+  }
+
+  @override
   String poemasContador(int n) {
     String _temp0 = intl.Intl.pluralLogic(
       n,

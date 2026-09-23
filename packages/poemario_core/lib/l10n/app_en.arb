@@ -13,6 +13,8 @@
 
   "indiceTitulo": "Index",
   "indiceSubtitulo": "— Index of Poets —",
+  "indiceBuscarPista": "Search poets…",
+  "indiceSinResultados": "No poet matches “{consulta}”",
 
   "poemasContador": "{n, plural, =0{No poems} =1{1 poem} other{{n} poems}}",
   "inicioPoemasDelDia": "Poems of the day",

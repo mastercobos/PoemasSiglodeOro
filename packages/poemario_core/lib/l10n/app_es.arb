@@ -13,6 +13,11 @@
 
   "indiceTitulo": "Índice",
   "indiceSubtitulo": "— Índice de Autores —",
+  "indiceBuscarPista": "Buscar autor…",
+  "indiceSinResultados": "Ningún autor coincide con «{consulta}»",
+  "@indiceSinResultados": {
+    "placeholders": { "consulta": { "type": "String" } }
+  },
 
   "poemasContador": "{n, plural, =0{Sin poemas} =1{1 poema} other{{n} poemas}}",
   "@poemasContador": {

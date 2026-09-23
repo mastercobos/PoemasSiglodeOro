@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/poema_repository.dart';
+import '../domain/orden_titulos.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
 import '../utils/navegacion.dart';
 import '../widgets/avatar_autor.dart';
-import '../widgets/linea_oro.dart';
+import '../widgets/campo_busqueda.dart';
 import '../widgets/poema_list_tile.dart';
 import 'autor_screen.dart';
 
@@ -16,39 +17,97 @@ import 'autor_screen.dart';
 ///
 /// The grouping that used to run in `initState` (and again, identically, in
 /// the favourites screen) is now done once at load in [Anthology].
-class IndiceScreen extends StatelessWidget {
+///
+/// The author filter matches anywhere in the name, ignoring case and accents,
+/// so "lope" finds "Lope de Vega" and "gongora" finds "Góngora". With a few
+/// hundred authors the list is filtered on every keystroke; no debounce.
+class IndiceScreen extends StatefulWidget {
   const IndiceScreen({super.key});
+
+  @override
+  State<IndiceScreen> createState() => _IndiceScreenState();
+}
+
+class _IndiceScreenState extends State<IndiceScreen> {
+  final _controlador = TextEditingController();
+
+  /// Folded query; empty shows every author.
+  String _consulta = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _controlador.addListener(_alEscribir);
+  }
+
+  @override
+  void dispose() {
+    _controlador
+      ..removeListener(_alEscribir)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _alEscribir() {
+    final consulta = plegarParaOrden(_controlador.text.trim());
+    if (consulta != _consulta) setState(() => _consulta = consulta);
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.colores;
+    final t = context.tipos;
     final l10n = L10n.of(context);
     final anthology = context.read<Anthology>();
-    final autores = anthology.autores;
+    final autores = _consulta.isEmpty
+        ? anthology.autores
+        : [
+            for (final a in anthology.autores)
+              if (plegarParaOrden(a).contains(_consulta)) a,
+          ];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.indiceTitulo,
-            style: context.tipos.appBarTitulo.copyWith(color: c.sobreSepia)),
-        bottom: const LineaOro(),
+            style: t.appBarTitulo.copyWith(color: c.sobreSepia)),
+        bottom: CampoBusqueda(
+          controlador: _controlador,
+          pista: l10n.indiceBuscarPista,
+          borrar: l10n.buscarBorrar,
+        ),
       ),
       body: Column(
         children: [
           BandaSubtitulo(l10n.indiceSubtitulo),
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.fromLTRB(
-                  14, 14, 14, espacioBarraFlotante(context)),
-              itemCount: autores.length,
-              itemBuilder: (context, i) {
-                final autor = autores[i];
-                return _TarjetaAutor(
-                  key: ValueKey(autor),
-                  autor: autor,
-                  totalPoemas: anthology.porAutor[autor]!.length,
-                );
-              },
-            ),
+            child: autores.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        l10n.indiceSinResultados(_controlador.text.trim()),
+                        textAlign: TextAlign.center,
+                        style: t.cuerpo.copyWith(color: c.textoSuave),
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    // Back to the top when the filter changes, as in Search.
+                    key: ValueKey(_consulta),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: EdgeInsets.fromLTRB(
+                        14, 14, 14, espacioBarraFlotante(context)),
+                    itemCount: autores.length,
+                    itemBuilder: (context, i) {
+                      final autor = autores[i];
+                      return _TarjetaAutor(
+                        key: ValueKey(autor),
+                        autor: autor,
+                        totalPoemas: anthology.porAutor[autor]!.length,
+                      );
+                    },
+                  ),
           ),
         ],
       ),

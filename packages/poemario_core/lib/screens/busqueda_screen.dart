@@ -10,6 +10,7 @@ import '../l10n/generated/app_localizations.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
 import '../utils/navegacion.dart';
+import '../widgets/campo_busqueda.dart';
 import '../widgets/nav_bar_scope.dart';
 import '../widgets/poema_list_tile.dart';
 
@@ -115,43 +116,12 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
       appBar: AppBar(
         title: Text(l10n.buscarTitulo,
             style: t.appBarTitulo.copyWith(color: c.sobreSepia)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-            child: SearchBar(
-              controller: _controlador,
-              focusNode: _focus,
-              hintText: l10n.buscarPista,
-              textInputAction: TextInputAction.search,
-              hintStyle: WidgetStatePropertyAll(
-                  t.cuerpo.copyWith(color: c.sobreSepia.withValues(alpha: .38))),
-              textStyle:
-                  WidgetStatePropertyAll(t.cuerpo.copyWith(color: c.sobreSepia)),
-              leading: Icon(Icons.search, color: c.oroClaro),
-              trailing: [
-                if (_controlador.text.isNotEmpty)
-                  IconButton(
-                    tooltip: l10n.buscarBorrar,
-                    icon: Icon(Icons.close,
-                        color: c.sobreSepia.withValues(alpha: .54)),
-                    onPressed: () {
-                      _controlador.clear();
-                      NavBarScope.of(context)?.mostrarNavBar();
-                    },
-                  ),
-              ],
-              backgroundColor:
-                  WidgetStatePropertyAll(c.sobreSepia.withValues(alpha: .10)),
-              surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
-              shadowColor: const WidgetStatePropertyAll(Colors.transparent),
-              overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-              shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12))),
-              padding: const WidgetStatePropertyAll(
-                  EdgeInsets.symmetric(horizontal: 8)),
-            ),
-          ),
+        bottom: CampoBusqueda(
+          controlador: _controlador,
+          focusNode: _focus,
+          pista: l10n.buscarPista,
+          borrar: l10n.buscarBorrar,
+          alBorrar: () => NavBarScope.of(context)?.mostrarNavBar(),
         ),
       ),
       body: _cuerpo(l10n),
