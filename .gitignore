@@ -49,3 +49,6 @@ app.*.map.json
 **/key.properties
 **/*.jks
 **/*.keystore
+
+# Local session chronology, kept on disk only
+/logs.md
