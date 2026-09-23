@@ -165,3 +165,29 @@ date only. From entry 4 on, times are taken from the system clock.
 - Session resumed after a closed session. Found the font work from the 2026-09-20 session (exact google_fonts 8.0.2 Lato 1.x + static Playfair Display files, pubspec pointing at them) plus `.gitignore` keystore patterns still uncommitted. Re-verified all six font files against the SHA-256 hashes in google_fonts 8.0.2's own tables; `flutter analyze` clean on `apps/es`.
 - Why it mattered: HEAD's pubspec referenced `PlayfairDisplay-Variable.ttf`, which was never tracked, and the new Playfair files were untracked, so a build from the repo (e.g. Codemagic) would not have matched the tested `1.1.0+10` device build.
 - Committed fonts + pubspec + `.gitignore`. Separately ran `git rm -r --cached` on the 30 `build/` files tracked under `apps/es/build` and `packages/poemario_core/build` despite `**/build/` being ignored (files stay on disk).
+
+### 26. 2026-09-23 01:06 — First on-device run of the English app
+- Ran `flutter run --debug` for `apps/en` on the Pixel 9a (installs as `com.manucobos.englishverse`, alongside the Spanish app). Built in ~69 s, installed and launched with no errors or assertions in the log.
+- Screenshot confirmed the full anthology loaded on-device: "English Verse" title, Poems of the day (Skelton, Burns), with the bundled EBGaramond/SourceSans3 fonts rendering and the 4-line preview on the home cards. Only build warning: `flutter_timezone` still applies the Kotlin Gradle Plugin (a deprecation warning for now, not an error).
+- Left `flutter run` attached in the background for hot reload while the user tests. No source changes, nothing committed.
+
+### 27. 2026-09-23 01:17 — Share card: fixed 4:5 frame, fills with verses instead of cutting to 4
+- User asked for a fixed-size share card (Instagram proportions) and, for long poems, to show up to a sonnet's worth or whatever fills the card instead of the old 4-verse cut. The old card was 800 px wide with a height that grew with the poem; >14 verses fell back to the first stanza (≤8) or the first 4 verses.
+- `TarjetaCompartir` is now a fixed 800×1000 (4:5, Instagram's tallest feed portrait; still exported at 3×). The verse area is an `Expanded` + `LayoutBuilder` that measures each verse with `TextPainter` at the real width, so wrapped long lines count:
+  - ≤14 verses: always shown whole; `FittedBox(scaleDown)` shrinks it slightly if a long title steals room (checked against the 271-char Cervantes title: fits whole).
+  - >14 verses: new `seleccionarVersos` fills as many verses as fit, then "…". Cuts at a stanza break if that keeps ≥¾ of what would fit, else mid-stanza. ½ was tried first and left Coleridge's card at 8 of ~14 verses.
+- Tightened spacing to fit a sonnet (verse line height 2.0→1.65, stanza gap 18→16, smaller vertical gaps). Title capped at 3 lines, author at 1, both with ellipsis.
+- Rendered real cards with the bundled Playfair/Lato (a scratch test, since deleted) for a short sonnet, the longest-title sonnet, the 21-verse Quevedo, and English 60-verse, long-line, and 4-verse poems. All fit with no overflow.
+- New `test/tarjeta_compartir_test.dart` (3 widget + 5 unit tests). 123 tests pass; analyze clean on core, es, en. Not committed.
+
+### 28. 2026-09-23 01:25 — Roadmap: four new items in the Store Launch Tracker
+- User asked for roadmap items only, no app changes. Added to the tracker (live artifact + `docs/store-launch-tracker.html`):
+  - Spanish Android group: restore stanza breaks, marked **before the update**. The Spanish `poemas.json` has no blank lines, so the core shows each sonnet as one 14-line block. 1.0.7 hard-coded breaks after lines 4/8/11, so 1.1.0 would regress.
+  - Spanish Android group: test the new 4:5 share card on a device; add an author search bar in Índice.
+  - English content group: rework the selection so the best-known authors come first with all their poems, no length cap. Then count the total, decide what to cut, and check performance.
+- Found the live tracker unstyled: its checkbox self-save used `querySelector("style")`, which picked up the host's injected style tag instead of the page's own. Rebuilt from the local file, kept the live-only checked state (`ei2`, Codemagic re-pointed), and gave the page's style tag an id so the self-save grabs the right one. Now 38 items, 10 done. Not committed.
+
+### 29. 2026-09-23 21:40 — Committed the share card and tracker changes
+- Re-ran analyze (clean) and the core suite (123 pass) first.
+- `3b3de99` Share card: fixed 4:5 frame that fills with verses (`compartir_poema.dart` + new `tarjeta_compartir_test.dart`).
+- Tracker commit: four roadmap items + the self-save style fix (`docs/store-launch-tracker.html`, plus this log). Not pushed.

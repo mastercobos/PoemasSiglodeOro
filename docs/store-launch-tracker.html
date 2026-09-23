@@ -1,5 +1,5 @@
 <title>Store Launch Tracker</title>
-<style>
+<style id="estilo-tracker">
   :root {
     --oro: #7A5A0F;
     --oro-claro: #D4AF6A;
@@ -279,6 +279,27 @@
             <label class="item-label" id="lbl-ea4" for="chk-ea4">Verified on a real device: release build launches, notifications fire on schedule with correct content, v1→v2 favourites migration works against real pre-restructure data</label>
           </div>
         </div>
+        <div class="item" data-item="ea11">
+          <input type="checkbox" class="check" id="chk-ea11">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea11" for="chk-ea11">Restore stanza breaks in the Spanish anthology — <strong>before the update</strong></label>
+            <div class="item-nota">Almost every poem is a sonnet, so the 4-4-3-3 structure matters. The core now takes stanzas from blank lines in the data, but the Spanish <code>poemas.json</code> has none, so each sonnet shows as one 14-line block. 1.0.7 hard-coded breaks after lines 4, 8 and 11, so this would be a visible regression in 1.1.0.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ea12">
+          <input type="checkbox" class="check" id="chk-ea12">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea12" for="chk-ea12">Test the new fixed 4:5 share card on a real device</label>
+            <div class="item-nota">Share a sonnet, a sonnet with a long title, and one of the ~26 poems over 14 verses. Check the image in Instagram/WhatsApp. Applies to both apps.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ea13">
+          <input type="checkbox" class="check" id="chk-ea13">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ea13" for="chk-ea13">Search bar in the Índice view to find an author</label>
+            <div class="item-nota">Filters the author list. Shared core feature, so the English app gets it too.</div>
+          </div>
+        </div>
         <div class="item" data-item="ea5">
           <input type="checkbox" class="check" id="chk-ea5">
           <div class="item-texto">
@@ -331,8 +352,8 @@
             <div class="item-nota">Done — matches the docs/notificaciones.md snippet and apps/en's already-correct version. Not compiled/verified (no Xcode/macOS available here).</div>
           </div>
         </div>
-        <div class="item" data-item="ei2">
-          <input type="checkbox" class="check" id="chk-ei2">
+        <div class="item done" data-item="ei2">
+          <input type="checkbox" class="check" id="chk-ei2" checked>
           <div class="item-texto">
             <label class="item-label" id="lbl-ei2" for="chk-ei2">Point Codemagic's workflow at <code>apps/es</code> instead of the repo root</label>
             <div class="item-nota">Workflow settings → working/project directory. Signing itself needs no recovery — it's managed at the Codemagic/Apple-Developer account level, keyed to the bundle id, independent of the repo's file layout.</div>
@@ -390,6 +411,13 @@
           <div class="item-texto">
             <label class="item-label" id="lbl-ec2" for="chk-ec2">Add the actual EBGaramond and SourceSans3 font files</label>
             <div class="item-nota"><code>AppConfig</code> already references them, but <code>apps/en/assets/fonts/</code> is empty and the pubspec font block is entirely commented out as <code># TEMP-FONTS (font files missing)</code> — the app currently renders in Flutter's fallback font, not its intended type at all.</div>
+          </div>
+        </div>
+        <div class="item" data-item="ec4">
+          <input type="checkbox" class="check" id="chk-ec4">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ec4" for="chk-ec4">Change the English poem selection: best-known authors first</label>
+            <div class="item-nota">Include every poem by the major authors whatever its length, instead of the current 60-verse cap. Then count the total, decide what to cut, and check load time and scrolling with the bigger anthology.</div>
           </div>
         </div>
         <div class="item" data-item="ec3">
@@ -526,7 +554,7 @@
   }
 
   function fullDocument() {
-    var styleTag = document.querySelector("style").outerHTML;
+    var styleTag = document.getElementById("estilo-tracker").outerHTML;
     var fontLink = document.querySelector('link[href*="fonts.googleapis"]').outerHTML;
     var pageHtml = document.querySelector(".page").outerHTML;
     return (
