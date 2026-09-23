@@ -3,6 +3,7 @@ import 'package:flutter/material.dart' show TimeOfDay;
 
 import '../data/poema.dart';
 import '../domain/seleccion_diaria.dart';
+import 'agenda_avisos.dart';
 
 /// One notification to be handed to the OS.
 @immutable
@@ -15,26 +16,20 @@ class AvisoProgramado {
   final String titulo;
   final String cuerpo;
 
-  /// Poem id, used to deep-link straight into the poem when tapped. Null for
-  /// the generic fallback.
-  final String? payload;
-
-  /// True for the single repeating reminder that covers the period after the
-  /// precomputed window runs out.
-  final bool repiteADiario;
+  /// What a tap opens. Always [SolicitudDePoema.inicio]: the notification
+  /// names both poems of the day, so it opens the screen that shows both.
+  final String payload;
 
   const AvisoProgramado({
     required this.id,
     required this.cuando,
     required this.titulo,
     required this.cuerpo,
-    this.payload,
-    this.repiteADiario = false,
+    this.payload = SolicitudDePoema.inicio,
   });
 
   @override
-  String toString() =>
-      'AvisoProgramado($id, $cuando, "$cuerpo", payload: $payload)';
+  String toString() => 'AvisoProgramado($id, $cuando, "$cuerpo")';
 }
 
 /// The localised strings a schedule needs. Passed in rather than looked up,
@@ -42,31 +37,51 @@ class AvisoProgramado {
 @immutable
 class TextosAviso {
   final String titulo;
-  final String Function(Poema) cuerpo;
+
+  /// One line of the body per poem of the day: title, author, opening verse.
+  final String Function(Poema) linea;
+
+  /// Body of the reminders past the named window, whose poems aren't worked
+  /// out in advance.
   final String cuerpoGenerico;
 
   const TextosAviso({
     required this.titulo,
-    required this.cuerpo,
+    required this.linea,
     required this.cuerpoGenerico,
   });
 }
 
-/// Builds the schedule.
+/// Builds the schedule: **one notification a day**, at the reader's hour.
 ///
-/// The interesting property: because [SeleccionDiariaService] is deterministic,
-/// we can name tomorrow's poem in tomorrow's notification — and the app will
-/// show that same poem when the reader opens it. A generic "new poems today"
-/// reminder gets swiped away within a week; "Volverán las oscuras golondrinas
-/// — Bécquer" is an invitation.
+/// Because [SeleccionDiariaService] is deterministic, the notification can
+/// name that morning's poems in advance — one line each — and the app will
+/// show those same poems when the reader taps through to the home screen. A
+/// generic "new poems today" gets swiped away within a week; "Volverán las
+/// oscuras golondrinas — Bécquer" is an invitation.
+///
+/// 1.1.0 also scheduled a generic reminder repeating daily "from day 15".
+/// The plugin's daily repeat ignores the start date and fires from the next
+/// occurrence of the time, so from the first day readers got it *alongside*
+/// the named one: two notifications every morning. Days past the named window
+/// are now one-shot generic reminders instead, and the old repeating slot is
+/// still cancelled on every reschedule so upgraded installs lose it.
 abstract final class PlanificadorAvisos {
-  /// Days named individually. iOS caps pending notifications at 64, and the
-  /// plan is rebuilt on every resume, so a fortnight is comfortable.
+  /// Days whose poems are named. iOS caps pending notifications at 64, and
+  /// the plan is rebuilt on every resume, so a fortnight is comfortable.
   static const diasConTitulo = 14;
 
-  /// Slot ids. Kept apart from any other notification the app might add later.
+  /// One-shot generic reminders after the named window, for a reader who
+  /// doesn't open the app for a while. Cheaper to plan than named days: no
+  /// selection to compute.
+  static const diasGenericos = 16;
+
+  /// Slot ids: `primerId + day`, for every named and generic day. Kept apart
+  /// from any other notification the app might add later.
   static const primerId = 1000;
-  static const idGenerico = 999;
+
+  /// The 1.1.0 repeating reminder. Never scheduled again; only cancelled.
+  static const idRepetidoAntiguo = 999;
 
   static List<AvisoProgramado> construir({
     required List<Poema> pool,
@@ -85,44 +100,33 @@ abstract final class PlanificadorAvisos {
     );
 
     final avisos = <AvisoProgramado>[];
-    for (var i = 0; i < serie.length; i++) {
-      final dia = serie[i];
-      if (dia.poemas.isEmpty) continue;
-
-      final cuando = _aLaHora(dia.fecha, hora);
+    for (var d = 0; d < diasConTitulo + diasGenericos; d++) {
+      // Date parts, not `add(Duration(days: d))`: see the note on
+      // `SeleccionDiariaService._diaMas` about the day the clocks go back.
+      final cuando = _aLaHora(
+          DateTime(desde.year, desde.month, desde.day + d), hora);
       // Today's slot has already passed if the reader is up after the reminder
       // time; skip it rather than firing immediately.
       if (!cuando.isAfter(desde)) continue;
 
-      final poema = dia.poemas.first;
+      final String cuerpo;
+      if (d < serie.length) {
+        final poemas = serie[d].poemas;
+        if (poemas.isEmpty) continue;
+        cuerpo = poemas.map(textos.linea).join('\n');
+      } else {
+        cuerpo = textos.cuerpoGenerico;
+      }
       avisos.add(AvisoProgramado(
-        id: primerId + i,
+        id: primerId + d,
         cuando: cuando,
         titulo: textos.titulo,
-        cuerpo: textos.cuerpo(poema),
-        payload: poema.id,
+        cuerpo: cuerpo,
       ));
     }
-
-    // Backstop: if the reader doesn't open the app for a fortnight the named
-    // window runs dry, so one repeating generic reminder takes over from the
-    // day after it ends.
-    avisos.add(AvisoProgramado(
-      id: idGenerico,
-      cuando: _aLaHora(
-        _soloFecha(desde).add(const Duration(days: diasConTitulo)),
-        hora,
-      ),
-      titulo: textos.titulo,
-      cuerpo: textos.cuerpoGenerico,
-      repiteADiario: true,
-    ));
-
     return avisos;
   }
 
   static DateTime _aLaHora(DateTime fecha, TimeOfDay hora) =>
       DateTime(fecha.year, fecha.month, fecha.day, hora.hour, hora.minute);
-
-  static DateTime _soloFecha(DateTime d) => DateTime(d.year, d.month, d.day);
 }

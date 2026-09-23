@@ -4,14 +4,18 @@ import 'package:flutter/material.dart' show TimeOfDay;
 import '../data/poema.dart';
 import 'planificador_avisos.dart';
 
-/// Poem id requested by a notification tap, including the tap that cold-started
-/// the app.
+/// What a notification tap asked for, including the tap that cold-started the
+/// app: [inicio] for the daily reminder, or a poem id from a reminder
+/// scheduled by 1.1.0, which named one poem and opened it.
 ///
 /// A separate object rather than a field on the platform service, so the shell
 /// can depend on *this* — which a test can create in one line — instead of on
 /// the notification plugin.
 class SolicitudDePoema extends ValueNotifier<String?> {
   SolicitudDePoema() : super(null);
+
+  /// Payload of the daily reminder: open the home screen.
+  static const inicio = 'inicio';
 
   void pedir(String id) => value = id;
 

@@ -104,7 +104,10 @@ TextosAviso textosAviso(BuildContext context) {
   final l10n = L10n.of(context);
   return TextosAviso(
     titulo: l10n.notifTitulo,
-    cuerpo: (poema) => l10n.notifCuerpo(poema.etiqueta, poema.autor),
+    // An untitled poem's label *is* its first verse; don't print it twice.
+    linea: (p) => p.mostrarPrimerVerso
+        ? l10n.notifLinea(p.titulo, p.autor, p.primerVerso)
+        : l10n.notifLineaSinTitulo(p.primerVerso, p.autor),
     cuerpoGenerico: l10n.notifCuerpoGenerico,
   );
 }

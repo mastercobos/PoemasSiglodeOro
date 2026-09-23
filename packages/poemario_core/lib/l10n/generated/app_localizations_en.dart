@@ -210,11 +210,16 @@ class L10nEn extends L10n {
   String get ajustesAbrirAjustesSistema => 'Open settings';
 
   @override
-  String get notifTitulo => 'Poem of the day';
+  String get notifTitulo => 'New poems today';
 
   @override
-  String notifCuerpo(String titulo, String autor) {
-    return '$titulo — $autor';
+  String notifLinea(String titulo, String autor, String verso) {
+    return '$titulo — $autor: “$verso”';
+  }
+
+  @override
+  String notifLineaSinTitulo(String verso, String autor) {
+    return '“$verso” — $autor';
   }
 
   @override

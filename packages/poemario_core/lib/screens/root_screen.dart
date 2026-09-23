@@ -83,19 +83,24 @@ class _RootScreenState extends State<RootScreen>
     super.dispose();
   }
 
-  /// Opens the poem a notification pointed at.
+  /// Handles a notification tap.
   ///
-  /// Routed through the *today* tab's navigator rather than the root one, so
-  /// back from the poem lands where a reader coming from a daily reminder
-  /// expects to be. An id that no longer resolves — normal after the anthology
-  /// is edited — just opens the app, which is the right failure.
+  /// The daily reminder ([SolicitudDePoema.inicio]) names both poems of the
+  /// day, so it opens the *today* tab at its root, where both are shown.
+  /// A poem id comes from a reminder scheduled by 1.1.0, which named a single
+  /// poem; that one still opens the poem, through the today tab's navigator so
+  /// back lands where a reader coming from a reminder expects. An id that no
+  /// longer resolves — normal after the anthology is edited — just opens the
+  /// app, which is the right failure.
   void _alPedirPoema() {
     if (!mounted) return;
     final id = _solicitudes.tomar();
     if (id == null) return;
 
-    final poema = context.read<Anthology>().porId(id);
-    if (poema == null) return;
+    final poema = id == SolicitudDePoema.inicio
+        ? null
+        : context.read<Anthology>().porId(id);
+    if (id != SolicitudDePoema.inicio && poema == null) return;
 
     setState(() => _tab = 0);
     // After the IndexedStack has switched, so the target navigator is mounted.
@@ -103,7 +108,7 @@ class _RootScreenState extends State<RootScreen>
       final nav = _clavesNavegador[0].currentState;
       if (nav == null) return;
       nav.popUntil((r) => r.isFirst);
-      nav.push(rutaFundido((_) => PoemaScreen(poema: poema)));
+      if (poema != null) nav.push(rutaFundido((_) => PoemaScreen(poema: poema)));
     });
   }
 

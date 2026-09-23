@@ -160,8 +160,6 @@ class ServicioAvisos implements AgendaAvisos {
           // that isn't an alarm clock or a calendar. A poem reminder arriving
           // within ~15 minutes of nine o'clock is fine.
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          matchDateTimeComponents:
-              aviso.repiteADiario ? DateTimeComponents.time : null,
         );
       } catch (e) {
         debugPrint('ServicioAvisos: no se pudo programar $aviso ($e)');
@@ -171,10 +169,12 @@ class ServicioAvisos implements AgendaAvisos {
 
   @override
   Future<void> cancelarTodo() async {
-    for (var i = 0; i < PlanificadorAvisos.diasConTitulo; i++) {
+    const dias =
+        PlanificadorAvisos.diasConTitulo + PlanificadorAvisos.diasGenericos;
+    for (var i = 0; i < dias; i++) {
       await _plugin.cancel(PlanificadorAvisos.primerId + i);
     }
-    await _plugin.cancel(PlanificadorAvisos.idGenerico);
+    await _plugin.cancel(PlanificadorAvisos.idRepetidoAntiguo);
   }
 
   /// Debug helper: what the OS currently has queued.

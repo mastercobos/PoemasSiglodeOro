@@ -424,14 +424,20 @@ abstract class L10n {
   /// No description provided for @notifTitulo.
   ///
   /// In es, this message translates to:
-  /// **'Poema del día'**
+  /// **'Hoy hay poemas nuevos'**
   String get notifTitulo;
 
-  /// No description provided for @notifCuerpo.
+  /// No description provided for @notifLinea.
   ///
   /// In es, this message translates to:
-  /// **'{titulo} — {autor}'**
-  String notifCuerpo(String titulo, String autor);
+  /// **'{titulo} — {autor}: «{verso}»'**
+  String notifLinea(String titulo, String autor, String verso);
+
+  /// No description provided for @notifLineaSinTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'«{verso}» — {autor}'**
+  String notifLineaSinTitulo(String verso, String autor);
 
   /// No description provided for @notifCuerpoGenerico.
   ///

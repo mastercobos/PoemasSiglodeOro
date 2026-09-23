@@ -63,8 +63,9 @@
   "ajustesRecordatorioPermiso": "Turn on notifications in system settings to get the daily reminder.",
   "ajustesAbrirAjustesSistema": "Open settings",
 
-  "notifTitulo": "Poem of the day",
-  "notifCuerpo": "{titulo} — {autor}",
+  "notifTitulo": "New poems today",
+  "notifLinea": "{titulo} — {autor}: “{verso}”",
+  "notifLineaSinTitulo": "“{verso}” — {autor}",
   "notifCuerpoGenerico": "New poems are waiting for you",
   "notifCanalNombre": "Poem of the day",
   "notifCanalDescripcion": "A daily reminder with the poems chosen for today",

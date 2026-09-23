@@ -100,7 +100,7 @@ void main() {
       expect(find.text('— Índice de Autores —'), findsOneWidget);
     });
 
-    testWidgets('a notification deep link opens the poem on the today tab',
+    testWidgets('a poem link from a 1.1.0 reminder still opens the poem',
         (tester) async {
       final (solicitudes, _) = await montar(tester, const RootScreen());
 
@@ -109,6 +109,23 @@ void main() {
 
       expect(find.text('Poema 1 de 2'), findsWidgets);
       // And the request is consumed, so a rebuild can't re-navigate.
+      expect(solicitudes.value, isNull);
+    });
+
+    testWidgets('the daily reminder opens the today tab at its root',
+        (tester) async {
+      final (solicitudes, _) = await montar(tester, const RootScreen());
+
+      // The reader was deep in another tab when they tapped the reminder.
+      await tester.tap(find.text('Índice'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Autor 1'));
+      await tester.pumpAndSettle();
+
+      solicitudes.pedir(SolicitudDePoema.inicio);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Poemas del día'), findsOneWidget);
       expect(solicitudes.value, isNull);
     });
 

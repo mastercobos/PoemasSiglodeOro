@@ -76,7 +76,7 @@ void main() {
         () => SeleccionDiariaService.serie(pool: anto.poemas, desde: fecha, dias: 14));
 
     const textos = TextosAviso(
-        titulo: 't', cuerpo: _cuerpo, cuerpoGenerico: 'g');
+        titulo: 't', linea: _cuerpo, cuerpoGenerico: 'g');
     await medir('PlanificadorAvisos.construir (pool completo)', () {
       PlanificadorAvisos.construir(
         pool: anto.poemas,

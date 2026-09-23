@@ -89,10 +89,14 @@
   "ajustesRecordatorioPermiso": "Activa las notificaciones en los ajustes del sistema para recibir el aviso diario.",
   "ajustesAbrirAjustesSistema": "Abrir ajustes",
 
-  "notifTitulo": "Poema del día",
-  "notifCuerpo": "{titulo} — {autor}",
-  "@notifCuerpo": {
-    "placeholders": { "titulo": { "type": "String" }, "autor": { "type": "String" } }
+  "notifTitulo": "Hoy hay poemas nuevos",
+  "notifLinea": "{titulo} — {autor}: «{verso}»",
+  "@notifLinea": {
+    "placeholders": { "titulo": { "type": "String" }, "autor": { "type": "String" }, "verso": { "type": "String" } }
+  },
+  "notifLineaSinTitulo": "«{verso}» — {autor}",
+  "@notifLineaSinTitulo": {
+    "placeholders": { "verso": { "type": "String" }, "autor": { "type": "String" } }
   },
   "notifCuerpoGenerico": "Hay poemas nuevos esperándote",
   "notifCanalNombre": "Poema del día",

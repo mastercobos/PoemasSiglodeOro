@@ -214,7 +214,7 @@ class AppDePrueba extends StatelessWidget {
             diario: ctx.read<PoemaDelDiaProvider>(),
             horaPorDefecto: const TimeOfDay(hour: 9, minute: 0),
             textos: () => const TextosAviso(
-                titulo: 't', cuerpo: _cuerpoFalso, cuerpoGenerico: 'g'),
+                titulo: 't', linea: _cuerpoFalso, cuerpoGenerico: 'g'),
           ),
           update: (_, __, previo) => previo!,
           lazy: false,
@@ -243,7 +243,7 @@ String _cuerpoFalso(Poema p) => p.etiqueta;
 abstract final class TextosAvisoDePrueba {
   static const instancia = TextosAviso(
     titulo: 'Poema del día',
-    cuerpo: _cuerpoFalso,
+    linea: _cuerpoFalso,
     cuerpoGenerico: 'Hay poemas nuevos',
   );
 }
