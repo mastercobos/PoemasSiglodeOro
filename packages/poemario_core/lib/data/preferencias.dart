@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../domain/seleccion_diaria.dart';
 import 'poema_repository.dart';
 
 /// Thin wrapper over [SharedPreferences].
@@ -72,7 +73,7 @@ class Preferencias {
   // ── Schema migrations ──────────────────────────────────────────────────
 
   /// Version of the on-disk schema. Bump when a migration is added.
-  static const _esquemaActual = 2;
+  static const _esquemaActual = 3;
   static const _claveEsquema = 'esquema_prefs';
 
   /// Runs once per upgrade, before any provider reads.
@@ -113,6 +114,23 @@ class Preferencias {
         await guardarLista('autores_excluidos', excluidos);
       }
       await borrar('autores_seleccionados');
+    }
+
+    if (version < 3) {
+      // v2 (1.1.0) stored the history *after* the last day seen: that day's
+      // authors first, then the older ones. v3 stores it *before* that day,
+      // so reschedules later the same day no longer avoid today's own
+      // authors. Dropping the leading day recovers exactly what v2 used for
+      // it; the date is unchanged.
+      final antiguo = leerLista('historial_autores');
+      final fecha = leerTexto('historial_fecha');
+      if (fecha != null) {
+        await guardarLista('historial_base',
+            antiguo.skip(SeleccionDiariaService.poemasPorDia));
+        await guardarTexto('historial_base_fecha', fecha);
+      }
+      await borrar('historial_autores');
+      await borrar('historial_fecha');
     }
 
     await guardarEntero(_claveEsquema, _esquemaActual);

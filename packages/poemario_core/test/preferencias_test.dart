@@ -89,4 +89,20 @@ void main() {
     expect(prefs.leerBool('no-existe'), isFalse);
     expect(prefs.leerEntero('no-existe'), isNull);
   });
+
+  test('v2 history is rewound to before the last day seen', () async {
+    final anthology = await anthologyDePrueba(autores: 4, porAutor: 1);
+    final prefs = await preferenciasDePrueba({
+      'esquema_prefs': 2,
+      'historial_autores': ['Autor 3', 'Autor 2', 'Autor 1', 'Autor 0'],
+      'historial_fecha': '2026-09-22T00:00:00.000',
+    });
+
+    await prefs.migrar(anthology);
+
+    expect(prefs.leerLista('historial_base'), ['Autor 1', 'Autor 0']);
+    expect(prefs.leerTexto('historial_base_fecha'), '2026-09-22T00:00:00.000');
+    expect(prefs.leerLista('historial_autores'), isEmpty);
+    expect(prefs.leerTexto('historial_fecha'), isNull);
+  });
 }

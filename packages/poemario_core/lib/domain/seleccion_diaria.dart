@@ -95,19 +95,70 @@ abstract final class SeleccionDiariaService {
     var historial = [...autoresRecientes];
 
     for (var d = 0; d < dias; d++) {
-      final fecha = _dia(desde).add(Duration(days: d));
       final seleccion = paraFecha(
         pool: pool,
-        fecha: fecha,
+        fecha: _diaMas(desde, d),
         autoresRecientes: historial,
       );
       resultado.add(seleccion);
-      historial = [...seleccion.autores, ...historial]
-          .take(ventanaHistorial * poemasPorDia)
-          .toList();
+      historial = _avanzar(historial, seleccion);
     }
     return resultado;
   }
+
+  /// The history in force on [fecha], given the history that was in force on
+  /// an earlier day [desde].
+  ///
+  /// Every day in between counts as shown, whether or not the reader opened
+  /// the app. That is what the notification schedule assumes when it names
+  /// days 2–14 in advance, so the app has to assume it too: if a skipped day
+  /// were left out of the history, the next morning's pick would avoid a
+  /// different set of authors from the one its notification was planned
+  /// against, and the two would name different poems.
+  ///
+  /// Gaps longer than [maxDias] return [historialDesde] unchanged. Nothing
+  /// named that far ahead is still pending, so any consistent answer will do,
+  /// and it keeps a reader returning after a year from replaying the year.
+  static List<String> historialPara({
+    required List<Poema> pool,
+    required DateTime desde,
+    required List<String> historialDesde,
+    required DateTime fecha,
+    int maxDias = 31,
+  }) {
+    final dias = _diasEntre(desde, fecha);
+    if (dias <= 0 || dias > maxDias) return historialDesde;
+    var historial = [...historialDesde];
+    for (final dia in serie(
+        pool: pool,
+        desde: desde,
+        dias: dias,
+        autoresRecientes: historialDesde)) {
+      historial = _avanzar(historial, dia);
+    }
+    return historial;
+  }
+
+  /// The history after [seleccion] has been shown: its authors first, then
+  /// the older ones, trimmed to what the rule can ever consult.
+  static List<String> _avanzar(
+          List<String> historial, SeleccionDiaria seleccion) =>
+      [...seleccion.autores, ...historial]
+          .take(ventanaHistorial * poemasPorDia)
+          .toList();
+
+  /// [d] plus [n] calendar days. Built from the date parts rather than by
+  /// adding `Duration(days: n)`: local midnight plus 24 hours lands on the
+  /// same date again on the 25-hour day the clocks go back, which used to
+  /// repeat that day and shift every notification after it by one.
+  static DateTime _diaMas(DateTime d, int n) =>
+      DateTime(d.year, d.month, d.day + n);
+
+  /// Whole calendar days from [a] to [b], immune to DST for the same reason.
+  static int _diasEntre(DateTime a, DateTime b) =>
+      DateTime.utc(b.year, b.month, b.day)
+          .difference(DateTime.utc(a.year, a.month, a.day))
+          .inDays;
 
   /// Date-only, so a pick never changes as the clock advances through the day.
   static DateTime _dia(DateTime d) => DateTime(d.year, d.month, d.day);

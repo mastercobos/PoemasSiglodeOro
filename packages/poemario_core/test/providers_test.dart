@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:poemario_core/domain/seleccion_diaria.dart';
 import 'package:poemario_core/notifications/agenda_avisos.dart';
 import 'package:poemario_core/providers/ajustes_provider.dart';
 import 'package:poemario_core/providers/favoritos_provider.dart';
@@ -152,20 +153,53 @@ void main() {
       expect(diario.poemasDelDia, isEmpty);
     });
 
-    test('registrarVisto records the authors once per day', () async {
+    test('registrarVisto records the day once and changes nothing shown',
+        () async {
       final anthology = await anthologyDePrueba(autores: 6, porAutor: 2);
-      final prefs = await preferenciasDePrueba({'esquema_prefs': 2});
-      final ajustes = AjustesProvider(
-          todosLosAutores: anthology.autores, prefs: prefs);
+      final prefs = await preferenciasDePrueba({'esquema_prefs': 3});
+      final ajustes =
+          AjustesProvider(todosLosAutores: anthology.autores, prefs: prefs);
       final diario = PoemaDelDiaProvider(
           anthology: anthology, prefs: prefs, ajustes: ajustes);
 
+      final antes = diario.poemasDelDia;
+      final historialAntes = diario.historial;
       await diario.registrarVisto();
-      final tras1 = prefs.leerLista('historial_autores');
+      final fecha = prefs.leerTexto(PoemaDelDiaProvider.claveFecha);
       await diario.registrarVisto();
 
-      expect(tras1, isNotEmpty);
-      expect(prefs.leerLista('historial_autores'), tras1);
+      expect(fecha, isNotNull);
+      expect(prefs.leerTexto(PoemaDelDiaProvider.claveFecha), fecha);
+      // The 1.1.0 bug: recording today put today's authors into the history
+      // that the next reschedule started from, so the schedule recomputed
+      // today while avoiding today's own poems.
+      expect(diario.historial, historialAntes);
+      expect(diario.poemasDelDia, antes);
+    });
+
+    test('days the app was not opened still count, as the schedule assumed',
+        () async {
+      final anthology = await anthologyDePrueba(autores: 8, porAutor: 2);
+      final hoy = DateTime.now();
+      final haceTres = DateTime(hoy.year, hoy.month, hoy.day - 3);
+      final prefs = await preferenciasDePrueba({
+        'esquema_prefs': 3,
+        PoemaDelDiaProvider.claveHistorial: ['Autor 0', 'Autor 1'],
+        PoemaDelDiaProvider.claveFecha: haceTres.toIso8601String(),
+      });
+      final ajustes =
+          AjustesProvider(todosLosAutores: anthology.autores, prefs: prefs);
+      final diario = PoemaDelDiaProvider(
+          anthology: anthology, prefs: prefs, ajustes: ajustes);
+
+      // What a schedule built three days ago named for today.
+      final planeado = SeleccionDiariaService.serie(
+        pool: anthology.poemas,
+        desde: haceTres,
+        dias: 4,
+        autoresRecientes: const ['Autor 0', 'Autor 1'],
+      ).last;
+      expect(diario.poemasDelDia, planeado.poemas);
     });
   });
 

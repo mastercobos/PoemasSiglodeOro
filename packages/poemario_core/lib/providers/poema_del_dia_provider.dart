@@ -17,18 +17,30 @@ import 'ajustes_provider.dart';
 /// the "don't repeat an author" rule consults, instead of re-deriving
 /// yesterday's pick from today's pool — which gave the wrong answer whenever
 /// the user changed their filter overnight.
+///
+/// What is stored is the history *in force on* a given day — before that
+/// day's own poems — plus the date. Days since then are replayed from the
+/// date alone ([SeleccionDiariaService.historialPara]). Storing the history
+/// *after* today's poems, as 1.1.0 did, made every reschedule later in the
+/// day recompute today while avoiding today's own authors, so from then on
+/// each notification named a poem the app would not show.
 class PoemaDelDiaProvider extends ChangeNotifier with WidgetsBindingObserver {
-  static const _claveHistorial = 'historial_autores';
-  static const _claveUltimaFecha = 'historial_fecha';
+  static const claveHistorial = 'historial_base';
+  static const claveFecha = 'historial_base_fecha';
 
   final Anthology _anthology;
   final Preferencias _prefs;
   final AjustesProvider _ajustes;
 
-  List<String> _historial;
+  /// History in force on [_fechaBase]. Empty with a null date on a fresh
+  /// install.
+  List<String> _base;
+  DateTime? _fechaBase;
+
   DateTime _hoy;
   Set<String> _activosEnCache = const {};
   SeleccionDiaria? _cache;
+  List<String> _historialEnCache = const [];
 
   PoemaDelDiaProvider({
     required Anthology anthology,
@@ -37,7 +49,8 @@ class PoemaDelDiaProvider extends ChangeNotifier with WidgetsBindingObserver {
   })  : _anthology = anthology,
         _prefs = prefs,
         _ajustes = ajustes,
-        _historial = prefs.leerLista(_claveHistorial),
+        _base = prefs.leerLista(claveHistorial),
+        _fechaBase = DateTime.tryParse(prefs.leerTexto(claveFecha) ?? ''),
         _hoy = _soloFecha(DateTime.now()) {
     _ajustes.addListener(_invalidar);
     WidgetsBinding.instance.addObserver(this);
@@ -61,36 +74,47 @@ class PoemaDelDiaProvider extends ChangeNotifier with WidgetsBindingObserver {
         _activosEnCache.containsAll(activos)) {
       return cache;
     }
+    final poemas = pool;
+    final fechaBase = _fechaBase;
+    final historial = fechaBase == null
+        ? _base
+        : SeleccionDiariaService.historialPara(
+            pool: poemas,
+            desde: fechaBase,
+            historialDesde: _base,
+            fecha: _hoy,
+          );
     final nueva = SeleccionDiariaService.paraFecha(
-      pool: pool,
+      pool: poemas,
       fecha: _hoy,
-      autoresRecientes: _historial,
+      autoresRecientes: historial,
     );
     _cache = nueva;
     _activosEnCache = activos;
+    _historialEnCache = List.unmodifiable(historial);
     return nueva;
   }
 
   List<Poema> get poemasDelDia => seleccion.poemas;
 
-  List<String> get historial => List.unmodifiable(_historial);
+  /// The history today's selection was made with — *not* including today's
+  /// own authors. This is what the notification schedule must start from so
+  /// that its first day reproduces today and every later day follows on.
+  List<String> get historial {
+    seleccion; // fills the cache
+    return _historialEnCache;
+  }
 
-  /// Records today's authors once the user has actually seen them. Called from
-  /// the home screen's first frame. Idempotent per day.
+  /// Records that today was seen. Called from the home screen's first frame.
+  /// Idempotent per day, and changes nothing the selection depends on: it
+  /// only moves the replay's starting point forward to today.
   Future<void> registrarVisto() async {
-    final ultima = _prefs.leerTexto(_claveUltimaFecha);
-    final hoyTexto = _hoy.toIso8601String();
-    if (ultima == hoyTexto) return;
-
-    _historial = [
-      ...seleccion.autores,
-      ..._historial,
-    ].take(SeleccionDiariaService.ventanaHistorial *
-            SeleccionDiariaService.poemasPorDia)
-        .toList();
-
-    await _prefs.guardarLista(_claveHistorial, _historial);
-    await _prefs.guardarTexto(_claveUltimaFecha, hoyTexto);
+    if (_fechaBase == _hoy) return;
+    final base = historial;
+    _base = base;
+    _fechaBase = _hoy;
+    await _prefs.guardarLista(claveHistorial, base);
+    await _prefs.guardarTexto(claveFecha, _hoy.toIso8601String());
   }
 
   void _invalidar() {

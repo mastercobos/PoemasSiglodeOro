@@ -106,6 +106,49 @@ void main() {
     });
   });
 
+  group('historialPara', () {
+    test('picks up where a schedule made days earlier expects', () {
+      final p = pool(autores: 10);
+      final inicial = ['Autor 3', 'Autor 7'];
+      final plan = SeleccionDiariaService.serie(
+          pool: p, desde: hoy, dias: 14, autoresRecientes: inicial);
+      for (var d = 0; d < 14; d++) {
+        final fecha = DateTime(hoy.year, hoy.month, hoy.day + d);
+        final historial = SeleccionDiariaService.historialPara(
+            pool: p, desde: hoy, historialDesde: inicial, fecha: fecha);
+        expect(
+          SeleccionDiariaService.paraFecha(
+                  pool: p, fecha: fecha, autoresRecientes: historial)
+              .poemas,
+          plan[d].poemas,
+          reason: 'día $d',
+        );
+      }
+    });
+
+    test('a gap longer than the limit keeps the stored history', () {
+      final historial = SeleccionDiariaService.historialPara(
+        pool: pool(autores: 10),
+        desde: hoy,
+        historialDesde: const ['Autor 3'],
+        fecha: DateTime(2027, 9, 19),
+      );
+      expect(historial, ['Autor 3']);
+    });
+  });
+
+  group('calendar', () {
+    test('serie steps one calendar day at a time across a clock change', () {
+      // 25 October 2026 is 25 hours long in most of Europe. Adding
+      // Duration(days: 1) to its midnight stayed on the 25th.
+      final dias = SeleccionDiariaService.serie(
+          pool: pool(autores: 10), desde: DateTime(2026, 10, 20), dias: 14);
+      for (var i = 0; i < dias.length; i++) {
+        expect(dias[i].fecha, DateTime(2026, 10, 20 + i));
+      }
+    });
+  });
+
   group('degenerate pools', () {
     test('an empty pool yields nothing instead of throwing', () {
       final s = SeleccionDiariaService.paraFecha(pool: const [], fecha: hoy);
