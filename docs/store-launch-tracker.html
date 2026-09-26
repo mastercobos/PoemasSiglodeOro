@@ -434,6 +434,20 @@
             <div class="item-nota">In progress 2026-09-23: <code>apps/en/poems_extraction/seleccionar.py</code> ranks authors (canon tier first, then Wikipedia page views) and keeps every poem, no cap: 12,846 poems, 277 authors, 31 MB, ~620 ms to parse on desktop. <code>ranking.md</code> has running totals by rank. Next: choose the cut, then check load time on a phone.</div>
           </div>
         </div>
+        <div class="item" data-item="ec5">
+          <input type="checkbox" class="check" id="chk-ec5">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ec5" for="chk-ec5">Add the 8 famous poems Gutenberg doesn't have, from Wikisource</label>
+            <div class="item-nota">Spenser's <em>Amoretti</em> 1 and 75, Southey's "After Blenheim" and "The Inchcape Rock", Blake's "Auguries of Innocence", Herbert's "Easter Wings", Marvell's "The Definition of Love", Wyatt's "Whoso List to Hunt". Add them to <code>apps/en/poems_extraction/anadidos_gutenberg.json</code> (38 poems already added from Gutenberg on 2026-09-24).</div>
+          </div>
+        </div>
+        <div class="item" data-item="ec6">
+          <input type="checkbox" class="check" id="chk-ec6">
+          <div class="item-texto">
+            <label class="item-label" id="lbl-ec6" for="chk-ec6">Restore verse lines set in capitals that the parser drops</label>
+            <div class="item-nota">Laurel's parser drops lines a poem sets all in capitals for emphasis: about 20 across 12 of the books <code>parser/extraer.py</code> splits (Seward 5, e.g. "COME DEAR REMEMBRANCE OF DEPARTED DAYS!"; Timrod 4; Thackeray, Hood, Praed, Swift, Emerson, Lovelace, Bowles, Lanier). None in a famous poem found. The fix must not keep headings, contents entries and printers' imprints, which are set the same way. Noted 2026-09-26.</div>
+          </div>
+        </div>
         <div class="item" data-item="ec3">
           <input type="checkbox" class="check" id="chk-ec3">
           <div class="item-texto">
