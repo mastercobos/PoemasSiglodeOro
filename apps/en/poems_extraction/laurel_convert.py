@@ -4,11 +4,13 @@ laurel_convert.py - convert the Laurel corpus (TEI XML) into app-friendly data.
 
 WHAT IT DOES
   Reads a local clone of https://github.com/laurel-corpus/laurel-corpus and writes:
-    out/authors/<author-slug>.json   one JSON file per author, poems inside
-    out/authors_index.json           summary of every author (counts, era, file)
-    out/poems.jsonl                  every poem, one JSON object per line
-    out/poems.sqlite                 SQLite database (+ full-text search if available)
-    out/gap_report.md                per-poet counts and a check for famous poems
+    <out>/authors/<author-slug>.json   one JSON file per author, poems inside
+    <out>/authors_index.json           summary of every author (counts, era, file)
+    <out>/poems.jsonl                  every poem, one JSON object per line
+    <out>/poems.sqlite                 SQLite database (+ full-text search if available)
+    <out>/gap_report.md                per-poet counts and a check for famous poems
+
+  <out> is corpus/laurel-export unless --out says otherwise.
 
   Only the poem text and factual metadata (author, dates, work title, source URL)
   are exported. Laurel's scansion, rhyme lettering, metre labels and URNs are NOT
@@ -16,8 +18,8 @@ WHAT IT DOES
   public domain. Read the corpus LICENCE before adding any of that apparatus.
 
 USAGE
-  git clone --depth 1 https://github.com/laurel-corpus/laurel-corpus.git
-  python3 laurel_convert.py --corpus laurel-corpus --out out
+  git clone --depth 1 https://github.com/laurel-corpus/laurel-corpus.git corpus/laurel-corpus
+  python3 laurel_convert.py --corpus corpus/laurel-corpus --out corpus/laurel-export
 
   Common options:
     --died-before 1926     keep authors who died before this year (default 1926)
@@ -48,6 +50,7 @@ import csv
 import json
 import re
 import sqlite3
+import subprocess
 import sys
 import unicodedata
 from collections import defaultdict
@@ -225,7 +228,10 @@ def default_excerpt(stanzas, total_lines):
 
 
 def read_poems(tei_path):
-    """Yield (head, stanzas) for every poem division in one TEI file."""
+    """Yield (head, stanzas, metre) for every poem division in one TEI file.
+
+    metre is Laurel's <note type="metre">, or None where it found no metre: free
+    verse, but also the editors' notes some editions print as if they were poems."""
     root = ET.parse(tei_path).getroot()
     body = root.find(".//" + NS + "body")
     if body is None:
@@ -235,6 +241,8 @@ def read_poems(tei_path):
             continue
         head_el = div.find(NS + "head")
         head = clean_line("".join(head_el.itertext())) if head_el is not None else ""
+        metre_el = div.find(NS + "note[@type='metre']")
+        metre = clean_line(metre_el.text) if metre_el is not None else None
         stanzas = []
         for lg in div.findall(NS + "lg"):
             lines = [clean_line("".join(l.itertext())) for l in lg.findall(NS + "l")]
@@ -242,7 +250,7 @@ def read_poems(tei_path):
             if lines:
                 stanzas.append(lines)
         if stanzas:
-            yield head, stanzas
+            yield head, stanzas, metre
 
 
 def split_sequences(head, stanzas):
@@ -312,7 +320,7 @@ def build(args):
         author = authors[key]
 
         source = entry.get("source") or {}
-        for pos, (head, stanzas) in enumerate(read_poems(tei_path)):
+        for pos, (head, stanzas, metre) in enumerate(read_poems(tei_path)):
             for sub, (title, sts) in enumerate(split_sequences(head, stanzas)):
                 n_lines = sum(len(s) for s in sts)
                 if n_lines < args.min_lines:
@@ -335,6 +343,7 @@ def build(args):
                     "work_title": entry.get("title"),
                     "published": entry.get("published"),
                     "form": form,
+                    "metre": metre,
                     "line_count": n_lines,
                     "stanza_count": len(sts),
                     "stanzas": sts,
@@ -359,6 +368,17 @@ def slugs_unique(authors):
             a["slug"] += "-%d" % seen[a["slug"]]
             for p in a["poems"]:
                 p["author_slug"] = a["slug"]
+
+
+def corpus_version(corpus):
+    """The corpus commit the export was built from, so a stale asset can be spotted."""
+    try:
+        commit, date, subject = subprocess.run(
+            ["git", "-C", str(corpus), "log", "-1", "--format=%H%n%cs%n%s"],
+            capture_output=True, text=True, check=True).stdout.strip().split("\n", 2)
+    except (OSError, subprocess.CalledProcessError, ValueError):
+        return None  # not a git clone (e.g. a downloaded zip)
+    return {"commit": commit, "date": date, "subject": subject}
 
 
 def write_outputs(out, authors, poems):
@@ -468,7 +488,7 @@ def gap_report(out, authors, poems, max_lines):
 def main():
     ap = argparse.ArgumentParser(description="Convert the Laurel corpus to per-author JSON, JSONL and SQLite.")
     ap.add_argument("--corpus", required=True, help="path to the cloned laurel-corpus repository")
-    ap.add_argument("--out", default="out", help="output directory (default: out)")
+    ap.add_argument("--out", default="corpus/laurel-export", help="output directory (default: corpus/laurel-export)")
     ap.add_argument("--died-before", type=int, default=1926, help="keep authors who died before this year")
     ap.add_argument("--max-lines", type=int, default=0, help="drop poems longer than this many lines")
     ap.add_argument("--min-lines", type=int, default=1, help="drop poems shorter than this many lines")
@@ -481,6 +501,8 @@ def main():
     authors, poems, skipped = build(args)
     slugs_unique(authors)
     write_outputs(args.out, authors, poems)
+    version = corpus_version(args.corpus)
+    (Path(args.out) / "corpus_version.json").write_text(json.dumps(version, ensure_ascii=False, indent=1), encoding="utf-8")
     missing = gap_report(args.out, authors, poems, args.max_lines)
 
     n_auth = sum(1 for a in authors.values() if a["poems"])

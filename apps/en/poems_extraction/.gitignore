@@ -1,0 +1,8 @@
+# Source corpora for the English anthology.
+# Laurel is a 265 MB git clone: re-clone it, see laurel_convert.py.
+corpus/laurel-corpus/
+# laurel_convert.py output, 272 MB: rebuild it, see the command in seleccionar.py.
+corpus/laurel-export/
+# extraer.py: its copy of Laurel's pipeline, and its output (rebuild with parser/extraer.py).
+corpus/parser-trabajo/
+corpus/parser-salida/

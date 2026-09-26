@@ -1,0 +1,280 @@
+[
+ {
+  "work": "swift-poems",
+  "section": "on-the-same-2",
+  "note": "two epigrams under one heading (Laurel's finding, redone on our split); the second is Latin",
+  "fix": {
+   "split_at_stanza": 1,
+   "second_title": "On the Same"
+  }
+ },
+ {
+  "work": "swift-poems",
+  "section": "twelve-articles",
+  "note": "Twelve Articles: the parser loses the short numbered articles (Laurel kept only VII, XI and XII, glued to the poem before). Taken whole from the source.",
+  "anadir": {
+   "ebook": 13621,
+   "desde": "^TWELVE ARTICLES\\[1\\]$",
+   "hasta": "^\\[Footnote 1: Addressed to Lady Acheson",
+   "sin_numeros": true,
+   "title": "Twelve Articles",
+   "despues_de": "in-the-person-of-a-lady-in-the-north-l-1730"
+  }
+ },
+ {
+  "work": "swift-poems",
+  "section": "in-the-person-of-a-lady-in-the-north-l-1730",
+  "note": "stanzas 1-4 are Twelve Articles VII, XI, XII and its close, now added whole",
+  "fix": {
+   "keep_stanzas": [
+    0
+   ]
+  }
+ },
+ {
+  "work": "longfellow-poems",
+  "section": "dedication-seaside-fireside",
+  "note": "Laurel's finding: the Dedication of The Seaside and the Fireside is in no section",
+  "anadir": {
+   "ebook": 1365,
+   "tras": "^THE SEASIDE AND THE FIRESIDE$",
+   "desde": "^DEDICATION$",
+   "hasta": "^BY THE SEASIDE$",
+   "title": "Dedication (The Seaside and the Fireside)",
+   "despues_de": "part-ii-section-v"
+  }
+ },
+ {
+  "work": "barnes-dorset",
+  "section": "eclogue-the-veairies",
+  "note": "Laurel's finding: the eclogue is in no section",
+  "anadir": {
+   "ebook": 21785,
+   "tras": "^THE VEAIRIES\\.$",
+   "desde": "^_Simon an' Samel\\._$",
+   "hasta": "^FALL\\.$",
+   "title": "Eclogue: The Veairies",
+   "despues_de": "readen-ov-a-head-stwone"
+  }
+ },
+ {
+  "work": "barnes-dorset",
+  "section": "eclogue-the-times",
+  "note": "Laurel's finding: the eclogue is in no section",
+  "anadir": {
+   "ebook": 21785,
+   "tras": "^THE TIMES\\.$",
+   "desde": "^_John an' Tom\\._$",
+   "hasta": "^POEMS OF RURAL LIFE\\.$",
+   "title": "Eclogue: The Times"
+  }
+ },
+ {
+  "work": "barnes-dorset",
+  "section": "readen-ov-a-head-stwone",
+  "note": "three texts under one heading: Readen ov a Head-stwone (0-3), Zummer Evenen Dance (4-8), and speeches from the eclogue The Veairies (9-14), which is added whole",
+  "fix": {
+   "keep_stanzas": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "split_at_stanza": 4,
+   "second_title": "Zummer Evenen Dance"
+  }
+ },
+ {
+  "work": "hemans-poems",
+  "resuelto": [
+   "constantine-the-sleeper-of-marathon",
+   "wallenstein-the-revellers",
+   "true-hearted-an-hour-of-romance"
+  ],
+  "note": "retitles: our split already gives these poems their own names"
+ },
+ {
+  "work": "burns-poems",
+  "resuelto": [
+   "lassie-wi-the-lint-white-locks"
+  ],
+  "note": "Philly and Willy is split off by its title in the contents"
+ },
+ {
+  "work": "longfellow-poems",
+  "resuelto": [
+   "act-i",
+   "act-ii",
+   "act-iii",
+   "padre-c-no-cicero",
+   "serenade",
+   "song",
+   "song-2",
+   "song-3"
+  ],
+  "note": "The Spanish Student, whose scenes these fixes cut out, is left out whole (PISTAS)"
+ },
+ {
+  "work": "longfellow-poems",
+  "resuelto": [
+   "part-ii-section-v"
+  ],
+  "note": "the Dedication is added above"
+ },
+ {
+  "work": "barnes-dorset",
+  "resuelto": [
+   "the-castle-ruins"
+  ],
+  "note": "both eclogues are added above"
+ },
+ {
+  "work": "swift-poems",
+  "resuelto": [
+   "on-the-same-2",
+   "twelve-articles-xii"
+  ],
+  "note": "redone above on our split"
+ },
+ {
+  "work": "swift-poems",
+  "resuelto": [
+   "a-dialogue-between-tom-and-robin-1730",
+   "the-dean-s-answer-2",
+   "the-dean-to-thomas-sheridan",
+   "dan-jackson-s-defence",
+   "to-dr-sheridan"
+  ],
+  "note": "the poem these fixes split off already comes out on its own (checked by title and first line)"
+ },
+ {
+  "work": "herrick-hesperides",
+  "resuelto": [
+   "transcriber-s-endnotes"
+  ],
+  "note": "the transcriber's endnotes are no section in our split: fuente.sin_notas drops them"
+ },
+ {
+  "work": "bryant-poems",
+  "section": "the-alcayde-of-molina",
+  "note": "The Death of Aliatar follows at stanza 1 (Laurel's finding the-alcayde-of-molina-2, redone: with the note marks gone its subtitle line opens that stanza)",
+  "fix": {
+   "split_at_stanza": 1,
+   "second_title": "The Death of Aliatar: From the Spanish"
+  }
+ },
+ {
+  "work": "bryant-poems",
+  "section": "the-death-of-aliatar-from-the-spanish",
+  "note": "its subtitle, already in the title",
+  "quitar": [
+   "FROM THE SPANISH."
+  ]
+ },
+ {
+  "work": "bryant-poems",
+  "resuelto": [
+   "the-alcayde-of-molina-2"
+  ],
+  "note": "redone above"
+ },
+ {
+  "work": "bryant-poems",
+  "resuelto": [
+   "hymn-of-the-city"
+  ],
+  "note": "The Prairies, which this fix split off, comes out on its own once the note marks are gone (checked)"
+ },
+ {
+  "work": "swift-poems-vol1",
+  "section": "dramatis-personae",
+  "note": "Laurel's finding redone: the heading THE COUNTRY LIFE was lost and the cast list above the poem took its place; Dr. Delany's Villa already comes out on its own",
+  "fix": {
+   "keep_stanzas": [
+    1
+   ],
+   "retitle": "The Country Life"
+  }
+ },
+ {
+  "work": "swift-poems-vol1",
+  "resuelto": [
+   "dramatis-personae"
+  ],
+  "note": "redone above"
+ },
+ {
+  "work": "swift-poems-vol1",
+  "resuelto": [
+   "clever-tom-clinch-going-to-be-hanged-1727",
+   "verses-on-i-know-not-what"
+  ],
+  "note": "the poem these fixes split off already has its own section (checked by title and first line)"
+ },
+ {
+  "work": "kirke-white-poems",
+  "resuelto": [
+   "sonnet-2"
+  ],
+  "note": "fails in Laurel's own run too; our split of the book matches Laurel's published one"
+ },
+ {
+  "work": "lovelace-lucasta",
+  "resuelto": [
+   "a-dialogue"
+  ],
+  "note": "fails in Laurel's own run too; our split of the book matches Laurel's published one"
+ },
+ {
+  "work": "arnold-poems",
+  "resuelto": [
+   "iii-a-farewell"
+  ],
+  "note": "fails in Laurel's own run too; our split of the book matches Laurel's published one"
+ },
+ {
+  "work": "lanier-poems",
+  "resuelto": [
+   "hymns-of-the-marshes"
+  ],
+  "note": "the table of contents this fix drops is no section of ours (checked)"
+ },
+ {
+  "work": "cawein-poems",
+  "section": "requiem-i",
+  "note": "Requiem is one poem in four numbered parts (the scan reads III as \"Ill\"); the parser made four poems, one titled ILL",
+  "unir": [
+   "requiem-ii",
+   "ill",
+   "poem-iv"
+  ],
+  "title": "Requiem"
+ },
+ {
+  "work": "drayton-minor-poems",
+  "section": "mr-m-d-to-the-author",
+  "note": "three commendatory poems under one heading, with the editor's note on where the second was printed between them",
+  "fix": {
+   "keep_stanzas": [
+    0,
+    2,
+    3
+   ],
+   "split_many": [
+    [
+     1,
+     "To His Friend, Master Chr. M., His Booke"
+    ],
+    [
+     2,
+     "To M. John Davies, My Good Friend"
+    ]
+   ]
+  }
+ }
+]
