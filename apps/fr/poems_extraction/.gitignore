@@ -1,0 +1,4 @@
+# API responses cached by wikisource.py (rebuild by rerunning it).
+corpus/
+corpus_crawl.log
+__pycache__/

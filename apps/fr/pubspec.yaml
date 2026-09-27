@@ -1,0 +1,65 @@
+name: app_fr
+description: Une anthologie de la poésie française, classée par poète.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  poemario_core:
+    path: ../../packages/poemario_core
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.0
+  flutter_native_splash: ^2.3.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    # The anthology, split: an index read at startup and the texts in chunks
+    # read when a poem is shown (see poemario_core's PoemaRepository).
+    - assets/poemas/
+    - assets/poemas/textos/
+    - assets/icon/quill_icon.png
+  # Fonts are bundled, not downloaded. This removes google_fonts, which
+  # fetched Playfair and Lato over the network on first launch — so an
+  # offline first run rendered the whole anthology in Roboto.
+  fonts:
+    - family: EBGaramond
+      fonts:
+        - asset: assets/fonts/EBGaramond-Regular.ttf
+        - asset: assets/fonts/EBGaramond-Bold.ttf
+          weight: 700
+    - family: SourceSans3
+      fonts:
+        - asset: assets/fonts/SourceSans3-Regular.ttf
+        - asset: assets/fonts/SourceSans3-Italic.ttf
+          style: italic
+        - asset: assets/fonts/SourceSans3-Bold.ttf
+          weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/quill_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#11151F"
+  adaptive_icon_foreground: "assets/icon/quill_icon.png"
+  image_fill_color: "#11151F"
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#11151F"
+  image: assets/icon/quill_icon.png
+  android: true
+  ios: true
+  android_12:
+    color: "#11151F"
+    image: assets/icon/quill_icon.png
+    icon_background_color: "#11151F"

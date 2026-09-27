@@ -1,0 +1,87 @@
+{
+ "François Villon": {
+  "wikidata": "Q849",
+  "deces": 1464,
+  "retenu": true
+ },
+ "Louise Labé": {
+  "wikidata": "Q237098",
+  "deces": 1566,
+  "retenu": true
+ },
+ "Pierre de Ronsard": {
+  "wikidata": "Q49752",
+  "deces": 1585,
+  "retenu": true
+ },
+ "Joachim du Bellay": {
+  "wikidata": "Q18420",
+  "deces": 1560,
+  "retenu": true
+ },
+ "Jean de La Fontaine": {
+  "wikidata": "Q49496",
+  "deces": 1695,
+  "retenu": true
+ },
+ "Alphonse de Lamartine": {
+  "wikidata": "Q188697",
+  "deces": 1869,
+  "retenu": true
+ },
+ "Victor Hugo": {
+  "wikidata": "Q535",
+  "deces": 1885,
+  "retenu": true
+ },
+ "Alfred de Vigny": {
+  "wikidata": "Q309702",
+  "deces": 1863,
+  "retenu": true
+ },
+ "Alfred de Musset": {
+  "wikidata": "Q179680",
+  "deces": 1857,
+  "retenu": true
+ },
+ "Gérard de Nerval": {
+  "wikidata": "Q191305",
+  "deces": 1855,
+  "retenu": true
+ },
+ "Marceline Desbordes-Valmore": {
+  "wikidata": "Q466987",
+  "deces": 1859,
+  "retenu": true
+ },
+ "Charles Baudelaire": {
+  "wikidata": "Q501",
+  "deces": 1867,
+  "retenu": true
+ },
+ "Leconte de Lisle": {
+  "wikidata": "Q309704",
+  "deces": 1894,
+  "retenu": true
+ },
+ "José-Maria de Heredia": {
+  "wikidata": "Q334970",
+  "deces": 1905,
+  "retenu": false
+ },
+ "Paul Verlaine": {
+  "wikidata": "Q755",
+  "deces": 1896,
+  "retenu": true
+ },
+ "Arthur Rimbaud": {
+  "wikidata": "Q493",
+  "deces": 1891,
+  "retenu": true
+ },
+ "Stéphane Mallarmé": {
+  "wikidata": "Q767",
+  "deces": 1898,
+  "retenu": true
+ }
+}

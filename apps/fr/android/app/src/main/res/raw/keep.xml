@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  flutter_local_notifications looks up the small icon by name at runtime
+  (AndroidInitializationSettings('ic_notification') in servicio_avisos.dart),
+  so the release resource shrinker sees no static reference and strips it,
+  which crashes bootstrap() on startup. This keeps it.
+  https://developer.android.com/build/shrink-code#keep-resources
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />
