@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../config/app_config.dart';
-import '../widgets/versos_sangrados.dart';
+import '../widgets/versos_ajustados.dart';
 import '../data/poema.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../providers/ajustes_provider.dart';
@@ -150,9 +150,9 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
     return poema.versos.length > 4 ? '$versos\n…' : versos;
   }
 
-  /// [_fragmento] for [DisposicionVersos.sangria]: the first four verses,
-  /// section marks left out, as one stanza for [VersosSangrados].
-  List<List<String>> get _fragmentoSangrado {
+  /// [_fragmento] for [DisposicionVersos.ajustada]: the first four verses,
+  /// section marks left out, as one stanza for [VersosAjustados].
+  List<List<String>> get _fragmentoAjustado {
     final versos = [
       for (final e in poema.estrofas)
         if (!esMarcaDeSeccion(e)) ...e,
@@ -213,11 +213,11 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
                       final estilo = t.verso.copyWith(
                           fontSize: 15, height: 1.85, color: c.texto);
                       if (context.config.disposicionVersos ==
-                          DisposicionVersos.sangria) {
-                        return VersosSangrados(
-                            estrofas: _fragmentoSangrado,
+                          DisposicionVersos.ajustada) {
+                        return VersosAjustados(
+                            estrofas: _fragmentoAjustado,
                             estilo: estilo,
-                            centrar: false);
+                            alineacion: TextAlign.start);
                       }
                       return Text(_fragmento, style: estilo);
                     },

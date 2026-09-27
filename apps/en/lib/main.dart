@@ -26,9 +26,9 @@ void main() {
       // need to sort as numbers, not as text ("Sonnet IX" before "Sonnet V"
       // is wrong).
       ordenTitulos: EstrategiaOrden.numeralesNaturales,
-      // Long lines (alexandrines, blank verse) wrap on a phone: continue them
-      // indented, measured per device, rather than centring the rest.
-      disposicionVersos: DisposicionVersos.sangria,
+      // Long lines (alexandrines, blank verse) would wrap on a phone: each
+      // poem is shrunk to fit its longest verse, measured per device.
+      disposicionVersos: DisposicionVersos.ajustada,
       fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
       coloresClaro: PoemaColors(
         oro: Color(0xFF8C2F45),

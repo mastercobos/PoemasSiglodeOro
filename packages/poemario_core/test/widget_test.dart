@@ -7,7 +7,7 @@ import 'package:poemario_core/screens/favoritos_screen.dart';
 import 'package:poemario_core/screens/indice_screen.dart';
 import 'package:poemario_core/screens/poema_screen.dart';
 import 'package:poemario_core/screens/root_screen.dart';
-import 'package:poemario_core/widgets/versos_sangrados.dart';
+import 'package:poemario_core/widgets/versos_ajustados.dart';
 
 import 'support/harness.dart';
 
@@ -161,8 +161,8 @@ void main() {
         findsOneWidget,
       );
       // The default layout (the Spanish app's) is the centred text above,
-      // untouched by DisposicionVersos.sangria.
-      expect(find.byType(VersosSangrados), findsNothing);
+      // untouched by DisposicionVersos.ajustada.
+      expect(find.byType(VersosAjustados), findsNothing);
     });
 
     testWidgets('the heart toggles and confirms with the right wording',

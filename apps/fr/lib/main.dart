@@ -23,9 +23,9 @@ void main() {
       // French sequences number inline too ("Les Regrets, XXXI", "Sonnet
       // IV"), as in the English corpus, so numerals sort by value.
       ordenTitulos: EstrategiaOrden.numeralesNaturales,
-      // Long lines (alexandrines, blank verse) wrap on a phone: continue them
-      // indented, measured per device, rather than centring the rest.
-      disposicionVersos: DisposicionVersos.sangria,
+      // Long lines (alexandrines, blank verse) would wrap on a phone: each
+      // poem is shrunk to fit its longest verse, measured per device.
+      disposicionVersos: DisposicionVersos.ajustada,
       fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
       coloresClaro: PoemaColors(
         oro: Color(0xFF2E4A7D),

@@ -26,7 +26,7 @@ TROZO = 150_000  # bytes of text per chunk: opening a poem decodes one chunk
 
 
 # A stanza that is only a section mark: numeral, asterism or row of dots.
-# Same pattern as esMarcaDeSeccion in poemario_core (versos_sangrados.dart).
+# Same pattern as esMarcaDeSeccion in poemario_core (versos_ajustados.dart).
 MARCA = re.compile(r"^\s*([IVXLCDM]+\.?|\d+\.?|[*∗⁂](\s*[*∗])*|[-—–_.\s]{3,})\s*$")
 
 

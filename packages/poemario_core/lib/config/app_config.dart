@@ -97,11 +97,13 @@ enum DisposicionVersos {
   /// Spanish anthology's hendecasyllables).
   centrada,
 
-  /// A centred block of left-aligned verses; a verse too long for the screen
-  /// continues on indented lines, measured on each device. A stanza that is
-  /// only a section mark ("II", "⁂") is drawn as a small heading. For long
-  /// lines: alexandrines, English blank verse and ballad metre.
-  sangria,
+  /// Each poem is set just small enough for its longest verse to fit the
+  /// screen on one line, measured on each device, down to 80% of the normal
+  /// size; past that its long verses wrap, a wrapped verse's lines set
+  /// closer together than two verses. A stanza that is only a section mark
+  /// ("II", "⁂") is drawn as a small heading. For long lines: alexandrines,
+  /// English blank verse and ballad metre.
+  ajustada,
 }
 
 extension AppConfigX on BuildContext {
