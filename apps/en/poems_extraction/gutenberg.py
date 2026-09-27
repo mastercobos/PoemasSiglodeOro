@@ -24,6 +24,12 @@ after checking its layout:
              exactly 6 spaces under a 2-space line ("... the valley of the /
              Mississippi"), except after a line that ends a sentence, where the
              indent is his own ("... grim and daring; / But O heart!").
+  "estricta" as "sangria", but the continuation must start with a lower-case
+             letter: in these books a line opening with a quotation mark or a
+             bracket is a line of the poem ('"It beats!"--Away, thou dreamer!').
+  "ancho-estricto"  no indent either, and poets who open lines with quotation
+             marks: a line of 55 characters or more (not counting its indent) followed by one starting
+             with a lower-case letter.
   "ancho"    the edition does not indent continuations, so a line that reached
              the wrap width followed by one starting in lower case is joined.
 """
@@ -58,9 +64,30 @@ LIBROS = {
     "whittier-anti-slavery": (9580, "ancho"),
     "procter-legends-lyrics": (2304, "ancho"),
     "meredith-poems": (1381, "ancho"),
+    # Checked 2026-09-27, every join inside a poem read: the stricter rules, since these
+    # poets open lines with quotation marks and brackets.
+    "byron-works-3": (21811, "estricta"),
+    "donne-poems": (48688, "estricta"),
+    "dunbar-poems": (18338, "estricta"),
+    "keats-1820": (23684, "estricta"),
+    "morris-defence-guenevere": (22650, "estricta"),
+    "thomas-edward-poems": (22423, "estricta"),
+    "seeger-poems": (617, "estricta"),
+    "lowell-amy-men-women-ghosts": (841, "estricta"),
+    "field-poems": (36150, "estricta"),
+    "campbell-poems": (59788, "estricta"),
+    "rosenberg-poems": (66889, "estricta"),
+    "carleton-farm-ballads": (9500, "ancho-estricto"),
+    "crawford-poems": (6815, "estricta"),
+    "longfellow-poems": (1365, "ancho-estricto"),
+    "tennyson-early-poems": (8601, "ancho-estricto"),
+    "henley-poems": (1568, "ancho-estricto"),
+    "milton-minor-poems": (397, "ancho-estricto"),
 }
 
 ANCHO = 60  # a line this long (with its indent) may have been wrapped
+ANCHO_SIN_INDENTAR = 55  # "ancho-estricto": measured without the indent, which in a play is
+                         # where a line shared between speakers goes ("SPIR. Care and utmost")
 ANCHO_SIN_SANGRIA = 45  # Whittier's edition wraps shorter; lower case is the real signal there
 FIN = re.compile(r"END OF TH[EI]S? PROJECT GUTENBERG")
 
@@ -106,21 +133,47 @@ def continuaciones(ebook, regla):
             continue
         if linea.strip().upper() == linea.strip():
             continue  # a line in capitals is a line of its own (Thackeray's "KILL ALL THE FRIARS!")
-        minuscula = re.match(r"[a-z(\"'‘“\-]", linea.strip())
+        inicio = linea.strip().lstrip("_")   # italics: Hemans's "_they_ seem,"
+        minuscula = re.match(r"[a-z(\"'‘“\-]", inicio)
+        if regla in ("estricta", "ancho-estricto"):
+            minuscula = re.match(r"[a-z]", inicio)
         previa_sin_numero = re.sub(r"\s{2,}\d+$", "", previa)
-        if regla == "sangria":
+        if regla in ("sangria", "estricta"):
             if sangria(linea) < sangria(previa):
                 continue
             if sangria(linea) == sangria(previa):  # broken twice: "... the / continental / blood"
                 ok = minuscula and sangria(linea) > 4 and len(previa_sin_numero) >= ANCHO
             else:
                 ok = (minuscula and len(previa_sin_numero) >= 50) or (
-                    sangria(linea) == 6 and sangria(previa) == 2 and not re.search(r"[;.!?]$", previa))
+                    regla == "sangria" and sangria(linea) == 6 and sangria(previa) == 2
+                    and not re.search(r"[;.!?]$", previa))
+        elif regla == "ancho-estricto":
+            ok = minuscula and len(previa_sin_numero.strip()) >= ANCHO_SIN_INDENTAR
         else:
             ok = minuscula and len(previa_sin_numero) >= ANCHO_SIN_SANGRIA
         if ok:
-            pares.add((normalizar(previa), normalizar(linea)))
+            # without note marks, which the parser drops: Byron's "so fast,[ni]"
+            sin_marca = lambda l: normalizar(re.sub(r"\[[^\]]{1,8}\]", "", l))
+            pares.add((sin_marca(previa), sin_marca(linea)))
     return pares
+
+
+# Long lines broken in two that no rule can find, each checked in its source (2026-09-27):
+# Whitman's edition sets these continuations at the verse's own indent; the others are
+# in books whose layout rule would join lines that are not broken, or not in our corpus.
+UNIONES_A_MANO = [
+    ("Here heed himself, unfold himself, (not others’ formulas heed,)", "here fill his time,"),
+    ("And every day I, a curious boy, never too close, never disturbing", "them,"),
+    ("To troops out of the war arising, they the tasks I have set", "promulging,"),
+    ("You will not read the riddle, though you do the best you", "can do."),
+    ("To form some Beauty by a new receipt, Jove sent, and found, far in a", "country scene,"),
+    ("I mean, what no other mortal in the universe can boast of, your own", "spirit of pun, and own wit."),
+    ("There was an Old Derry down Derry, who loved to see little folks", "merry;"),
+    ("thrusting its flaming petals under and over one another like tortured", "snakes."),
+    ("The waters closed—and when I shriek’d, I shriek’d below the", "foam!"),
+    ("The fair starrs fill their wakefull fires, the sun him-", "self drinks day."),
+]
+PARES_A_MANO = {(normalizar(a), normalizar(b)) for a, b in UNIONES_A_MANO}
 
 
 def unir(estrofas, pares):

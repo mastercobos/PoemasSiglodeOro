@@ -43,6 +43,7 @@ Tools: buscar.py (which section holds a line), probar_reglas.py (which source
 rule changes the split around a line), comparar.py / detalle.py (two runs).
 """
 import argparse
+import collections
 import copy
 import hashlib
 import json
@@ -71,7 +72,7 @@ import fuente     # noqa: E402
 LIBROS = [
     "herrick-hesperides", "hemans-poems", "burns-poems", "dickinson-poems", "longfellow-poems",
     "dunbar-poems", "macdonald-poems", "barnes-dorset", "whitman-leaves", "swift-poems",
-    "hood-poems", "emerson-poems", "shelley-later-poems", "lowell-james-russell-poems", "donne-poems",
+    "hood-poems", "emerson-poems", "shelley-later-poems", "shelley-poems", "lowell-james-russell-poems", "donne-poems",
     "byron-childe-harold", "swift-poems-vol1", "drayton-minor-poems", "rossetti-goblin-market", "byron-works-3",
     "cawein-poems", "bowles-sonnets", "henley-poems", "hood-poetical-works", "whittier-anti-slavery",
     "bryant-poems", "seward-sonnets", "kirke-white-poems", "sidney-astrophel", "lovelace-lucasta",
@@ -90,6 +91,9 @@ PISTAS = {
     "bowles-sonnets": {"drop_range": [(r"^PICTURES FROM THEOCRITUS\.$", r"^LADY M----VE\.$")]},   # translations
     # glosses in a margin column beside the verse (fuente.sin_margen)
     "drayton-minor-poems": {"margen": True},
+    # Pollard's word-glosses under the poems; headings that run to two lines (fuente)
+    "herrick-hesperides": {"glosas": True, "titulos_largos": True},
+    "byron-works-3": {"marcas_letra": True},
     # Collins's critical introduction quotes Tennyson line by line with the poem named under
     # each quotation, and the parser made those poems ("The Eagle" in 22 lines). The poems
     # begin at the second "To the Queen" (the first is in the contents; any case, since
@@ -101,6 +105,12 @@ PISTAS = {
     "longfellow-poems": {"drop_range": [(r"^THE SPANISH STUDENT$", r"^THE BELFRY OF BRUGES AND OTHER POEMS$"),
                                         (r"^THE MASQUE OF PANDORA$", r"^THE HANGING OF THE CRANE$"),
                                         (r"^TRANSLATIONS$", r"^(?!x)x")]},           # to the end of the book
+    # Shelley's plays: Prometheus Unbound and The Cenci; Swellfoot; Hellas, the unfinished
+    # drama and Charles the First. The contents list names them with their subtitles, so the
+    # bare headings are the plays themselves.
+    "shelley-poems": {"drop_range": [(r"^PROMETHEUS UNBOUND\.$", r"^THE MASK OF ANARCHY\.$"),
+                                     (r"^OEDIPUS TYRANNUS$", r"^EPIPSYCHIDION\.$"),
+                                     (r"^HELLAS$", r"^THE TRIUMPH OF LIFE\.$")]},
     "bryant-poems": {"drop_range": [(r"^TRANSLATIONS\.$", r"^LATER POEMS$", 2)]},
     "emerson-poems": {"drop_range": [(r"^TRANSLATIONS$", r"^APPENDIX$", 2)]},
     "hemans-poems": {"no_hablantes": ["FROM A PAINTING BY WILLIAMS."],
@@ -143,6 +153,27 @@ PARCHES = [
      """def clean_stanza(st, notes=None, keep_speakers=False):""",
      """CONSERVAR_MAYUSCULAS = False
 def clean_stanza(st, notes=None, keep_speakers=False):"""),
+    # APPARATUS drops a line that opens on two or more short capitalised words each with a
+    # comma, meant for Grierson's lists of manuscripts ("A18, A25, B, Cy, D, H49, ..."). It
+    # also took verse: "Love, Hope, and Self-esteem, like clouds depart" out of Shelley's Hymn
+    # to Intellectual Beauty, "Burn, Sun, down the sea!", "Now, God, quoth I, that died upon
+    # the rood," -- 150-odd lines in our books, where the only real lists are Donne's two.
+    # Both name a manuscript with a number, so with CONSERVAR_MAYUSCULAS a list without
+    # one is kept.
+    ("generic.py",
+     """        if APPARATUS.search(l): continue""",
+     """        if APPARATUS.search(l) and not (CONSERVAR_MAYUSCULAS and not _APARATO_SIN_LISTA.search(l) and not re.match(r"^\\s*(?:[A-Z][A-Za-z']{0,3},\\s*)*[A-Z][A-Za-z']{0,3}\\d", l)): continue"""),
+    ("generic.py",
+     """GLOSS_LINE = re.compile(""",
+     """_APARATO_SIN_LISTA = re.compile(APPARATUS.pattern.replace(r"|^(?:[A-Z][A-Za-z0-9\\']{0,3},\\s*){2,}", "", 1))
+GLOSS_LINE = re.compile("""),
+    # A heading is at most seventy characters, and Pollard's Herrick numbers headings that run
+    # longer ("336. HIS AGE, DEDICATED TO HIS PECULIAR FRIEND, M. JOHN WICKES, UNDER THE NAME OF
+    # POSTHUMUS."): refused, the poem went into the one before. With the hint titulos_largos a
+    # numbered heading in capitals has no cap.
+    ("generic.py",
+     """    if not t or len(t) > 70: return False""",
+     """    if not t or (len(t) > 70 and not (meta and meta.get('titulos_largos') and re.match(r'^\\d{1,4}\\. [^a-z]+$', t))): return False"""),
 ]
 
 
@@ -170,6 +201,32 @@ def preparar(libros_gutenberg):
     sys.path.insert(0, str(TRABAJO / "pipeline"))
 
 
+def apertura(estrofa):
+    """A stanza told by its first two lines: in a play the first is often a speaker's name,
+    and Rosalind and Helen has forty stanzas opening "HELEN:". By the first line alone Laurel's
+    split of it was moved onto the last of them, and its first 613 lines went to the fragment
+    before it."""
+    return fuente.clave(" ".join(estrofa[:2]))
+
+
+def indice_de_estrofas(estrofas):
+    """Stanza -> position, by apertura; by the first line alone when no other stanza
+    opens with it, since our rules can change a stanza's second line (Drayton's margin
+    notes); and by the two lines after the first, when we kept a first line Laurel's
+    parser dropped (Drayton's "Now, Loue, if thou wilt proue a Conqueror,")."""
+    por_dos = {apertura(st): k for k, st in enumerate(estrofas) if st}
+    cuenta = collections.Counter(fuente.clave(st[0]) for st in estrofas if st)
+    por_una = {fuente.clave(st[0]): k for k, st in enumerate(estrofas) if st and cuenta[fuente.clave(st[0])] == 1}
+    por_tras = {apertura(st[1:]): k for k, st in enumerate(estrofas) if len(st) > 2}
+
+    def buscar(st):
+        for k in (por_dos.get(apertura(st)), por_una.get(fuente.clave(st[0])), por_tras.get(apertura(st))):
+            if k is not None:
+                return k
+        return None
+    return buscar
+
+
 def ya_hecho(r, viejo, secciones):
     """Our split already does what this Laurel fix is for: the poem it splits off starts a
     section of ours, the text it drops starts none, the title it gives is the one we have.
@@ -180,17 +237,17 @@ def ya_hecho(r, viejo, secciones):
         return False
     inicio = {fuente.clave(s["stanzas"][0][0]): s for s in secciones if s["stanzas"] and s["stanzas"][0]}
     vista = [old[n] for n in fix["keep_stanzas"] if 0 <= n < len(old)] if "keep_stanzas" in fix else old
-    anterior = {}                                            # first line of a section -> the section before it
+    anterior = {}                                            # opening of a section -> the section before it
     for a, b in zip(secciones, secciones[1:]):
         if b["stanzas"] and b["stanzas"][0]:
-            anterior[fuente.clave(b["stanzas"][0][0])] = a
+            anterior[apertura(b["stanzas"][0])] = a
 
     def abre(n):
         """Stanza n opens a section of ours, and the stanza before it ends the section before
         (not just any section: Donne's edition prints the Psalms poem twice)."""
         if not (0 < n < len(vista) and vista[n] and vista[n - 1]):
             return False
-        antes = anterior.get(fuente.clave(vista[n][0]))
+        antes = anterior.get(apertura(vista[n]))
         return bool(antes) and any(fuente.clave(vista[n - 1][0]) == fuente.clave(st[0]) for st in antes["stanzas"] if st)
     pruebas = []
     if "drop" in fix:
@@ -237,8 +294,8 @@ def reanclar(r, viejo, ahora, log):
     r = copy.deepcopy(r)
     r["section"] = destino
     f = r["fix"]
-    primeras = {st[0]: k for k, st in enumerate(new) if st}
-    mover = lambda n: primeras.get(old[n][0]) if 0 <= n < len(old) and old[n] else None
+    primeras = indice_de_estrofas(new)
+    mover = lambda n: primeras(old[n]) if 0 <= n < len(old) and old[n] else None
     # split and join numbers count the stanzas left after keep_stanzas, in both splits
     vista_old = [old[n] for n in f["keep_stanzas"] if 0 <= n < len(old)] if "keep_stanzas" in f else old
     if "keep_stanzas" in f:
@@ -246,8 +303,8 @@ def reanclar(r, viejo, ahora, log):
         vista_new = [new[k] for k in f["keep_stanzas"]]
     else:
         vista_new = new
-    pos = {st[0]: k for k, st in enumerate(vista_new) if st}
-    m2 = lambda n: pos.get(vista_old[n][0]) if 0 <= n < len(vista_old) and vista_old[n] else None
+    pos = indice_de_estrofas(vista_new)
+    m2 = lambda n: pos(vista_old[n]) if 0 <= n < len(vista_old) and vista_old[n] else None
     ok = not ("keep_stanzas" in f and not f["keep_stanzas"])
     if "split_at_stanza" in f:
         f["split_at_stanza"] = m2(f["split_at_stanza"])
@@ -278,7 +335,7 @@ def anadir(w, r, ingest, log):
     matching `hasta`. `sin_numeros` drops lines that are only a roman numeral."""
     import re
     a = r["anadir"]
-    lineas = ingest.load(a["ebook"])
+    lineas = fuente.sin_variantes(ingest.load(a["ebook"]))   # Hutchinson's Shelley: "_5", "NOTES:"
     t = next((k for k, l in enumerate(lineas) if re.match(a["tras"], l.strip())), None) if a.get("tras") else 0
     i = next((k for k in range(t, len(lineas)) if re.match(a["desde"], lineas[k].strip())), None) if t is not None else None
     j = next((k for k in range(i + 1, len(lineas)) if re.match(a["hasta"], lineas[k].strip())), None) if i is not None else None
@@ -325,9 +382,17 @@ def extraer(slug, lib, consultas, hallazgos, propias, reglas, informe):
     if not reglas:
         meta = meta_laurel
     if reglas:
-        margen = meta.get("margen")
-        generic.load = lambda gid: fuente.titulos_del_indice(fuente.sin_notas(fuente.sin_marcas(
-            fuente.sin_margen(ingest.load(gid)) if margen else ingest.load(gid))))[0]
+        def cargar(gid, meta=meta):
+            lineas = ingest.load(gid)
+            if meta.get("margen"):
+                lineas = fuente.sin_margen(lineas)
+            if meta.get("glosas"):
+                lineas = fuente.titulos_en_dos_lineas(fuente.sin_glosas(lineas))
+            lineas = fuente.sin_notas(fuente.sin_marcas(fuente.sin_variantes(lineas)))
+            if meta.get("marcas_letra"):        # after sin_notas, which needs the marks to find the notes
+                lineas = fuente.sin_marcas_de_letra(lineas)
+            return fuente.titulos_del_indice(lineas)[0]
+        generic.load = cargar
         generic.CONSERVAR_MAYUSCULAS = True
         w = generic.parse_gutenberg(ebook, slug, meta)
         generic.CONSERVAR_MAYUSCULAS = False
@@ -433,7 +498,9 @@ def extraer(slug, lib, consultas, hallazgos, propias, reglas, informe):
             if "cambiar" in r:                              # a line the parser cut, given back from the source
                 for s in w["sections"]:
                     if s["id"] == r["section"]:
-                        s["stanzas"] = [[r["cambiar"].get(l.strip(), l) for l in st] for st in s["stanzas"]]
+                        # a replacement may hold a line break: a line the source left out, given back
+                        s["stanzas"] = [[x for l in st for x in r["cambiar"].get(l.strip(), l).split("\n")]
+                                        for st in s["stanzas"]]
             if "quitar" in r:                               # stray lines: a subtitle left in the verse
                 for s in w["sections"]:
                     if s["id"] == r["section"]:

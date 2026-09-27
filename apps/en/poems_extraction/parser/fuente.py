@@ -111,6 +111,77 @@ def sin_margen(lines, minimo=10):
     return out
 
 
+GLOSA = re.compile(r"^  _[^_]{1,70}_")   # two spaces: the verse is indented four
+
+
+def sin_glosas(lines):
+    """Pollard's Herrick sets word-glosses under a poem, a block of entries like
+    "  _Repullulate_, be born again." or "  _Anchus and rich Tullus._ Herrick is...",
+    with indented continuations; they reached the poem as its last stanza, sometimes
+    after a note ("  For an account of Alabaster
+    see Notes..."). The verse is indented four spaces and the notes two: a block of
+    two-space lines and their indented continuations, one of them an entry, goes."""
+    out, i, n = [], 0, len(lines)
+    while i < n:
+        if not lines[i].strip():
+            out.append(lines[i]); i += 1; continue
+        j = i
+        while j < n and lines[j].strip(): j += 1
+        bloque = lines[i:j]
+        if (re.match(r"^  \S", bloque[0]) and any(GLOSA.match(l) for l in bloque)
+                and all(re.match(r"^  \S", l) or l.startswith('    ') for l in bloque)):
+            i = j
+            continue
+        out.extend(bloque)
+        i = j
+    return out
+
+
+def titulos_en_dos_lineas(lines):
+    """A numbered heading in capitals that runs on to a second line ("336. HIS AGE,
+    DEDICATED TO ... UNDER" / "THE NAME OF POSTHUMUS."): the parser took the heading
+    for verse and the poem went into the one before. The two lines are joined."""
+    out = list(lines)
+    for k in range(len(out) - 1):
+        a, b = out[k], out[k + 1]
+        if (re.match(r"^\d{1,4}\. [A-Z][^a-z]{3,}$", a) and b.strip() and not b.startswith(" ")
+                and b == b.upper() and re.search(r"[A-Z]{3}", b)):
+            out[k], out[k + 1] = a.rstrip() + " " + b.strip(), ""
+    return out
+
+
+def sin_marcas_de_letra(lines):
+    """Coleridge's Byron marks his notes with letters in brackets set against the word:
+    "bared before thee[ri]". The parser dropped the brackets and kept the letters, so the
+    app read "theeri". Only for books that mark notes this way: elsewhere a bracket against
+    a word is the editor's conjecture ("Fate[s]", "C[lipseby] C[rew]")."""
+    return [re.sub(r"(?<=\S)\[[a-z]{1,2}\]", "", l) for l in lines]
+
+
+def sin_variantes(lines):
+    """Hutchinson's Shelley follows a poem with its variant readings: "NOTES:" and then
+    "_2 wert 1839; did 1824." up to the next blank line, sometimes more blocks of
+    "_n" entries after it. Eight such blocks reached the app as a last stanza
+    ("Love's Philosophy", "Mutability"). They go, and so do the line numbers set at
+    the right margin as "_35", which the parser only knows without the underscore."""
+    out, i, n = [], 0, len(lines)
+    while i < n:
+        if re.match(r"^NOTES?:\s*$", lines[i]):
+            i += 1
+            while True:
+                while i < n and lines[i].strip(): i += 1
+                k = i
+                while k < n and not lines[k].strip(): k += 1
+                if k < n and re.match(r"^_\d", lines[k]):
+                    i = k
+                    continue
+                break
+            continue
+        out.append(re.sub(r"\s{2,}_\d{1,4}_?\s*$", "", lines[i]))
+        i += 1
+    return out
+
+
 def sin_marcas(lines):
     """Transcriber's marks: Bryant's "THE MASSACRE AT SCIO. deg." (a degree sign standing for a
     note) reached the app as "The Massacre at Scio. Deg"; and emphasis set as *I* (Lanier) lost

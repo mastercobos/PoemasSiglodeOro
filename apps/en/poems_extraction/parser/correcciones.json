@@ -338,5 +338,90 @@
    "from-the-same"
   ],
   "note": "a Theocritus piece in Pictures from Theocritus, translations now left out (PISTAS drop_range)"
+ },
+ {
+  "work": "spenser-amoretti",
+  "section": "amoretti",
+  "note": "Sonnet I lacks its line 8 in this Gutenberg edition (checked against the Renascence Editions text of 1595): given back, which also lets the 88 sonnets split into separate poems",
+  "cambiar": {
+   "And reade the sorrowes of my dying spright,": "And reade the sorrowes of my dying spright,\nWritten with teares in harts close bleeding book."
+  }
+ },
+ {
+  "work": "whitman-leaves",
+  "section": "myself-and-mine",
+  "note": "Year of Meteors is glued to Myself and Mine: Gutenberg prints its heading \"Year of Meteors [1859-60\" without the closing bracket, and neither parser takes it for a title (Laurel lacks the poem). Split off, with the bracket given back",
+  "fix": {
+   "split_at_stanza": 11,
+   "second_title": "Year of Meteors [1859-60]"
+  }
+ },
+ {
+  "work": "whitman-leaves",
+  "section": "year-of-meteors-1859-60",
+  "note": "\"600 feet long,\" continues the line before it in the source; Laurel's rule for line numbers took the 600 as one and left \"feet long,\" as a line",
+  "cambiar": {
+   "Well-shaped and stately the Great Eastern swam up my bay, she was": "Well-shaped and stately the Great Eastern swam up my bay, she was 600 feet long,"
+  },
+  "quitar": [
+   "feet long,"
+  ]
+ },
+ {
+  "work": "byron-works-3",
+  "section": "the-bride-of-abydos-canto-i",
+  "note": "The first cantos of The Corsair and Lara are glued to The Bride of Abydos, Canto I: the three poems' \"CANTO THE FIRST.\" headings all key as Canto I, and the parser folds them together. Split at the Corsair's \"O'er the glad waters of the dark blue sea\" and Lara's \"The Serfs are glad through Lara's wide domain\"",
+  "fix": {
+   "split_many": [
+    [
+     20,
+     "The Corsair: Canto I"
+    ],
+    [
+     47,
+     "Lara: Canto I"
+    ]
+   ]
+  }
+ },
+ {
+  "work": "burns-poems",
+  "section": "grace-before-and-after-meat",
+  "note": "the Impromptu on Dumourier (three stanzas) is glued under the Grace before and after Meat: split off with the title the source gives it",
+  "fix": {
+   "split_at_stanza": 2,
+   "second_title": "Impromptu On General Dumourier’s Desertion From The French Republican Army"
+  }
+ },
+ {
+  "work": "harper-poems",
+  "section": "the-martyr-of-alabama",
+  "note": "one poem the parser cut in four at page numbers; joined back",
+  "unir": [
+   "the-martyr-of-alabama-2",
+   "the-martyr-of-alabama-51",
+   "the-martyr-of-alabama-3"
+  ]
+ },
+ {
+  "work": "shelley-poems",
+  "section": "julian-and-maddalo",
+  "note": "Julian and Maddalo follows its prose preface with no heading between them, so the parser, skipping the PREFACE, skipped the poem too (Laurel lacks it). Taken whole from the source",
+  "anadir": {
+   "ebook": 4797,
+   "desde": "^sufficient comment for the text of every heart\\.$",
+   "hasta": "^CANCELLED FRAGMENTS OF JULIAN AND MADDALO\\.$",
+   "title": "Julian and Maddalo: A Conversation",
+   "despues_de": "rosalind-and-helen-a-modern-eclogue"
+  }
+ },
+ {
+  "work": "shelley-poems",
+  "resuelto": [
+   "translated-from-the-original-doric",
+   "time-sunset",
+   "indian-youth-and-lady"
+  ],
+  "note": "Laurel's retitles for Swellfoot, Hellas and the unfinished drama: the plays are cut at the source (PISTAS drop_range)"
  }
 ]

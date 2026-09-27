@@ -5,26 +5,27 @@ all fixes, and as Laurel published it (its published count includes hand work it
 
 | Book | Laurel's split | Ours | Published | Speaker tags restored | Epigraphs dropped |
 |---|---:|---:|---:|---:|---:|
-| herrick-hesperides | 1394 | 1392 | 1390 | 0 | 0 |
+| herrick-hesperides | 1394 | 1412 | 1390 | 0 | 0 |
 | hemans-poems | 691 | 638 | 688 | 9 | 48 |
-| burns-poems | 546 | 555 | 540 | 0 | 3 |
+| burns-poems | 546 | 556 | 540 | 0 | 3 |
 | dickinson-poems | 448 | 448 | 448 | 0 | 0 |
 | longfellow-poems | 457 | 358 | 458 | 2 | 2 |
 | dunbar-poems | 422 | 422 | 422 | 0 | 0 |
 | macdonald-poems | 318 | 318 | 318 | 0 | 0 |
-| barnes-dorset | 325 | 319 | 318 | 74 | 0 |
-| whitman-leaves | 325 | 335 | 334 | 0 | 0 |
+| barnes-dorset | 325 | 319 | 318 | 76 | 0 |
+| whitman-leaves | 325 | 336 | 334 | 0 | 0 |
 | swift-poems | 243 | 261 | 257 | 0 | 1 |
-| hood-poems | 228 | 230 | 229 | 21 | 10 |
+| hood-poems | 228 | 230 | 229 | 23 | 10 |
 | emerson-poems | 220 | 208 | 218 | 0 | 0 |
 | shelley-later-poems | 198 | 209 | 209 | 0 | 2 |
+| shelley-poems | 91 | 49 | 90 | 0 | 0 |
 | lowell-james-russell-poems | 190 | 189 | 176 | 3 | 1 |
 | donne-poems | 182 | 191 | 191 | 0 | 0 |
 | byron-childe-harold | 166 | 166 | 166 | 0 | 0 |
 | swift-poems-vol1 | 148 | 167 | 169 | 0 | 0 |
 | drayton-minor-poems | 59 | 149 | 146 | 0 | 0 |
 | rossetti-goblin-market | 138 | 139 | 140 | 0 | 0 |
-| byron-works-3 | 166 | 162 | 166 | 0 | 2 |
+| byron-works-3 | 166 | 131 | 166 | 0 | 2 |
 | cawein-poems | 143 | 139 | 142 | 0 | 0 |
 | bowles-sonnets | 143 | 137 | 144 | 4 | 0 |
 | henley-poems | 141 | 133 | 133 | 0 | 1 |
@@ -37,7 +38,7 @@ all fixes, and as Laurel published it (its published count includes hand work it
 | lovelace-lucasta | 143 | 143 | 143 | 12 | 0 |
 | waller-denham | 157 | 147 | 147 | 15 | 0 |
 | arnold-poems | 145 | 113 | 113 | 49 | 0 |
-| harper-poems | 111 | 111 | 111 | 0 | 1 |
+| harper-poems | 111 | 108 | 111 | 0 | 1 |
 | thackeray-ballads | 115 | 114 | 114 | 2 | 0 |
 | stedman-poems | 108 | 108 | 108 | 0 | 0 |
 | wordsworth-vol2 | 122 | 123 | 124 | 0 | 2 |
@@ -48,7 +49,7 @@ all fixes, and as Laurel published it (its published count includes hand work it
 | meredith-poems | 91 | 93 | 93 | 0 | 0 |
 | praed-poems | 101 | 98 | 101 | 0 | 5 |
 | rossetti-house-of-life | 98 | 98 | 98 | 0 | 0 |
-| timrod-poems | 90 | 88 | 89 | 0 | 0 |
+| timrod-poems | 90 | 87 | 89 | 0 | 0 |
 | coleridge-poems | 101 | 98 | 98 | 0 | 0 |
 | johnson-lionel-poems | 95 | 87 | 87 | 0 | 0 |
 
@@ -63,5 +64,6 @@ None.
 Checked by content: the poem the fix splits off starts one of our sections, the text it drops
 starts none, the title it gives is ours.
 
+* shelley-later-poems: `fragment-to-a-friend-released-from-prison`
 * lowell-james-russell-poems: `introduction`
 * bryant-poems: `poems`, `a-scene-on-the-banks-of-the-hudson`, `hymn-of-the-city`, `the-strange-lady`, `the-death-of-schiller`, `poem`

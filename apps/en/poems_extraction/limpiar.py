@@ -260,7 +260,50 @@ OBRA_A_MANO = {
 TITULOS_A_MANO = [
     ("Lord Byron", re.compile(r"^Canto ([IVX]+): Ge ([IVXLC]+)$"), r"The Bride of Abydos: Canto \1, Stanza \2"),
     ("Lord Byron", re.compile(r"^Canto ([IVX]+): Canto \1 ([IVXLC]+)$"), r"The Corsair: Canto \1, Stanza \2"),
+    ("Lord Byron", re.compile(r"^LARA\.jb: Canto II$"), "Lara: Canto II"),   # Laurel's title, with a note mark
+    # Falconer's Shipwreck, titled from each canto's argument ("Time, About Four Days and a Half"),
+    # and the elegy after it, from its subtitle.
+    ("William Falconer", re.compile(r"^Time, About Four Days and a Half$"), "The Shipwreck: Canto I"),
+    ("William Falconer", re.compile(r"^Canto (II|III)\b.*$"), r"The Shipwreck: Canto \1"),
+    ("William Falconer", re.compile(r"^In Which the Preceding Narrative Is Concluded$"), "Occasional Elegy"),
 ]
+
+# Headings printed over several lines, which Laurel joined with ", " ("TO / HONORA SNEYD[1], /
+# WHOSE HEALTH..." came out "To, Honora Sneyd,, Whose Health..."), each checked in its source
+# (2026-09-27); Gutenberg's "[:Y]" (a y with a diaeresis) in Barnes's headings, spelt as his verse
+# spells the word; and two poems titled from what stands over them.
+TITULOS_EXACTOS = {
+    ("Alfred Tennyson", "On the Death Of, the Duke of Wellington"): "On the Death of the Duke of Wellington",
+    ("Samuel Taylor Coleridge", "Composed Before Daylight, on the Morning, Appointed for the Departure of a Very, Worthy, but Not Very Pleasant Visitor,, Whom It Was Feared the Rain Might, Detain"):
+        "Composed Before Daylight, on the Morning Appointed for the Departure of a Very Worthy, but Not Very Pleasant Visitor, Whom It Was Feared the Rain Might Detain",
+    ("Henry Wadsworth Longfellow", "Act I: Scene II. — A Street. On One Side, Nicholas Upsall's House; On, the Other, Walter Merry's, with a Flock of Pigeons on the Roof, Upsall Seated in the Porch of His House"):
+        "Act I: Scene II. — A Street. On One Side, Nicholas Upsall's House; On the Other, Walter Merry's, with a Flock of Pigeons on the Roof. Upsall Seated in the Porch of His House",
+    ("Henry Wadsworth Longfellow", "Act I: Scene III. — A Room in Upsall's House. Night. Edith, Wharton,, and Other Quakers Seated at a Table. Upsall Seated Near Them,, Several Books on the Table"):
+        "Act I: Scene III. — A Room in Upsall's House. Night. Edith, Wharton, and Other Quakers Seated at a Table. Upsall Seated Near Them. Several Books on the Table",
+    ("Henry Wadsworth Longfellow", "Act II: Scene II. — Dock Square. On One Side, the Tavern of the Three, Mariners. In the Background, a Quaint Building with Gables; And,, Beyond It, Wharves and Shipping. Captain Kempthorn and Others, Seated at a Table Before the Door. Samuel Cole Standing Near, Them"):
+        "Act II: Scene II. — Dock Square. On One Side, the Tavern of the Three Mariners. In the Background, a Quaint Building with Gables; And, Beyond It, Wharves and Shipping. Captain Kempthorn and Others Seated at a Table Before the Door. Samuel Cole Standing Near Them",
+    ("Henry Wadsworth Longfellow", "Act IV: Scene II. — Street in Front of the Prison. In the Background A, Gateway and Several Flights of Steps Leading Up Terraces to The, Governor's House. A Pump on One Side of the Street. John, Endicott, Merry, Upsall, and Others. A Drum Beats"):
+        "Act IV: Scene II. — Street in Front of the Prison. In the Background a Gateway and Several Flights of Steps Leading Up Terraces to the Governor's House. A Pump on One Side of the Street. John Endicott, Merry, Upsall, and Others. A Drum Beats",
+    ("Henry Wadsworth Longfellow", "Act I: Scene II. — A Room at Justice Hathorne's. A Clock in The, Corner, Enter Hathorne and Mather"):
+        "Act I: Scene II. — A Room at Justice Hathorne's. A Clock in the Corner. Enter Hathorne and Mather",
+    ("Robert Herrick", "To The, Most Illustrious and Most Hopeful, Prince, Charles,, Prince of Wales"):
+        "To the Most Illustrious and Most Hopeful Prince, Charles, Prince of Wales",
+    ("Anna Seward", "To, Honora Sneyd,, Whose Health Was Always Best in Winter"): "To Honora Sneyd, Whose Health Was Always Best in Winter",
+    ("Anna Seward", "To A, Friend,, Who Thinks Sensibility a Misfortune"): "To a Friend, Who Thinks Sensibility a Misfortune",
+    ("Anna Seward", "To, Sylvia, on Her Approaching Nuptials"): "To Sylvia, on Her Approaching Nuptials",
+    ("William Barnes", "Naighbour Pla[:Y]Meaetes"): "Naighbour Playmeaetes",
+    ("William Barnes", "Early Pla[:Y]Meaete"): "Early Playmeaete",
+    ("William Barnes", "Gammony Ga[:Y]"): "Gammony Gay",
+    ("Helen Maria Williams", "An, on The, Peace"): "An Ode on the Peace",
+    ("Helen Maria Williams", "An, Epistle, To, Dr. Moore"): "An Epistle to Dr. Moore",
+    ("Helen Maria Williams", "An, Epistle, To, Dr. Moore, Author of"):
+        "An Epistle to Dr. Moore, Author of A View of Society and Manners in France, Switzerland, and Germany",
+    ("Helen Maria Williams", "Part, of An, Irregular Fragment,, Found in A, Dark Passage of the Tower"):
+        "Part of an Irregular Fragment, Found in a Dark Passage of the Tower",
+    ("Ella Wheeler Wilcox", "Other Books, By, Ella Wheeler Wilcox"): "The Poet's Song",   # the proem, under its illustration's caption
+    ("John Milton", "Song"): "Song from Comus",   # "Sweet Echo", the one part of the masque kept
+}
+TITULOS_A_MANO.append(("Edmund Spenser", re.compile(r"^Visions, Of, the Worlds Vanitie, ([IVX]+)$"), r"Visions of the Worlds Vanitie, \1"))
 
 NUMERACION = re.compile(r"^\d+\.\s+(?=\S)")  # "207. To Carnations" (Herrick's Hesperides)
 
@@ -271,6 +314,8 @@ def titulo_completo(titulo, obra, edicion=None, autor=None, primera=""):
     holds the Essay on Man's epistles. So both must look like a single work;
     otherwise the section is looked up in OBRA_A_MANO."""
     t = limpiar_linea(NUMERACION.sub("", titulo.strip()))
+    if (autor, t) in TITULOS_EXACTOS:
+        return TITULOS_EXACTOS[(autor, t)]
     for a, patron, nuevo in TITULOS_A_MANO:
         if a == autor and patron.match(t):
             return patron.sub(nuevo, t)
@@ -303,8 +348,18 @@ def lineas_partidas(estrofas):
 #  * the editions' footnote marks, pointing to notes the app doesn't show (Wheatley, Spenser,
 #    Lazarus, Whittier, Harper, Barnes). Wheatley's mark on "Niobe" said the verse from there
 #    to the end "is the Work of another Hand";
-#  * Gutenberg's own slips in Tennyson's Maud, an asterisk typed for an apostrophe.
+#  * Gutenberg's own slips in Tennyson's Maud, an asterisk typed for an apostrophe;
+#  * a line number the edition prints after the verse with a single space (Hutchinson's
+#    Shelley, and one each in Wordsworth, Spenser, Hopkins, Dryden, Crashaw), which no rule
+#    can tell from the verse; Rogers's "[also Footnote 1]".
 LINEAS_A_MANO = {
+    ('William Wordsworth', 'Choice word and measured phrase, above the reach 95'): 'Choice word and measured phrase, above the reach',
+    ('Edmund Spenser', 'That she whose conquering beauty doth captíve 275'): 'That she whose conquering beauty doth captíve',
+    ('Gerard Manley Hopkins', 'But Harry—in his hands he has flung 35'): 'But Harry—in his hands he has flung',
+    ('John Dryden', 'Even those, whom for rebellion she transmits 483'): 'Even those, whom for rebellion she transmits',
+    ('Richard Crashaw', 'The aiery nation of neat doves, pure 45'): 'The aiery nation of neat doves, pure',
+    ('Samuel Rogers', 'And ebon chair [also Footnote 1] of many a serpent-fold;'): 'And ebon chair of many a serpent-fold;',
+    ('Percy Bysshe Shelley', 'And in the arms of Adiposa oft 290'): 'And in the arms of Adiposa oft',
     ('Alfred Tennyson', 'I play*d with the girl when a child; she promised then to be fair.'): "I play'd with the girl when a child; she promised then to be fair.",
     ('Alfred Tennyson', "The red rose cries, *She is near, she is near;'"): "The red rose cries, 'She is near, she is near;'",
     ('Edmund Spenser', 'And steel-hed speare, and morion * on her hedd,'): 'And steel-hed speare, and morion on her hedd,',
@@ -326,13 +381,47 @@ DESCARTAR_A_MANO = {
     ("Robert Browning", "The Life of Browning", "And I myself went with the tale"),
     ("James Beattie", "The Life of Robert Blair", "O great maneater"),
     ("John Wilmot Rochester", "The Contents", "A Letter from Artemisa"),
+    ("William Falconer", "William Falconer", '"It was that fatal and perfidious bark,'),
+    ("Thomas Hood", "The Hood-Dore", "=The Complete Works of Thomas Hood="),  # an advertisement
+    ("Ralph Waldo Emerson", "Violet, The, Visit, The, Voluntaries", "Waldeinsamkeit"),  # a page of the index
+    ("Percy Bysshe Shelley", "Scene from 'Tasso'", ""),  # a scene of a play
     # Notes pages in the Rape of the Lock edition, each note too short to look like prose.
     ("Alexander Pope", "Canto V", "Painting the face was"),
     ("Alexander Pope", "Introduction", "2) learning, culture"),
     ("Alexander Pope", "Epistle", "An imaginary portrait of a mad poet"),
+    # A publisher's list of illustrated gift books at the end of the House of Life edition.
+    ("Dante Gabriel Rossetti", "Under the General Editorship of F. B. Money-Coutts", "Vol. I. Gray's Elegy"),
+}
+# Editors' notes that open or close a poem, cut by hand: (author, start of the stanza where
+# the poem starts or where the notes start) -> "desde" (drop that stanza and the rest) or
+# "hasta" (drop the stanzas before it). Checked 2026-09-27.
+CORTES_A_MANO = {
+    # the prose argument over each canto of Falconer's Shipwreck
+    ("William Falconer", "I. A ship from Egypt, o'er the deep impell'd"): "hasta",
+    ("William Falconer", "I. Adieu! ye pleasures of the sylvan scene,"): "hasta",
+    ("William Falconer", "I. When, in a barbarous age, with blood defiled,"): "hasta",
+    ("Percy Bysshe Shelley", "(36 The oldest scholiasts read—"): "desde",   # his note to Peter Bell the Third
+    ("Lord Byron", "Fare thee well! and if for ever,"): "hasta",   # the epigraph from Christabel, with its attribution
+    ("Richard Lovelace", '"Heer patches are of every cut,'): "desde",      # Hazlitt's note on patches
+    ("William Barnes", "Jack-o'-lent, a man-like scarecrow."): "desde",     # Barnes's glossary
+    ("Alfred Tennyson", "Almondine. This should be “almandine,” the word probably being a"): "desde",  # Collins
+    ("William Edmondstoune Aytoun", "Come listen to another song,"): "hasta",  # his note on Lord Pitsligo
 }
 LINEAS_ESPURIAS = {
     ("John Donne", "one page which shall paste"),  # a marginal gloss printed inside Coryat's verses
+    ("Richard Henry Horne", "A LANDSCAPE IN BERKSHIRE"),  # the Oxford Book's subtitle, set over the poem
+    ("Helen Maria Williams", "IN"),                      # left from the Epistle's heading
+    ("Ella Wheeler Wilcox", "WHEELER WILCOX A Birthday Book"),  # the end of a list of her books
+    # a note at the end of the last stanza: Thorn-Drury's on Waller
+    ("Edmund Waller", "'Mrs. Wharton': the daughter, and co-heiress with the Countess of"),
+    ("Edmund Waller", "Abingdon, of Sir Henry Lee, of Ditchley, in Oxfordshire."),
+    ("Edmund Waller", "'In blood': the Earl of Rochester's mother was Mrs. Wharton's grand"),
+    ("Edmund Waller", "aunt."),
+    # Collins's note over Tennyson's "Sonnet to J. M. K.", set like verse
+    ("Alfred Tennyson", "This sonnet was addressed to John Mitchell Kemble, the well-known"),
+    ("Alfred Tennyson", "Editor of the Beowulf and other Anglo-Saxon poems. He intended to go"),
+    ("Alfred Tennyson", "into the Church, but was never ordained, and devoted his life to early"),
+    ("Alfred Tennyson", "English studies. See memoir of him in Dict, of Nat. Biography."),
 }
 
 
@@ -351,6 +440,16 @@ def limpiar_poema(titulo, estrofas, obra=None, edicion=None, con_metro=True, aut
     found no metre) makes the test stricter for stanzas that cite something."""
     if any(a == autor and t == titulo and estrofas[0][0].startswith(c) for a, t, c in DESCARTAR_A_MANO):
         return titulo, None, [("by hand", "\n".join(estrofas[0]), "start")]
+    letras = lambda l: re.sub(r"[\W_]+", "", l).lower()   # the raw text still has "--" for "—"
+    cortes = {(a, letras(l)): v for (a, l), v in CORTES_A_MANO.items()}
+    for i, e in enumerate(estrofas):
+        corte = e and cortes.get((autor, letras(e[0])))
+        if corte == "desde" and i > 0:
+            estrofas = estrofas[:i]
+            break
+        if corte == "hasta":
+            estrofas = estrofas[i:]
+            break
     if es_indice(estrofas):
         return titulo, None, [("contents list", "\n".join(estrofas[0]), "start")]
     if TITULO_APARATO.match(titulo.strip()):
