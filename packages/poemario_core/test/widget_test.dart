@@ -7,6 +7,7 @@ import 'package:poemario_core/screens/favoritos_screen.dart';
 import 'package:poemario_core/screens/indice_screen.dart';
 import 'package:poemario_core/screens/poema_screen.dart';
 import 'package:poemario_core/screens/root_screen.dart';
+import 'package:poemario_core/widgets/versos_sangrados.dart';
 
 import 'support/harness.dart';
 
@@ -159,6 +160,9 @@ void main() {
         find.textContaining('primer verso de 00\nsegundo verso\n\nsegunda'),
         findsOneWidget,
       );
+      // The default layout (the Spanish app's) is the centred text above,
+      // untouched by DisposicionVersos.sangria.
+      expect(find.byType(VersosSangrados), findsNothing);
     });
 
     testWidgets('the heart toggles and confirms with the right wording',

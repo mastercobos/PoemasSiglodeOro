@@ -94,7 +94,10 @@ class Poema {
   }
 
   /// A poem from a split anthology's index: `[titulo, autor, primera, id?]`,
-  /// `primera` being the text's first non-empty line as it stands.
+  /// `primera` being the first verse as the app's pipeline wrote it: the
+  /// text's first non-empty line (English), or the first one after a leading
+  /// section mark such as "I" (French, `asset.py`). The id hashes it, so for a
+  /// published poem it must never change (rule 1).
   factory Poema.deIndice(
     List<dynamic> fila, {
     required int index,

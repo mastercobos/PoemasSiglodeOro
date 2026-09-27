@@ -46,6 +46,9 @@ class AppConfig {
   /// but it costs nothing now and is painful to retrofit later.
   final String prefijoPreferencias;
 
+  /// How verses are laid out. See [DisposicionVersos].
+  final DisposicionVersos disposicionVersos;
+
   /// Store product ids of the tip-jar amounts (consumables, created in Play
   /// Console and App Store Connect). Empty means the app has no tip jar.
   /// Ids the store doesn't know are skipped, so listing one before it exists
@@ -64,6 +67,7 @@ class AppConfig {
     this.ordenTitulos = EstrategiaOrden.alfabetico,
     this.prefijoPreferencias = '',
     this.idsPropinas = const {},
+    this.disposicionVersos = DisposicionVersos.centrada,
   });
 
   /// Comparator derived from [ordenTitulos]. Built once per config rather than
@@ -84,6 +88,20 @@ class AppConfig {
       );
 
   String clave(String nombre) => '$prefijoPreferencias$nombre';
+}
+
+/// How the reader and the home cards lay out a poem's verses.
+enum DisposicionVersos {
+  /// Every line centred. A verse too long for the screen wraps and its rest
+  /// is centred too, like a verse of its own. Fine where verses fit (the
+  /// Spanish anthology's hendecasyllables).
+  centrada,
+
+  /// A centred block of left-aligned verses; a verse too long for the screen
+  /// continues on indented lines, measured on each device. A stanza that is
+  /// only a section mark ("II", "⁂") is drawn as a small heading. For long
+  /// lines: alexandrines, English blank verse and ballad metre.
+  sangria,
 }
 
 extension AppConfigX on BuildContext {

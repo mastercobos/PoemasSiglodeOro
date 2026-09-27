@@ -10,7 +10,9 @@ import '../providers/favoritos_provider.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
 import '../utils/compartir_poema.dart';
+import '../config/app_config.dart';
 import '../widgets/texto_de_poema.dart';
+import '../widgets/versos_sangrados.dart';
 import '../widgets/autor_link.dart';
 import '../widgets/linea_oro.dart';
 import '../widgets/ornamento.dart';
@@ -202,6 +204,12 @@ class _CuerpoPoema extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estrofas = poema.estrofas;
+    if (context.config.disposicionVersos == DisposicionVersos.sangria) {
+      return SelectionArea(
+        child: VersosSangrados(
+            estrofas: estrofas, estilo: estilo, seleccionable: true),
+      );
+    }
     final spans = <TextSpan>[];
     for (var e = 0; e < estrofas.length; e++) {
       if (e > 0) spans.add(const TextSpan(text: '\n\n'));

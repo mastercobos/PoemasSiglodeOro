@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../config/app_config.dart';
+import '../widgets/versos_sangrados.dart';
 import '../data/poema.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../providers/ajustes_provider.dart';
@@ -149,6 +150,18 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
     return poema.versos.length > 4 ? '$versos\n…' : versos;
   }
 
+  /// [_fragmento] for [DisposicionVersos.sangria]: the first four verses,
+  /// section marks left out, as one stanza for [VersosSangrados].
+  List<List<String>> get _fragmentoSangrado {
+    final versos = [
+      for (final e in poema.estrofas)
+        if (!esMarcaDeSeccion(e)) ...e,
+    ];
+    return [
+      [...versos.take(4), if (versos.length > 4) '…'],
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colores;
@@ -196,9 +209,18 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(18, 16, 18, 6),
                   child: TextoDePoema(
                     poema: poema,
-                    builder: (_) => Text(_fragmento,
-                        style: t.verso.copyWith(
-                            fontSize: 15, height: 1.85, color: c.texto)),
+                    builder: (_) {
+                      final estilo = t.verso.copyWith(
+                          fontSize: 15, height: 1.85, color: c.texto);
+                      if (context.config.disposicionVersos ==
+                          DisposicionVersos.sangria) {
+                        return VersosSangrados(
+                            estrofas: _fragmentoSangrado,
+                            estilo: estilo,
+                            centrar: false);
+                      }
+                      return Text(_fragmento, style: estilo);
+                    },
                   ),
                 ),
                 // Plain text, not a disabled TextButton. The old version used
