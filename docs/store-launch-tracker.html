@@ -445,7 +445,7 @@
           <input type="checkbox" class="check" id="chk-ec6">
           <div class="item-texto">
             <label class="item-label" id="lbl-ec6" for="chk-ec6">Restore verse lines set in capitals that the parser drops</label>
-            <div class="item-nota">Laurel's parser drops lines a poem sets all in capitals for emphasis: about 20 across 12 of the books <code>parser/extraer.py</code> splits (Seward 5, e.g. "COME DEAR REMEMBRANCE OF DEPARTED DAYS!"; Timrod 4; Thackeray, Hood, Praed, Swift, Emerson, Lovelace, Bowles, Lanier). None in a famous poem found. The fix must not keep headings, contents entries and printers' imprints, which are set the same way. Noted 2026-09-26.</div>
+            <div class="item-nota">Done 2026-09-26: 47 verse lines back (Seward's sonnet endings, Lovelace's refrain, Timrod, Thackeray, Hood, Praed, Swift, Lanier, Emerson, Bowles) through a patch to our copy of Laurel's parser (<code>PARCHES</code> in <code>parser/extraer.py</code>). Headings, dates and references in capitals are still dropped.</div>
           </div>
         </div>
         <div class="item" data-item="ec3">
