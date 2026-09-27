@@ -92,9 +92,11 @@ AUTEURS = [
     # the Dernier Chant du pèlerinage d'Harold (long single poems).
     {'nom': 'Alphonse de Lamartine', 'wikisource': 'Auteur:Alphonse de Lamartine', 'recueils': [
         {'page': 'Méditations poétiques/Édition de 1860', 'titre': 'Méditations poétiques', 'edition': 'Œuvres complètes, 1860',
-         'prefixe': 'Œuvres complètes de Lamartine (1860)/Tome 1/'},
+         'prefixe': 'Œuvres complètes de Lamartine (1860)/Tome 1/',
+         'exclure': [r'/L’apparition de l’ombre de Samuël$']},  # a scene from his tragedy Saül
         {'page': 'Nouvelles Méditations poétiques/Édition de 1849', 'titre': 'Nouvelles Méditations poétiques',
-         'edition': '1849', 'prefixe': '*'},
+         'edition': '1849', 'prefixe': '*',
+         'exclure': [r'/L’apparition de l’ombre de Samuël$']},  # a scene from his tragedy Saül
         {'page': 'Harmonies poétiques et religieuses', 'edition': '1860', 'prefixe': '*',
          'exclure': [r'^Œuvres complètes de Lamartine \(1860\)$']},
         {'page': 'Recueillements poétiques'},
@@ -114,7 +116,8 @@ AUTEURS = [
         {'page': 'Les Rayons et les Ombres'},
         {'page': 'Les Châtiments'},
         {'page': 'Les Contemplations'},
-        {'page': 'La Légende des siècles', 'prefixe': '*', 'exclure': [r'/1e série, 1859$']},
+        {'page': 'La Légende des siècles', 'prefixe': '*',
+         'exclure': [r'/1e série, 1859$', r'/Welf, Castellan d’Osbor$']},  # Welf: a play
         {'page': 'Les Chansons des rues et des bois', 'prefixe': '*'},
         {'page': 'L’Année terrible'},
         {'page': 'L’Art d’être grand-père', 'prefixe': '*'},
@@ -214,3 +217,16 @@ AUTEURS = [
          'titres_centres': True, 'separer_blocs': True},
     ]},
 ]
+
+
+# Hand corrections to single poems, (author, title) -> [(regex, replacement)],
+# applied to the finished text. Each regex must match exactly once, so a
+# correction that no longer applies (the source was fixed) stops the build.
+CORRECTIONS = {
+    # Dante's Italian lines and their French prose translation, printed as
+    # the epigraph: not Hugo's verse. The poem opens at "Murs, ville,".
+    ('Victor Hugo', 'Les Djinns'): [(r'(?s)\A.*?\n\n(?=Murs, ville,)', '')],
+    # Two alexandrines run together on one line.
+    ('Alphonse de Lamartine', 'Épitaphe des prisonniers français'): [
+        (r'rêve\. (?=Patience)', 'rêve.\n')],
+}

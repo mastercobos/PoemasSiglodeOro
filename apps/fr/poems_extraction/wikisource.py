@@ -42,7 +42,7 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 
-from recueils import AUTEURS
+from recueils import AUTEURS, CORRECTIONS
 
 AQUI = Path(__file__).resolve().parent
 CACHE = AQUI / 'corpus' / 'cache'
@@ -711,6 +711,9 @@ class Collecte:
         if html is None:
             self.manquantes.append((rec['page'], titre))
             return
+        # Again under the title the link resolved to (a redirect).
+        if any(re.search(m, titre) for m in rec.get('exclure', [])):
+            return
         self.vues.add(titre)
         enfants = liens(html, titre + '/')
         segs = self._segments(rec, html)
@@ -882,6 +885,10 @@ def finaliser(poemes):
     for p in poemes:
         p['titulo'] = typographie(p['titulo'])
         p['texto'] = typographie(sans_entete(typographie(p['texto']), p['titulo']))
+        for motif, remplacement in CORRECTIONS.get((p['autor'], p['titulo']), []):
+            p['texto'], n = re.subn(motif, remplacement, p['texto'])
+            if n != 1:
+                sys.exit(f"Correction for {p['titulo']} matched {n} times: {motif}")
         if sum(1 for l in p['texto'].split('\n') if l.strip()) < 3:
             courts.append(p)
             continue
@@ -978,6 +985,9 @@ def main():
     c.non_relus = [p for p in c.poemes if p['relu'] is False]
     c.poemes = [p for p in c.poemes if p['relu'] is not False]
     c.poemes, c.trop_courts = finaliser(c.poemes)
+    corriges = {(p['autor'], p['titulo']) for p in c.poemes}
+    if oublies := set(CORRECTIONS) - corriges:
+        sys.exit(f'Corrections for poems not in the corpus: {oublies}')
     Path(args.out).write_text(json.dumps(c.poemes, ensure_ascii=False, indent=1) + '\n')
     rapport(c, verifies, Path(args.rapport))
 
