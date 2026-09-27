@@ -38,6 +38,7 @@
 
   "buscarTitulo": "Buscar",
   "buscarPista": "Buscar por título, autor o verso…",
+  "buscarPreparando": "Preparando la búsqueda…",
   "buscarVacioTitulo": "Escribe para buscar",
   "buscarVacioSubtitulo": "Busca por título, autor o cualquier verso",
   "buscarSinResultados": "Sin resultados para «{consulta}»",

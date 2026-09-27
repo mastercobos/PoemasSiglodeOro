@@ -84,6 +84,12 @@ Future<void> bootstrap(
   );
   unawaited(propinas.iniciar());
 
+  // The search index folds every poem (and, for a split anthology, loads
+  // every text): seconds of work on a phone, so it starts once the first
+  // screen is up, off the UI isolate. Search waits for it if it has to.
+  WidgetsBinding.instance
+      .addPostFrameCallback((_) => unawaited(anthology.indiceBusqueda));
+
   runApp(_AppPoemario(
     config: config,
     anthology: anthology,

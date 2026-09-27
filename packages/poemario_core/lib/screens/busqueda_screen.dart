@@ -19,7 +19,9 @@ import '../widgets/poema_list_tile.dart';
 /// The original lowercased every poem's entire body on every keystroke, on the
 /// UI thread. Three changes:
 ///
-/// * the corpus is folded once at load into [Poema.indiceBusqueda];
+/// * the corpus is folded once, off the UI isolate, into
+///   [Anthology.indiceBusqueda] (started right after the first frame; until
+///   it is ready a query shows "preparing" and runs as soon as it is);
 /// * input is debounced, so a fast typist triggers one pass rather than twelve;
 /// * matching is diacritic-insensitive, so "cancion" finds "canción" and
 ///   "Becquer" finds "Bécquer" — which readers on a plain keyboard expect.
@@ -40,10 +42,28 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
   String _consulta = '';
   List<Poema> _resultados = const [];
 
+  /// Folded search text, one per poem in [Anthology.poemas] order; null
+  /// while it is still being built.
+  List<String>? _indice;
+
+  /// A query typed before [_indice] was ready.
+  String? _pendiente;
+
   @override
   void initState() {
     super.initState();
     _controlador.addListener(_alEscribir);
+    final anthology = context.read<Anthology>();
+    _indice = anthology.indiceBusquedaListo;
+    if (_indice == null) {
+      anthology.indiceBusqueda.then((indice) {
+        if (!mounted) return;
+        setState(() => _indice = indice);
+        final pendiente = _pendiente;
+        _pendiente = null;
+        if (pendiente != null) _buscar(pendiente);
+      });
+    }
   }
 
   @override
@@ -61,6 +81,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     if (texto.trim().isEmpty) {
       _debounce?.cancel();
       NavBarScope.of(context)?.mostrarNavBar();
+      if (_pendiente != null) setState(() => _pendiente = null);
       if (_consulta.isNotEmpty) {
         setState(() {
           _consulta = '';
@@ -74,12 +95,17 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
   }
 
   void _buscar(String texto) {
+    final indice = _indice;
+    if (indice == null) {
+      setState(() => _pendiente = texto);
+      return;
+    }
     final aguja = plegarParaOrden(texto.trim());
     if (aguja == _consulta) return;
     final anthology = context.read<Anthology>();
     final encontrados = [
-      for (final p in anthology.poemas)
-        if (p.indiceBusqueda.contains(aguja)) p,
+      for (var i = 0; i < anthology.poemas.length; i++)
+        if (indice[i].contains(aguja)) anthology.poemas[i],
     ];
     if (!mounted) return;
     setState(() {
@@ -90,9 +116,10 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
 
   /// ~40 characters either side of the match, for hits in the body.
   String _fragmento(Poema p) {
-    final idx = p.indiceBusqueda.indexOf(_consulta);
+    // indiceOriginal is the poem's position in Anthology.poemas
+    final idx = _indice![p.indiceOriginal].indexOf(_consulta);
     if (idx == -1) return '';
-    // indiceBusqueda is "titulo autor texto"; offset back into the body.
+    // The index is "titulo autor texto"; offset back into the body.
     final desplazamiento =
         plegarParaOrden('${p.titulo} ${p.autor} ').length;
     final enTexto = idx - desplazamiento;
@@ -131,6 +158,25 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
   Widget _cuerpo(L10n l10n) {
     final c = context.colores;
     final t = context.tipos;
+
+    if (_pendiente != null && _indice == null && _controlador.text.trim().isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(strokeWidth: 2.5, color: c.oro),
+            ),
+            const SizedBox(height: 16),
+            Text(l10n.buscarPreparando,
+                textAlign: TextAlign.center,
+                style: t.cuerpo.copyWith(color: c.textoSuave)),
+          ],
+        ),
+      );
+    }
 
     if (_consulta.isEmpty) {
       return Center(

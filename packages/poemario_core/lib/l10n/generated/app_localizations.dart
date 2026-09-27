@@ -229,6 +229,12 @@ abstract class L10n {
   /// **'Buscar por título, autor o verso…'**
   String get buscarPista;
 
+  /// No description provided for @buscarPreparando.
+  ///
+  /// In es, this message translates to:
+  /// **'Preparando la búsqueda…'**
+  String get buscarPreparando;
+
   /// No description provided for @buscarVacioTitulo.
   ///
   /// In es, this message translates to:

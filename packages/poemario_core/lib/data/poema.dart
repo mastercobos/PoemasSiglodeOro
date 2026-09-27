@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../domain/orden_titulos.dart';
+import 'textos_poemas.dart';
 
 /// One poem.
 ///
@@ -16,8 +16,11 @@ import '../domain/orden_titulos.dart';
 /// wrong for a romance, and wrong for most of an English anthology. The source
 /// already carries the structure; we keep it.
 ///
-/// **Search text is precomputed.** The search screen used to lowercase the
-/// entire corpus on every keystroke.
+/// **The text can arrive later.** A large anthology ships an index (title,
+/// author, first verse) that loads at startup and its texts in chunks that
+/// load when a poem is shown ([TextosPoemas]); [texto] is empty until then
+/// ([textoCargado]). A small one ships everything in one file and has its
+/// text from the start.
 @immutable
 class Poema {
   /// Stable across releases. Taken from the JSON `id` field when present,
@@ -30,44 +33,102 @@ class Poema {
 
   final String titulo;
   final String autor;
-  final String texto;
 
-  /// Verses grouped by stanza, blank lines removed within each group.
-  final List<List<String>> estrofas;
+  /// First non-empty verse. Stored rather than read from [estrofas], so lists,
+  /// notifications and sorting never need the text.
+  final String primerVerso;
 
-  /// Lowercased, diacritic-folded `"titulo autor texto"`, built once at load.
-  final String indiceBusqueda;
+  final String? _textoPropio;
+  final TextosPoemas? _textos;
+  final int _trozo;
+  final int _posicion;
 
   const Poema({
     required this.id,
     required this.indiceOriginal,
     required this.titulo,
     required this.autor,
-    required this.texto,
-    required this.estrofas,
-    required this.indiceBusqueda,
-  });
+    required this.primerVerso,
+    String? texto,
+    TextosPoemas? textos,
+    int trozo = 0,
+    int posicion = 0,
+  })  : _textoPropio = texto,
+        _textos = textos,
+        _trozo = trozo,
+        _posicion = posicion;
 
+  /// The whole poem. Empty while its chunk isn't loaded (see [textoCargado]).
+  String get texto => _textoPropio ?? _textos?.texto(_trozo, _posicion) ?? '';
+
+  bool get textoCargado => _textoPropio != null || (_textos?.cargado(_trozo) ?? false);
+
+  /// Loads the chunk this poem's text is in, if it isn't loaded yet.
+  Future<void> cargarTexto() =>
+      textoCargado ? Future.value() : _textos!.cargar(_trozo);
+
+  /// Verses grouped by stanza, blank lines removed within each group. Split
+  /// the first time they are read once the text is there, not at load: a
+  /// screen shows one poem, and splitting all ~15,000 of the English
+  /// anthology at load was a fifth of its startup time.
+  List<List<String>> get estrofas => textoCargado
+      ? (_estrofas[this] ??= _dividirEnEstrofas(texto))
+      : const [];
+
+  static final _estrofas = Expando<List<List<String>>>('estrofas');
+
+  /// A poem from a single-file anthology: the text comes with it.
   factory Poema.fromJson(Map<String, dynamic> json, {required int index}) {
     final titulo = (json['titulo'] as String?)?.trim() ?? '';
-    final autor = (json['autor'] as String?)?.trim().isNotEmpty == true
-        ? (json['autor'] as String).trim()
-        : 'Anónimo';
+    final autor = _autor(json['autor'] as String?);
     final texto = (json['texto'] as String?) ?? '';
-    final estrofas = _dividirEnEstrofas(texto);
-
+    final primera = _primeraLinea(texto);
     return Poema(
-      id: (json['id'] as String?)?.trim().isNotEmpty == true
-          ? (json['id'] as String).trim()
-          : _idDerivado(autor, titulo, texto),
+      id: _idExplicito(json['id']) ?? _idDerivado(autor, titulo, primera.trim()),
       indiceOriginal: index,
       titulo: titulo,
       autor: autor,
+      primerVerso: primera.trimRight(),
       texto: texto,
-      estrofas: estrofas,
-      indiceBusqueda: plegarParaOrden('$titulo $autor $texto'),
     );
   }
+
+  /// A poem from a split anthology's index: `[titulo, autor, primera, id?]`,
+  /// `primera` being the text's first non-empty line as it stands.
+  factory Poema.deIndice(
+    List<dynamic> fila, {
+    required int index,
+    required TextosPoemas textos,
+    required int trozo,
+    required int posicion,
+  }) {
+    final titulo = (fila[0] as String?)?.trim() ?? '';
+    final autor = _autor(fila[1] as String?);
+    final primera = (fila[2] as String?) ?? '';
+    return Poema(
+      id: _idExplicito(fila.length > 3 ? fila[3] : null) ??
+          _idDerivado(autor, titulo, primera.trim()),
+      indiceOriginal: index,
+      titulo: titulo,
+      autor: autor,
+      primerVerso: primera.trimRight(),
+      textos: textos,
+      trozo: trozo,
+      posicion: posicion,
+    );
+  }
+
+  static String _autor(String? autor) =>
+      autor?.trim().isNotEmpty == true ? autor!.trim() : 'Anónimo';
+
+  static String? _idExplicito(Object? id) =>
+      (id as String?)?.trim().isNotEmpty == true ? id!.trim() : null;
+
+  /// The first line with something on it, untrimmed. Its [String.trim] is
+  /// what the id hashes, its [String.trimRight] is [primerVerso] (the first
+  /// line of the first stanza, since [_dividirEnEstrofas] trims only the right).
+  static String _primeraLinea(String texto) =>
+      texto.split('\n').firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
 
   /// Splits on blank lines. A poem with no blank line is a single stanza.
   static List<List<String>> _dividirEnEstrofas(String texto) {
@@ -92,11 +153,7 @@ class Poema {
   /// anthology keeps working without re-editing the data, and so that an
   /// edited *typo* in a poem doesn't orphan a favourite: the hash covers the
   /// author and the opening verse, not the whole text.
-  static String _idDerivado(String autor, String titulo, String texto) {
-    final primeraLinea = texto
-        .split('\n')
-        .map((l) => l.trim())
-        .firstWhere((l) => l.isNotEmpty, orElse: () => '');
+  static String _idDerivado(String autor, String titulo, String primeraLinea) {
     final semilla = '${autor.toLowerCase()}|'
         '${titulo.toLowerCase()}|'
         '${primeraLinea.toLowerCase()}';
@@ -113,10 +170,6 @@ class Poema {
     }
     return hash;
   }
-
-  /// First non-empty verse.
-  String get primerVerso =>
-      estrofas.isEmpty || estrofas.first.isEmpty ? '' : estrofas.first.first;
 
   /// What lists show: the title, or the first verse for untitled poems.
   String get etiqueta => titulo.isNotEmpty ? titulo : primerVerso;

@@ -155,17 +155,18 @@ List<Object> _tokenizarTitulo(String titulo) {
 /// comes before `"Sonnet Interlude"`), and once every token up to the
 /// shorter title matches, the shorter one comes first (`"Part I"` before
 /// `"Part I, Section I"`).
-int _compararNatural(String a, String b) {
-  final ta = _tokenizarTitulo(a);
-  final tb = _tokenizarTitulo(b);
+///
+/// Takes titles already tokenised and folded ([_claveNatural]): sorting the
+/// English anthology compares each title a dozen times, and tokenising on
+/// every comparison made the sort ~16× slower than an alphabetical one.
+int _compararNatural(List<Object> ta, List<Object> tb) {
   final n = ta.length < tb.length ? ta.length : tb.length;
   for (var i = 0; i < n; i++) {
     final xa = ta[i], xb = tb[i];
     if (xa is int && xb is int) {
       if (xa != xb) return xa.compareTo(xb);
     } else if (xa is String && xb is String) {
-      final fa = plegarParaOrden(xa), fb = plegarParaOrden(xb);
-      if (fa != fb) return fa.compareTo(fb);
+      if (xa != xb) return xa.compareTo(xb);
     } else {
       return xa is int ? -1 : 1;
     }
@@ -173,11 +174,21 @@ int _compararNatural(String a, String b) {
   return ta.length.compareTo(tb.length);
 }
 
+/// [_tokenizarTitulo] with its text tokens folded, which is what
+/// [_compararNatural] compares.
+List<Object> _claveNatural(String titulo) => [
+      for (final x in _tokenizarTitulo(titulo))
+        if (x is String) plegarParaOrden(x) else x,
+    ];
+
 /// Comparator for two display labels. Always returns a *total* order: ties on
 /// the numeral fall through to the text, so a sort is stable across runs
 /// (the old version returned 0 for two identical numerals and let the order
 /// drift between launches).
 int Function(String, String) comparadorDeTitulos(EstrategiaOrden estrategia) {
+  // Each title's key is worked out once per comparator and reused: a pure
+  // function of the title, so the order is exactly what it was without it.
+  final claves = <String, List<Object>>{};
   return (a, b) {
     switch (estrategia) {
       case EstrategiaOrden.romanosPrimero:
@@ -188,7 +199,10 @@ int Function(String, String) comparadorDeTitulos(EstrategiaOrden estrategia) {
         if (nA == null && nB != null) return 1;
         return plegarParaOrden(a).compareTo(plegarParaOrden(b));
       case EstrategiaOrden.numeralesNaturales:
-        return _compararNatural(a, b);
+        return _compararNatural(
+          claves.putIfAbsent(a, () => _claveNatural(a)),
+          claves.putIfAbsent(b, () => _claveNatural(b)),
+        );
       case EstrategiaOrden.alfabetico:
         return plegarParaOrden(a).compareTo(plegarParaOrden(b));
     }

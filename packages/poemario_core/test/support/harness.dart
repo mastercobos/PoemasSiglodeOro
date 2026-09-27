@@ -73,7 +73,12 @@ Future<Anthology> cargarDesdeAssetFalso(
   // real event loop. Inside a testWidgets body (FakeAsync) that await never
   // completes, so run it outside the fake zone.
   final binding = TestWidgetsFlutterBinding.ensureInitialized();
-  return (await binding.runAsync(repo.cargar))!;
+  final anthology = (await binding.runAsync(repo.cargar))!;
+  // The app builds the search index right after its first frame, also with
+  // `compute`; tests start from that state (see busqueda_screen's
+  // "preparing" state for the moment before it).
+  await binding.runAsync(() => anthology.indiceBusqueda);
+  return anthology;
 }
 
 /// A [Preferencias] backed by mock shared_preferences.

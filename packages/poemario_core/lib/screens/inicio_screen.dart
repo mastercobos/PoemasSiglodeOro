@@ -10,6 +10,7 @@ import '../providers/poema_del_dia_provider.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
 import '../utils/navegacion.dart';
+import '../widgets/texto_de_poema.dart';
 import '../widgets/linea_oro.dart';
 import '../widgets/ornamento.dart';
 import '../widgets/poema_list_tile.dart';
@@ -193,9 +194,12 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(18, 16, 18, 6),
-                  child: Text(_fragmento,
-                      style: t.verso.copyWith(
-                          fontSize: 15, height: 1.85, color: c.texto)),
+                  child: TextoDePoema(
+                    poema: poema,
+                    builder: (_) => Text(_fragmento,
+                        style: t.verso.copyWith(
+                            fontSize: 15, height: 1.85, color: c.texto)),
+                  ),
                 ),
                 // Plain text, not a disabled TextButton. The old version used
                 // `onPressed: null`, so screen readers announced a disabled

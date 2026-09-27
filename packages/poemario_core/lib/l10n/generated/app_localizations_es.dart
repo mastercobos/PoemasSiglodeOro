@@ -95,6 +95,9 @@ class L10nEs extends L10n {
   String get buscarPista => 'Buscar por título, autor o verso…';
 
   @override
+  String get buscarPreparando => 'Preparando la búsqueda…';
+
+  @override
   String get buscarVacioTitulo => 'Escribe para buscar';
 
   @override

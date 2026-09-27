@@ -8,9 +8,16 @@ import 'package:flutter_test/flutter_test.dart';
 /// Lets the *real* [PoemaRepository] run under test — parsing, id checks,
 /// grouping and sorting all included — instead of hand-building an
 /// [Anthology] that could drift from what the app actually loads.
-void registrarAsset(String ruta, String contenido) {
+void registrarAsset(String ruta, String contenido) =>
+    registrarAssets({ruta: contenido});
+
+/// Several assets at once: a split anthology's index and its text chunks.
+void registrarAssets(Map<String, String> contenidos) {
   final binding = TestWidgetsFlutterBinding.ensureInitialized();
-  final datos = ByteData.sublistView(utf8.encode(contenido));
+  final datos = {
+    for (final e in contenidos.entries)
+      e.key: ByteData.sublistView(utf8.encode(e.value)),
+  };
   // rootBundle is a CachingAssetBundle: without this, the first anthology a
   // test file loads is handed back to every later call, silently ignoring
   // different fixtures.
@@ -23,7 +30,7 @@ void registrarAsset(String ruta, String contenido) {
     'flutter/assets',
     (mensaje) async {
       final pedida = utf8.decode(mensaje!.buffer.asUint8List());
-      return pedida == ruta ? datos : null;
+      return datos[pedida];
     },
   );
   addTearDown(() {

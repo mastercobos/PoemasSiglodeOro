@@ -27,6 +27,7 @@
 
   "buscarTitulo": "Search",
   "buscarPista": "Search by title, poet or line…",
+  "buscarPreparando": "Preparing search…",
   "buscarVacioTitulo": "Type to search",
   "buscarVacioSubtitulo": "Search by title, poet or any line",
   "buscarSinResultados": "No results for “{consulta}”",

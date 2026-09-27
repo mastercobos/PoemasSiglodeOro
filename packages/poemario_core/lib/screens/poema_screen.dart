@@ -10,6 +10,7 @@ import '../providers/favoritos_provider.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
 import '../utils/compartir_poema.dart';
+import '../widgets/texto_de_poema.dart';
 import '../widgets/autor_link.dart';
 import '../widgets/linea_oro.dart';
 import '../widgets/ornamento.dart';
@@ -59,6 +60,8 @@ class _PoemaScreenState extends State<PoemaScreen> {
     setState(() => _compartiendo = true);
     unawaited(HapticFeedback.lightImpact());
     try {
+      await _poema.cargarTexto(); // the card and the text share need it
+      if (!mounted) return;
       await CompartirPoema.compartir(
         context: context,
         poema: _poema,
@@ -168,9 +171,12 @@ class _PoemaScreenState extends State<PoemaScreen> {
             const SizedBox(height: 34),
             Semantics(
               label: l10n.semPoema(_poema.etiqueta, _poema.autor),
-              child: _CuerpoPoema(
+              child: TextoDePoema(
                 poema: _poema,
-                estilo: t.verso.copyWith(color: c.texto),
+                builder: (_) => _CuerpoPoema(
+                  poema: _poema,
+                  estilo: t.verso.copyWith(color: c.texto),
+                ),
               ),
             ),
             const SizedBox(height: 52),
@@ -195,10 +201,11 @@ class _CuerpoPoema extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estrofas = poema.estrofas;
     final spans = <TextSpan>[];
-    for (var e = 0; e < poema.estrofas.length; e++) {
+    for (var e = 0; e < estrofas.length; e++) {
       if (e > 0) spans.add(const TextSpan(text: '\n\n'));
-      spans.add(TextSpan(text: poema.estrofas[e].join('\n')));
+      spans.add(TextSpan(text: estrofas[e].join('\n')));
     }
     return SelectableText.rich(
       TextSpan(children: spans, style: estilo),
