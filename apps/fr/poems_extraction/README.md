@@ -6,6 +6,7 @@ python3 wikisource.py                  # crawl every collection in recueils.py
 python3 wikisource.py --auteur Hugo    # one author
 python3 wikisource.py --page "Les Fleurs du mal (1868)/Allégorie"   # debug one page
 python3 sonde.py "Some Wikisource page"    # what the crawler would see there
+python3 asset.py                       # poemas_fr.json -> ../assets/poemas (indice.json + textos/)
 ```
 
 Stdlib only. API responses are cached in `corpus/` (gitignored), so a rerun
