@@ -176,9 +176,17 @@ class Poema {
 
   /// True when the first verse adds information beyond the title, i.e. when a
   /// list row should show the `«…»` subtitle. This condition appeared verbatim
-  /// in four screens.
+  /// in four screens. Quotes, punctuation and case are ignored: Wikisource
+  /// titles an untitled poem by its first line in guillemets
+  /// ("« J’ai beau comme un imbécile »"), which is no new information.
   bool get mostrarPrimerVerso =>
-      titulo.isNotEmpty && primerVerso.isNotEmpty && primerVerso != titulo;
+      titulo.isNotEmpty &&
+      primerVerso.isNotEmpty &&
+      _soloPalabras(primerVerso) != _soloPalabras(titulo);
+
+  static final _noPalabra = RegExp(r'[^\p{L}\p{N}]+', unicode: true);
+  static String _soloPalabras(String s) =>
+      s.replaceAll(_noPalabra, '').toLowerCase();
 
   /// All verses, stanza breaks discarded. For the share text and for measuring.
   List<String> get versos => [for (final e in estrofas) ...e];

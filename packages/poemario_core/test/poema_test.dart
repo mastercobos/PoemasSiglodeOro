@@ -76,5 +76,15 @@ void main() {
       expect(distinto.mostrarPrimerVerso, isTrue);
       expect(sinTitulo.mostrarPrimerVerso, isFalse);
     });
+
+    test('mostrarPrimerVerso ignores quotes, punctuation and case', () {
+      final entreComillas = construir({
+        'titulo': '« J’ai beau comme un imbécile »',
+        'texto': 'J’ai beau comme un imbécile\nRegarder dans ma maison,',
+      });
+      final conComa = construir({'titulo': 'Uno', 'texto': 'uno,\ndos'});
+      expect(entreComillas.mostrarPrimerVerso, isFalse);
+      expect(conComa.mostrarPrimerVerso, isFalse);
+    });
   });
 }
