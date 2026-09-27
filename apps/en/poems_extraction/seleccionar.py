@@ -6,7 +6,7 @@ seleccionar.py - build the English app's poemas.json from laurel_convert.py outp
   python3 gutenberg.py                     # downloads the Gutenberg books into corpus/gutenberg
   python3 parser/extraer.py                # splits the biggest books into corpus/parser-salida
   python3 seleccionar.py --poems corpus/laurel-export/poems.jsonl \
-      --asset ../assets/poemas.json --report ranking.md [--top-authors N] [--max-lines N]
+      --asset ../assets/poemas --report ranking.md [--top-authors N] [--max-lines N]
 
 Authors are ranked, best known first, and every poem of each selected author
 is kept. Ranking:
@@ -60,6 +60,62 @@ AQUI = Path(__file__).resolve().parent
 
 # Whole Laurel books left out: not English poems, not verse, mostly editors'
 # apparatus, or crediting the poems to the wrong person. Laurel slug -> reason.
+# Translations inside an English poet's own collection, left out: the anthology
+# is original English poems (2026-09-26). The large translation sections of
+# Longfellow, Bryant, Emerson and Hemans are cut at the source instead
+# (parser/extraer.py PISTAS). Kept on purpose: free imitations and paraphrases
+# (Swift's and Field's Horace, Coleridge's "Imitated from Schiller", FitzGerald's
+# Omar), psalms and hymns put into verse, poems that only name a foreign poet,
+# and Byron's "From the French" and "Ode from the French" (his own poems in the
+# guise of translations). Author -> title patterns (re.search on the final title).
+TRADUCCIONES = {
+    "Jonathan Swift": [r"^Translated Almost Literally Out of the Original Irish", r"^Translated by Dr\. Dunkin",
+                       r"^Epigram from the French$", r"^Catullus De Lesbia$", r"^Translation$"],
+    "Felicia Hemans": [r"Translated from", r"^From the (Spanish|Italian|German)", r": From the German",
+                       r"^Vincenzo Da Filicaja$"],
+    "Richard Lovelace": [r"\(Englished\)$", r"^Lineally Translated Out of the French$"],
+    "Edmund Spenser": [r"^Virgils Gnat", r"^The Visions of Petrarch", r"Bellay"],
+    "Anna Seward": [r"^Translation$", r"^Translated from Boileau$", r"^From the Italian of"],
+    "Edmund Waller": [r"^Translated Out of (Spanish|French)$"],
+    "Richard Crashaw": [r"Out of Virgil$", r"^Out of Catullus$", r"^From Horace$"],
+    "William Makepeace Thackeray": [r"^Ronsard to His Mistress$", r"^By Adelbert Von Chamisso$", r"^From Uhland$"],
+    "Samuel Rogers": [r"^Fragments from Euripides$", r"^From a Greek Epigram$"],
+    "John Hay": [r"^From the (German|Spanish)"],
+    "Ralph Waldo Emerson": [r"^From the French$"],
+    "Algernon Charles Swinburne": [r"^From the Italian of"],
+    "Sidney Lanier": [r"^From the German of"],
+    "William Edmondstoune Aytoun": [r"^From the (German|Romaic)"],
+    "George MacDonald": [r"^From the German of", r"^From Schiller$", r"^From Novalis$"],
+    "John Denham": [r"^Sarpedon's Speech to Glaucus"],
+    "Samuel Taylor Coleridge": [r"—CATULLUS$"],
+    "Oliver Goldsmith": [r"^Translation"],
+    "Alan Seeger": [r"^Dante\. Inferno"],
+    "William Wordsworth": [r"^From the Italian of Michael Angelo$"],
+    "Henry Kirke White": [r"^Translated from the French"],
+    "Thomas Campbell": [r"from the Greek of", r"^Song of Hybrias the Cretan$"],
+    "Lord Byron": [r"From the Turkish$", r"^Translation of a Romaic Love Song$", r"^\"Tu Mi Chamas\"$"],
+    "Edmund Clarence Stedman": [r"^Jean Prouvaire’s Song at the Barricade$"],
+    # the Oxford Book's translations: marked "From the Irish", or well known as such
+    "Jeremiah Joseph Callanan": [r"^The Outlaw of Loch Lene$"],
+    "Sir Samuel Ferguson": [r"^Cashel of Munster$", r"^Cean Dubh Deelish$"],
+    "William (johnson) Cory": [r"^Heraclitus$"],                    # Callimachus
+    "Henry Howard, Earl of Surrey": [r"^The Means to attain Happy Life$"],   # Martial
+    "Sir Richard Fanshawe": [r"^A Rose$"],                         # Góngora
+}
+
+
+# Books whose last part is an appendix of translations: author -> the last
+# original poem (every poem of the author after it, in book order, is left
+# out). Stanley's edition: "his original lyrics, complete ... an appendix of
+# translations" (Ronsard, Guarini, Tasso, Secundus, Anacreon, Plato), several
+# under titles like "Song" or "Poem II" that a pattern can't tell apart.
+TRADUCCIONES_TRAS = {"Thomas Stanley": "The Relapse"}
+
+
+def es_traduccion(autor, titulo):
+    return any(re.search(patron, titulo) for patron in TRADUCCIONES.get(autor, []))
+
+
 LIBROS_EXCLUIDOS = {
     "boethius-consolation": "translation, with the Latin",
     "prudentius-hymns": "translation, with the Latin",
@@ -170,6 +226,50 @@ def libros_propios(poemas, carpeta):
     return salida, len(salidas)
 
 
+TROZO = 150_000  # bytes of text per chunk: opening a poem decodes one chunk
+
+
+def primera_linea(texto):
+    """The first line with something on it, untrimmed: the app trims it to
+    derive the poem's id and shows it as the first verse. Same rule as
+    Poema._primeraLinea (Dart's trim and Python's strip agree on the
+    whitespace these texts contain; the app's tests check the ids match)."""
+    return next((l for l in texto.split("\n") if l.strip()), "")
+
+
+def escribir_dividido(salida, carpeta):
+    """The split anthology the app loads (PoemaRepository): indice.json with
+    title, author number and first line of every poem, in order, and the
+    texts in chunks of about TROZO bytes in textos/<n>.json. Only the index is
+    read at startup; a 33 MB single file took ~12 s on a Pixel 9a."""
+    carpeta.mkdir(parents=True, exist_ok=True)
+    textos = carpeta / "textos"
+    textos.mkdir(exist_ok=True)
+    for viejo in textos.glob("*.json"):
+        viejo.unlink()
+    autores, filas, inicios, trozo, tam = [], [], [], [], 0
+    numero = {}
+    def cerrar():
+        (textos / ("%d.json" % (len(inicios) - 1))).write_text(
+            json.dumps(trozo, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    for i, p in enumerate(salida):
+        if p["autor"] not in numero:
+            numero[p["autor"]] = len(autores)
+            autores.append(p["autor"])
+        filas.append([p["titulo"], numero[p["autor"]], primera_linea(p["texto"])])
+        if not inicios or tam >= TROZO:
+            if inicios:
+                cerrar()
+            inicios.append(i)
+            trozo, tam = [], 0
+        trozo.append(p["texto"])
+        tam += len(p["texto"].encode("utf-8"))
+    cerrar()
+    (carpeta / "indice.json").write_text(json.dumps(
+        {"textos": "textos", "inicios": inicios, "autores": autores, "poemas": filas},
+        ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+
 def es_canon(autor):
     return any(p.lower() in autor.lower() for p in PRIORITY_POETS)
 
@@ -202,7 +302,10 @@ def es_famoso(estrofas):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--poems", required=True)
-    ap.add_argument("--asset", required=True)
+    ap.add_argument("--asset", required=True,
+                    help="folder for the split anthology (indice.json + textos/); a path ending in .json writes one file")
+    ap.add_argument("--completo", default=str(AQUI / "corpus" / "poemas-completo.json"),
+                    help="also write the whole anthology as one file here, for the comparison tools ('' = no)")
     ap.add_argument("--report", required=True)
     ap.add_argument("--cleaning-report", default=str(AQUI / "limpieza.md"), help="what limpiar.py dropped")
     ap.add_argument("--top-authors", type=int, default=0, help="keep only the N best-ranked authors (0 = all)")
@@ -245,7 +348,8 @@ def main():
                       for libro, (ebook, regla) in gutenberg.LIBROS.items()}
     unidas = 0
     limpios, informe_limpieza = [], []
-    fuera = {"Cut by the cleaner": [], "Section title, work unknown": [], "Lines broken in two": []}
+    en_apendice = set()  # authors past their TRADUCCIONES_TRAS poem
+    fuera = {"Translations": [], "Cut by the cleaner": [], "Section title, work unknown": [], "Lines broken in two": []}
     for p in poemas:
         anadido = "work_title" not in p
         titulo, estrofas, descartes = limpiar_poema(
@@ -262,6 +366,11 @@ def main():
             unidas += antes - sum(len(e) for e in estrofas)
         limpio = dict(p, title=titulo, stanzas=estrofas, text="\n\n".join("\n".join(e) for e in estrofas),
                       line_count=sum(len(e) for e in estrofas))
+        if es_traduccion(p["author"], titulo) or p["author"] in en_apendice:
+            fuera["Translations"].append(limpio)
+            continue
+        if TRADUCCIONES_TRAS.get(p["author"]) == titulo:
+            en_apendice.add(p["author"])
         if not anadido:
             if descartes and not es_famoso(estrofas) and (p["author"], titulo) not in VERIFICADOS:
                 fuera["Cut by the cleaner"].append(limpio)
@@ -314,7 +423,12 @@ def main():
             format(vistas.get(autor, {}).get("vistas_12m", 0), ","),
             len(ps), sum(1 for p in ps if p["line_count"] > 60), total_p, total_b / 1e6))
 
-    Path(args.asset).write_text(json.dumps(salida, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.asset.endswith(".json"):
+        Path(args.asset).write_text(json.dumps(salida, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    else:
+        escribir_dividido(salida, Path(args.asset))
+    if args.completo:
+        Path(args.completo).write_text(json.dumps(salida, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     ruta_version = Path(args.poems).parent / "corpus_version.json"
     version = json.loads(ruta_version.read_text(encoding="utf-8")) if ruta_version.exists() else None

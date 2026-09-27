@@ -9,7 +9,7 @@ def sin_notas(lines):
     """Drop footnote bodies: '[Footnote 2: ...]' up to its closing bracket, and '[238]' blocks
     (the marker, the note after it, and, when the marker stands alone, the quotation under it).
 
-    A '[238]' block is a note only when the text has already pointed to it ("Bivar,[238]").
+    A '[238]' or '<19.1>' block is a note only when the text has already pointed to it ("Bivar,[238]").
     Knight's Wordsworth sets a bare '[21]' above the stanza a note refers to: that one is the
     reference itself, and the stanza under it is verse."""
     visto = set()                                             # note numbers referred to so far
@@ -22,6 +22,28 @@ def sin_notas(lines):
                 i += 1
                 if fin: break
             continue
+        a = re.match(r'^<(\d+\.\d+)>', s)
+        if a and (i == 0 or not lines[i-1].strip()) and a.group(1) in visto:
+            # Hazlitt's Lovelace: "<19.1> Dr. John Wilson was..." The parser drops the note's prose
+            # but kept the verse it quotes as the end of the poem ("OR CURIOUS WILSON."). A note that
+            # ends on a colon introduces quotations: the indented blocks after it that open with a
+            # quotation mark go too. Not a block that is one line in capitals: that is the title of
+            # a whole poem the editor reprints ("TO HIS FAIREST VALENTINE MRS. A. L."), and it stays.
+            while i < n and lines[i].strip(): i += 1
+            if re.search(r':\W*$', lines[i-1]):
+                while True:
+                    j = i
+                    while j < n and not lines[j].strip(): j += 1
+                    k = j
+                    while k < n and lines[k].strip(): k += 1
+                    bloque = lines[j:k]
+                    titulo = len(bloque) == 1 and bloque[0].upper() == bloque[0]
+                    tabla = any('===' in x or re.search(r'\s!\s', x) for x in bloque)   # a family tree (Sandys)
+                    if bloque and bloque[0].startswith('    ') and (re.match(r'^\s*["“]', bloque[0]) or tabla) and not titulo:
+                        i = k
+                    else:
+                        break
+            continue
         m = re.match(r'^\[(\d+)\](\s|$)', s)
         if m and (i == 0 or not lines[i-1].strip()) and m.group(1) in visto:   # a note body opens a block
             solo = re.fullmatch(r'\[\d+\]', s)
@@ -31,12 +53,70 @@ def sin_notas(lines):
                 while i < n and lines[i].strip(): i += 1
             continue
         visto.update(re.findall(r'\[(\d+)\]', lines[i]))
+        visto.update(re.findall(r'<(\d+\.\d+)>', lines[i]))
         out.append(lines[i]); i += 1
     return out
 
+def sin_margen(lines, minimo=10):
+    """Glosses printed in the margin: Drayton's edition sets them in a left column beside the
+    verse ("Pyreneus, _King     The _Phocean_ it did proue,"), and they reached the poem as the
+    start of the line. The verse column is found block by block (20 in the odes, 14 in the
+    elegies): the smallest indentation of at least `minimo` spaces. In such a block the text
+    before that column goes when two spaces separate it from the verse; a line that is only
+    gloss goes; and the asterisks in the verse that pointed to a gloss go with it. A speaker set
+    in the margin ("Cho.", "Batte.": twice or more in the book) is kept in front of the line."""
+    ETIQUETA = re.compile(r"^\s*_?([A-Z][a-z]{1,10}[.:])_?\s{2,}\S")   # "Batte.", "Row:"
+    veces = {}
+    for l in lines:
+        m = ETIQUETA.match(l)
+        if m: veces[m.group(1)] = veces.get(m.group(1), 0) + 1
+    hablantes = {e for e, k in veces.items() if k >= 2} | {"Chorus."}   # "Batte." twice; "Zeno." (a gloss) once
+    out, i, n, anterior = [], 0, len(lines), None
+    while i < n:
+        if not lines[i].strip():
+            out.append(lines[i]); i += 1; continue
+        j = i
+        while j < n and lines[j].strip(): j += 1
+        bloque = lines[i:j]
+        sangrias = [len(l) - len(l.lstrip(' ')) for l in bloque if len(l) - len(l.lstrip(' ')) >= minimo]
+        col = min(sangrias) if sangrias else None
+        if col:
+            # a glossed line may start its verse left of the only bare line, which is indented
+            # (Thebes stanza: verse at 20, the bare line at 22)
+            tras_glosa = [m.end() for m in (re.match(r'^\S.*?\s{2,}(?=\S)', l) for l in bloque)
+                          if m and minimo <= m.end() <= col]
+            col = min([col] + tras_glosa)
+        # a stanza with a gloss on every line shows no bare verse line: then the verse starts
+        # where each line resumes after the gloss and a gap of two spaces or more, and the
+        # column is the leftmost of those (the Orpheus stanza of the Ode to his Rival)
+        if col is None and anterior:
+            inicios = [m.end() for m in (re.match(r'^\S.*?\s{2,}(?=\S)', l) for l in bloque) if m and m.end() <= anterior + 4]
+            solo_glosa = [l for l in bloque if len(l.rstrip()) <= anterior and not re.search(r'\s{2,}\S', l.strip())]
+            if len(inicios) >= 2 and len(inicios) + len(solo_glosa) == len(bloque):     # "Metam." alone
+                col = min(inicios)
+        anterior = col or anterior
+        for l in bloque:
+            if col and l[:col].strip():
+                m = ETIQUETA.match(l)
+                if m and m.group(1) in hablantes:
+                    l = ' ' * col + m.group(1) + ' ' + l[col:].strip()   # a speaker in the margin stays
+                elif len(l) > col and l[col - 2:col] == '  ' and l[col:].strip():
+                    l = ' ' * col + l[col:]
+                elif len(l.rstrip()) <= col:
+                    continue                                  # gloss only
+            if col:
+                l = re.sub(r'\*(?=_?[A-Za-z])', '', l)
+            out.append(l)
+        i = j
+    return out
+
+
 def sin_marcas(lines):
-    """Transcriber's note markers left on headings: Bryant's "THE MASSACRE AT SCIO. deg."
-    (a degree sign standing for a note) reached the app as "The Massacre at Scio. Deg"."""
+    """Transcriber's marks: Bryant's "THE MASSACRE AT SCIO. deg." (a degree sign standing for a
+    note) reached the app as "The Massacre at Scio. Deg"; and emphasis set as *I* (Lanier) lost
+    its closing mark to the parser and showed as "*I saw It". Blanked names ("R*k*r", "L**G")
+    have letters on both sides of the asterisks and are left alone."""
+    lines = [re.sub(r"(?<![\w*])\*([A-Za-z][^*\n]{0,40}?(?<=[\w.,!?']))\*(?![\w*])", r"\1", l) for l in lines]
     return [re.sub(r"\s*\(?\s*\bdeg\.\)?\s*$", "", l) if re.search(r"[A-Za-z.]\s+\(?\s*deg\.\)?\s*$", l) else l
             for l in lines]
 

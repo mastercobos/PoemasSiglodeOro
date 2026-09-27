@@ -6,17 +6,17 @@ all fixes, and as Laurel published it (its published count includes hand work it
 | Book | Laurel's split | Ours | Published | Speaker tags restored | Epigraphs dropped |
 |---|---:|---:|---:|---:|---:|
 | herrick-hesperides | 1394 | 1392 | 1390 | 0 | 0 |
-| hemans-poems | 691 | 691 | 688 | 9 | 48 |
+| hemans-poems | 691 | 638 | 688 | 9 | 48 |
 | burns-poems | 546 | 555 | 540 | 0 | 3 |
 | dickinson-poems | 448 | 448 | 448 | 0 | 0 |
-| longfellow-poems | 457 | 440 | 458 | 13 | 2 |
+| longfellow-poems | 457 | 358 | 458 | 2 | 2 |
 | dunbar-poems | 422 | 422 | 422 | 0 | 0 |
 | macdonald-poems | 318 | 318 | 318 | 0 | 0 |
 | barnes-dorset | 325 | 319 | 318 | 74 | 0 |
 | whitman-leaves | 325 | 335 | 334 | 0 | 0 |
 | swift-poems | 243 | 261 | 257 | 0 | 1 |
 | hood-poems | 228 | 230 | 229 | 21 | 10 |
-| emerson-poems | 220 | 218 | 218 | 0 | 0 |
+| emerson-poems | 220 | 208 | 218 | 0 | 0 |
 | shelley-later-poems | 198 | 209 | 209 | 0 | 2 |
 | lowell-james-russell-poems | 190 | 189 | 176 | 3 | 1 |
 | donne-poems | 182 | 191 | 191 | 0 | 0 |
@@ -26,11 +26,11 @@ all fixes, and as Laurel published it (its published count includes hand work it
 | rossetti-goblin-market | 138 | 139 | 140 | 0 | 0 |
 | byron-works-3 | 166 | 162 | 166 | 0 | 2 |
 | cawein-poems | 143 | 139 | 142 | 0 | 0 |
-| bowles-sonnets | 143 | 143 | 144 | 4 | 0 |
+| bowles-sonnets | 143 | 137 | 144 | 4 | 0 |
 | henley-poems | 141 | 133 | 133 | 0 | 1 |
 | hood-poetical-works | 180 | 186 | 186 | 14 | 12 |
 | whittier-anti-slavery | 134 | 134 | 134 | 0 | 1 |
-| bryant-poems | 133 | 132 | 131 | 0 | 0 |
+| bryant-poems | 133 | 115 | 131 | 0 | 0 |
 | seward-sonnets | 80 | 126 | 126 | 0 | 0 |
 | kirke-white-poems | 120 | 123 | 123 | 2 | 0 |
 | sidney-astrophel | 117 | 117 | 117 | 0 | 0 |
@@ -46,7 +46,7 @@ all fixes, and as Laurel published it (its published count includes hand work it
 | patmore-angel | 102 | 102 | 102 | 0 | 0 |
 | coolidge-few-more-verses | 103 | 103 | 103 | 0 | 0 |
 | meredith-poems | 91 | 93 | 93 | 0 | 0 |
-| praed-poems | 101 | 101 | 101 | 0 | 5 |
+| praed-poems | 101 | 98 | 101 | 0 | 5 |
 | rossetti-house-of-life | 98 | 98 | 98 | 0 | 0 |
 | timrod-poems | 90 | 88 | 89 | 0 | 0 |
 | coleridge-poems | 101 | 98 | 98 | 0 | 0 |

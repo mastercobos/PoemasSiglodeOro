@@ -298,6 +298,27 @@ def lineas_partidas(estrofas):
     return n
 
 
+# Lines corrected by hand, (author, line as cleaned) -> line. Checked against Gutenberg
+# (2026-09-26). Two kinds only; nothing here modernises the text:
+#  * the editions' footnote marks, pointing to notes the app doesn't show (Wheatley, Spenser,
+#    Lazarus, Whittier, Harper, Barnes). Wheatley's mark on "Niobe" said the verse from there
+#    to the end "is the Work of another Hand";
+#  * Gutenberg's own slips in Tennyson's Maud, an asterisk typed for an apostrophe.
+LINEAS_A_MANO = {
+    ('Alfred Tennyson', 'I play*d with the girl when a child; she promised then to be fair.'): "I play'd with the girl when a child; she promised then to be fair.",
+    ('Alfred Tennyson', "The red rose cries, *She is near, she is near;'"): "The red rose cries, 'She is near, she is near;'",
+    ('Edmund Spenser', 'And steel-hed speare, and morion * on her hedd,'): 'And steel-hed speare, and morion on her hedd,',
+    ('Edmund Spenser', 'And Iacob staffe ** in hand devoutly crost,'): 'And Iacob staffe in hand devoutly crost,',
+    ('Emma Lazarus', 'Half of his immortality."* He needs'): 'Half of his immortality." He needs',
+    ('Phillis Wheatley', '* "The queen of all her family bereft,'): '"The queen of all her family bereft,',
+    ('Phillis Wheatley', "Who ere escap'd thee, but the saint * of old"): "Who ere escap'd thee, but the saint of old",
+    ('Phillis Wheatley', "When loss to loss * ensu'd, and woe to woe,"): "When loss to loss ensu'd, and woe to woe,",
+    ('John Greenleaf Whittier', "Our eyes to Pillow's ghastly stain. **"): "Our eyes to Pillow's ghastly stain.",
+    ('Frances Ellen Watkins Harper', 'The Loyal Legion * band.'): 'The Loyal Legion band.',
+    ('William Barnes', 'J. L., *T. D., at Meldonley.'): 'J. L., T. D., at Meldonley.',
+}
+
+
 # Found by hand; the heuristics above miss them. (author, title, opening words).
 DESCARTAR_A_MANO = {
     # Biographies and a contents page, printed as verse because they quote it.
@@ -339,6 +360,7 @@ def limpiar_poema(titulo, estrofas, obra=None, edicion=None, con_metro=True, aut
     for i, e in enumerate(estrofas):
         lineas = [limpiar_linea(l) for l in e]
         lineas = [l for l in lineas if re.search(r"[^\W\d_]", l) and (autor, l) not in LINEAS_ESPURIAS]
+        lineas = [LINEAS_A_MANO.get((autor, l), l) for l in lineas]
         if not lineas:
             continue
         motivo = motivo_estrofa(lineas, con_metro)

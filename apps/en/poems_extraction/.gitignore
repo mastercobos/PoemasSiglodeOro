@@ -6,3 +6,5 @@ corpus/laurel-export/
 # extraer.py: its copy of Laurel's pipeline, and its output (rebuild with parser/extraer.py).
 corpus/parser-trabajo/
 corpus/parser-salida/
+# seleccionar.py: the whole anthology as one file, for the comparison tools
+corpus/poemas-completo.json

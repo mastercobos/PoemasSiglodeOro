@@ -18,7 +18,7 @@ void main() {
       locale: Locale('en'),
       nombreApp: 'English Verse',
       firmaCompartir: 'English Verse · A daily anthology',
-      assetPoemas: 'assets/poemas.json',
+      assetPoemas: 'assets/poemas/indice.json',
       assetOrnamento: 'assets/icon/quill_icon.png',
       // Sequences are numbered inline ("Sonnet I", "Sonnets from the
       // Portuguese, I") rather than with the Spanish corpus's leading

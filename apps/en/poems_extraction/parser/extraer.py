@@ -34,7 +34,8 @@ Per book:
      Laurel's title; our rules move boundaries, not names;
   5. our own fixes, correcciones.json: Laurel's format keyed to our split, plus
      "anadir" (a poem taken straight from the source), "unir" (parts of one
-     poem split apart), "quitar" (stray lines) and "resuelto" (Laurel fixes checked and closed, with the reason);
+     poem split apart), "quitar" (stray lines), "cambiar" (a line the parser cut,
+     given back whole) and "resuelto" (Laurel fixes checked and closed, with the reason);
   6. speaker tags put back in dialogue poems, epigraphs from other writers
      dropped (fuente.con_hablantes, fuente.sin_epigrafes).
 
@@ -43,6 +44,7 @@ rule changes the split around a line), comparar.py / detalle.py (two runs).
 """
 import argparse
 import copy
+import hashlib
 import json
 import os
 import shutil
@@ -83,16 +85,30 @@ LIBROS = [
 PISTAS = {
     # Longfellow's two plays, taken out like Laurel takes out Christus: an act is not a poem.
     # Capital lines that fuente.hablantes takes for speaker tags and are not: "no_hablantes".
-    "hemans-poems": {"no_hablantes": ["FROM A PAINTING BY WILLIAMS."]},
     "barnes-dorset": {"no_hablantes": ["THE RAILROAD."]},
     "seward-sonnets": {"no_hablantes": ["SUBJECT CONTINUED."]},
+    "bowles-sonnets": {"drop_range": [(r"^PICTURES FROM THEOCRITUS\.$", r"^LADY M----VE\.$")]},   # translations
+    # glosses in a margin column beside the verse (fuente.sin_margen)
+    "drayton-minor-poems": {"margen": True},
     # Collins's critical introduction quotes Tennyson line by line with the poem named under
     # each quotation, and the parser made those poems ("The Eagle" in 22 lines). The poems
     # begin at the second "To the Queen" (the first is in the contents; any case, since
     # fuente.titulos_del_indice may have raised it).
     "tennyson-early-poems": {"start_at": r"(?i)^to the queen$", "start_occurrence": 2, "start_inclusive": True},
+    # Plays and translations are left out: the anthology is original English poems. Each range
+    # is (first line, first line after it[, which occurrence]); the contents lists name the same
+    # sections, set slightly differently, hence the exact patterns and occurrences.
     "longfellow-poems": {"drop_range": [(r"^THE SPANISH STUDENT$", r"^THE BELFRY OF BRUGES AND OTHER POEMS$"),
-                                        (r"^THE MASQUE OF PANDORA$", r"^THE HANGING OF THE CRANE$")]},
+                                        (r"^THE MASQUE OF PANDORA$", r"^THE HANGING OF THE CRANE$"),
+                                        (r"^TRANSLATIONS$", r"^(?!x)x")]},           # to the end of the book
+    "bryant-poems": {"drop_range": [(r"^TRANSLATIONS\.$", r"^LATER POEMS$", 2)]},
+    "emerson-poems": {"drop_range": [(r"^TRANSLATIONS$", r"^APPENDIX$", 2)]},
+    "hemans-poems": {"no_hablantes": ["FROM A PAINTING BY WILLIAMS."],
+                     "drop_range": [(r"^TRANSLATIONS FROM CAMOENS, AND OTHER POETS\.$", r"^MISCELLANEOUS POEMS\.$"),
+                                    # Laurel's own ranges (applied first) have already cut the
+                                    # play De Chatillon that follows, up to The Forest Sanctuary
+                                    (r"^TRANSLATIONS FROM HORACE\.$", r"^THE FOREST SANCTUARY\.$"),
+                                    (r"^SCENES AND PASSAGES FROM GOETHE\.$", r"^A VERNAL THOUGHT\.$", 2)]},
 }
 
 CORRECCIONES = AQUI / "correcciones.json"
@@ -103,15 +119,48 @@ def commit_laurel():
                           capture_output=True, text=True, check=True).stdout.strip()
 
 
+# Changes to Laurel's code itself, applied to the working copy. Each is off unless extraer
+# turns its flag on, so the reference run (Laurel's split, which its hand fixes were written
+# against) is still Laurel's own.
+PARCHES = [
+    # clean_stanza drops every line in capitals as a "shouting header": also the lines poets set
+    # in capitals for emphasis (Seward's sonnets close on one, Lovelace's refrain is one). With
+    # CONSERVAR_MAYUSCULAS such a line is kept when it comes after verse in a stanza of verse
+    # (two lines or more in lower case, one of them before it). It still goes at the top of a
+    # stanza (Swift's "VERSES / SENT TO THE DEAN..." heading runs straight into the verse), and
+    # when it looks like a reference: digits ("ISAIAH 60:15.", "BEN JONSON, 1615."), brackets,
+    # a leading dash ("--ESSAYS OF ELIA."), =markup=, a closing colon.
+    ("generic.py",
+     """    for l in st:
+        if notes is not None: l = strip_gloss(l, notes)""",
+     """    _mixtas = sum(1 for x in st if re.search(r'[a-z]', x))
+    for _i, l in enumerate(st):
+        if notes is not None: l = strip_gloss(l, notes)"""),
+    ("generic.py",
+     """        if len(l) > 12 and l.upper() == l and re.search(r'[A-Z]{3}', l): continue   # shouting headers, publisher lines""",
+     """        if len(l) > 12 and l.upper() == l and re.search(r'[A-Z]{3}', l) and not (CONSERVAR_MAYUSCULAS and _mixtas >= 2 and any(re.search(r'[a-z]', x) for x in st[:_i]) and not re.search(r'\\d|^\\s*[(\\[=—-]|[:=]\\W*$', l)): continue   # shouting headers, publisher lines"""),
+    ("generic.py",
+     """def clean_stanza(st, notes=None, keep_speakers=False):""",
+     """CONSERVAR_MAYUSCULAS = False
+def clean_stanza(st, notes=None, keep_speakers=False):"""),
+]
+
+
 def preparar(libros_gutenberg):
-    """The working copy of Laurel's pipeline, with the books where its parser looks for them."""
+    """The working copy of Laurel's pipeline, patched, with the books where its parser looks for them."""
     sello = TRABAJO / "laurel_commit"
-    commit = commit_laurel()
-    if not sello.exists() or sello.read_text() != commit:
+    firma = commit_laurel() + " " + hashlib.sha1(repr(PARCHES).encode()).hexdigest()[:10]
+    if not sello.exists() or sello.read_text() != firma:
         shutil.rmtree(TRABAJO, ignore_errors=True)
         shutil.copytree(LAUREL / "pipeline", TRABAJO / "pipeline")
         (TRABAJO / "site" / "data" / "works").mkdir(parents=True)   # the parser writes commentary there
-        sello.write_text(commit)
+        for fichero, antes, despues in PARCHES:
+            ruta = TRABAJO / "pipeline" / fichero
+            codigo = ruta.read_text(encoding="utf-8")
+            if codigo.count(antes) != 1:
+                sys.exit("Laurel's %s has changed: patch no longer applies:\n%s" % (fichero, antes))
+            ruta.write_text(codigo.replace(antes, despues), encoding="utf-8")
+        sello.write_text(firma)
     fuentes = TRABAJO / "pipeline" / "sources"
     fuentes.mkdir(exist_ok=True)
     for ebook in libros_gutenberg:
@@ -276,8 +325,12 @@ def extraer(slug, lib, consultas, hallazgos, propias, reglas, informe):
     if not reglas:
         meta = meta_laurel
     if reglas:
-        generic.load = lambda gid: fuente.titulos_del_indice(fuente.sin_notas(fuente.sin_marcas(ingest.load(gid))))[0]
+        margen = meta.get("margen")
+        generic.load = lambda gid: fuente.titulos_del_indice(fuente.sin_notas(fuente.sin_marcas(
+            fuente.sin_margen(ingest.load(gid)) if margen else ingest.load(gid))))[0]
+        generic.CONSERVAR_MAYUSCULAS = True
         w = generic.parse_gutenberg(ebook, slug, meta)
+        generic.CONSERVAR_MAYUSCULAS = False
     else:
         w = laurel
     w = catalog.mark_prose(w, meta)
@@ -377,6 +430,10 @@ def extraer(slug, lib, consultas, hallazgos, propias, reglas, informe):
                     base["title"] = r.get("title", base["title"])
                 else:
                     log.append("not joined: `%s` (a part is missing)" % r["section"])
+            if "cambiar" in r:                              # a line the parser cut, given back from the source
+                for s in w["sections"]:
+                    if s["id"] == r["section"]:
+                        s["stanzas"] = [[r["cambiar"].get(l.strip(), l) for l in st] for st in s["stanzas"]]
             if "quitar" in r:                               # stray lines: a subtitle left in the verse
                 for s in w["sections"]:
                     if s["id"] == r["section"]:

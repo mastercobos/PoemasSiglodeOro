@@ -104,6 +104,8 @@ def continuaciones(ebook, regla):
     for previa, linea in zip(lineas, lineas[1:]):
         if not previa.strip() or not linea.strip():
             continue
+        if linea.strip().upper() == linea.strip():
+            continue  # a line in capitals is a line of its own (Thackeray's "KILL ALL THE FRIARS!")
         minuscula = re.match(r"[a-z(\"'‘“\-]", linea.strip())
         previa_sin_numero = re.sub(r"\s{2,}\d+$", "", previa)
         if regla == "sangria":

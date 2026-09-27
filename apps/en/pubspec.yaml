@@ -22,7 +22,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/poemas.json
+    # The anthology, split: an index read at startup and the texts in chunks
+    # read when a poem is shown (see poemario_core's PoemaRepository).
+    - assets/poemas/
+    - assets/poemas/textos/
     - assets/icon/quill_icon.png
   # Fonts are bundled, not downloaded. This removes google_fonts, which
   # fetched Playfair and Lato over the network on first launch — so an

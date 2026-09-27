@@ -161,30 +161,6 @@
  },
  {
   "work": "bryant-poems",
-  "section": "the-alcayde-of-molina",
-  "note": "The Death of Aliatar follows at stanza 1 (Laurel's finding the-alcayde-of-molina-2, redone: with the note marks gone its subtitle line opens that stanza)",
-  "fix": {
-   "split_at_stanza": 1,
-   "second_title": "The Death of Aliatar: From the Spanish"
-  }
- },
- {
-  "work": "bryant-poems",
-  "section": "the-death-of-aliatar-from-the-spanish",
-  "note": "its subtitle, already in the title",
-  "quitar": [
-   "FROM THE SPANISH."
-  ]
- },
- {
-  "work": "bryant-poems",
-  "resuelto": [
-   "the-alcayde-of-molina-2"
-  ],
-  "note": "redone above"
- },
- {
-  "work": "bryant-poems",
   "resuelto": [
    "hymn-of-the-city"
   ],
@@ -276,5 +252,91 @@
     ]
    ]
   }
+ },
+ {
+  "work": "praed-poems",
+  "section": "the-canterbury-poets",
+  "note": "the publisher's advertisements at the back of the book (series list, prices, forthcoming volumes)",
+  "fix": {
+   "drop": true
+  }
+ },
+ {
+  "work": "praed-poems",
+  "section": "volumes-already-issued",
+  "note": "the publisher's advertisements at the back of the book (series list, prices, forthcoming volumes)",
+  "fix": {
+   "drop": true
+  }
+ },
+ {
+  "work": "praed-poems",
+  "section": "by-eric-robertson-m-a",
+  "note": "the publisher's advertisements at the back of the book (series list, prices, forthcoming volumes)",
+  "fix": {
+   "drop": true
+  }
+ },
+ {
+  "work": "hood-poems",
+  "section": "skipping-a-mystery",
+  "note": "the readers' skipping, set as rows of asterisks round \"and\": the parser cuts a line's trailing asterisks (Laurel's ingest.clean), leaving \"* * * * * and\"",
+  "cambiar": {
+   "* * * * * and": "* * * * * and * * * * *",
+   "* * * * and": "* * * * and * * * * *",
+   "* * * and": "* * * and * * * * *"
+  }
+ },
+ {
+  "work": "hemans-poems",
+  "resuelto": [
+   "translations-from-camoens-and-other-poets-sonnet-70",
+   "sonnet-271",
+   "sonnet-186",
+   "sonnet-108",
+   "sonnet-19",
+   "sonnet-58",
+   "sonnet-178",
+   "sonnet-80",
+   "sonnet-128",
+   "sonnet-205",
+   "sonnet-133",
+   "sonnet-181",
+   "sonnet-278",
+   "book-i-ode-xxx"
+  ],
+  "note": "the poems these fixes are for are translations, in a translation section now left out (PISTAS drop_range)"
+ },
+ {
+  "work": "longfellow-poems",
+  "resuelto": [
+   "by-lope-de-vega",
+   "by-francisco-de-aldana",
+   "by-gonzalo-de-berceo"
+  ],
+  "note": "the poems these fixes are for are translations, in a translation section now left out (PISTAS drop_range)"
+ },
+ {
+  "work": "bryant-poems",
+  "resuelto": [
+   "from-the-spanish-2",
+   "from-the-spanish-of-bartolome-leonardo-de-argensola",
+   "from-the-spanish-of-luis-ponce-de-leon",
+   "from-the-spanish-2",
+   "from-the-portuguese-of-semedo",
+   "from-the-spanish-of-iglesias",
+   "from-the-german-of-uhland",
+   "from-the-spanish-3",
+   "from-the-german-of-uhland-2",
+   "the-alcayde-of-molina-2"
+  ],
+  "note": "the poems these fixes are for are translations, in a translation section now left out (PISTAS drop_range)"
+ },
+ {
+  "work": "bowles-sonnets",
+  "resuelto": [
+   "from-the-same"
+  ],
+  "note": "a Theocritus piece in Pictures from Theocritus, translations now left out (PISTAS drop_range)"
  }
 ]
