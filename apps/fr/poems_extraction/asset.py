@@ -8,13 +8,15 @@ seleccionar.py, escribir_dividido): indice.json holds the title, author number
 and first line of every poem, and the texts go in chunks of about TROZO bytes
 in textos/<n>.json. Only the index is read at startup.
 
-The app derives each poem's id from author, title and the first line given
-here (Poema._idDerivado). Once the app ships, favourites and notifications
-persist those ids: changing a title or a first line then orphans them.
+The app derives each poem's id from author, title and the first verse given
+here (Poema._idDerivado; see primera_linea). Once the app ships, favourites
+and notifications persist those ids: changing a title or a first verse then
+orphans them.
 """
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -23,10 +25,21 @@ AQUI = Path(__file__).parent
 TROZO = 150_000  # bytes of text per chunk: opening a poem decodes one chunk
 
 
+# A stanza that is only a section mark: numeral, asterism or row of dots.
+# Same pattern as esMarcaDeSeccion in poemario_core (versos_sangrados.dart).
+MARCA = re.compile(r"^\s*([IVXLCDM]+\.?|\d+\.?|[*∗⁂](\s*[*∗])*|[-—–_.\s]{3,})\s*$")
+
+
 def primera_linea(texto):
-    """The first line with something on it, untrimmed: the app trims it to
-    derive the poem's id and shows it as the first verse. Same rule as
-    Poema._primeraLinea."""
+    """The first verse, untrimmed: the first line with something on it,
+    skipping a leading stanza that is only a section mark ("I" before part
+    one of a poem). The app trims it to derive the poem's id and shows it as
+    the first verse, so once the app ships this must not change."""
+    for estrofa in re.split(r"\n\s*\n", texto):
+        lineas = [l for l in estrofa.split("\n") if l.strip()]
+        if not lineas or (len(lineas) == 1 and MARCA.match(lineas[0])):
+            continue
+        return lineas[0]
     return next((l for l in texto.split("\n") if l.strip()), "")
 
 
