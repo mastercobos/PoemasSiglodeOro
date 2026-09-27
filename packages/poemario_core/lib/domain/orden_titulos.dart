@@ -55,6 +55,8 @@ int? numeroDeTitulo(String titulo) {
 ///
 /// 'ñ' maps to 'n~' so that it sorts immediately after every 'n' word, which
 /// is what Spanish alphabetisation expects, without needing a full collator.
+/// The ligatures 'œ' and 'æ' spell out as 'oe' and 'ae', so "coeur" finds
+/// "cœur" and both sort where a French or English dictionary puts them.
 String plegarParaOrden(String s) {
   final minusculas = s.toLowerCase();
   // This runs over the full text of every poem at startup, so it scans code
@@ -72,6 +74,9 @@ String plegarParaOrden(String s) {
       0xFA || 0xF9 || 0xFC || 0xFB => 'u', // ú ù ü û
       0xE7 => 'c', // ç
       0xF1 => 'n~', // ñ
+      0xFF => 'y', // ÿ
+      0x153 => 'oe', // œ
+      0xE6 => 'ae', // æ
       _ => null,
     };
     if (reemplazo == null) continue;

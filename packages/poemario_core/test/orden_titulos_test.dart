@@ -50,6 +50,9 @@ void main() {
           'ú' || 'ù' || 'ü' || 'û' => 'u',
           'ç' => 'c',
           'ñ' => 'n~',
+          'ÿ' => 'y',
+          'œ' => 'oe',
+          'æ' => 'ae',
           final otro => otro,
         });
       }
@@ -72,6 +75,7 @@ void main() {
         'a\u{1F600}ñ\u{1F600}b',
         'İstanbul ǅ ẞ',
         'Volverán las oscuras golondrinas — Bécquer',
+        'Œuvres, cœur, Ægir, L’Haÿ-les-Roses',
       ];
       for (final s in casos) {
         expect(plegarParaOrden(s), referencia(s), reason: s);
@@ -85,6 +89,14 @@ void main() {
         ..sort((a, b) => plegarParaOrden(a).compareTo(plegarParaOrden(b)));
       // The old toLowerCase().compareTo() put Ángel last, after Zorrilla.
       expect(nombres, ['Ángel', 'Antonio', 'Zorrilla']);
+    });
+
+    test('spells out œ and æ so French searches match', () {
+      expect(plegarParaOrden('Le Cœur'), 'le coeur');
+      expect(plegarParaOrden('Ægir'), 'aegir');
+      final palabras = ['cœur', 'cobalt', 'coffre']
+        ..sort((a, b) => plegarParaOrden(a).compareTo(plegarParaOrden(b)));
+      expect(palabras, ['cobalt', 'cœur', 'coffre']);
     });
 
     test('sorts ñ immediately after n', () {
