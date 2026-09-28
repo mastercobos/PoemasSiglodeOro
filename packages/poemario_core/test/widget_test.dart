@@ -186,6 +186,64 @@ void main() {
       expect(find.byIcon(Icons.favorite), findsOneWidget);
       expect(prefs.leerLista('favoritos_v2'), ['a0-p0']);
     });
+
+    testWidgets('pinching magnifies the page; each poem opens at 1x',
+        (tester) async {
+      final anthology = await anthologyDePrueba();
+      final prefs = await preferenciasDePrueba({'esquema_prefs': 2});
+      Future<void> abrir() async {
+        await tester.pumpWidget(AppDePrueba(
+          anthology: anthology,
+          prefs: prefs,
+          solicitudes: SolicitudDePoema(),
+          agenda: AgendaFalsa(),
+          child: PoemaScreen(poema: anthology.porId('a0-p0')!),
+        ));
+        await tester.pumpAndSettle();
+      }
+
+      final versos = find
+          .byWidgetPredicate((w) => w is SelectableText && w.textSpan != null);
+      await abrir();
+      final base = tester.getRect(versos);
+      double tamano() =>
+          tester.widget<SelectableText>(versos).textSpan!.style!.fontSize!;
+      final tamanoBase = tamano();
+      final centro = tester.getCenter(find.byType(Scaffold));
+
+      // One finger scrolls or selects; it never magnifies.
+      await tester.dragFrom(centro, const Offset(0, -40));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(versos).size, base.size);
+
+      // Fingers 40 px apart moved to 60: one and a half times.
+      final uno = await tester.startGesture(centro - const Offset(0, 20));
+      final dos = await tester.startGesture(centro + const Offset(0, 20));
+      for (var i = 0; i < 5; i++) {
+        await uno.moveBy(const Offset(0, -2));
+        await dos.moveBy(const Offset(0, 2));
+        await tester.pump();
+      }
+      await uno.up();
+      await dos.up();
+      await tester.pumpAndSettle();
+      final grande = tester.getRect(versos);
+      expect(grande.width, closeTo(base.width * 1.5, .5));
+      expect(grande.height, closeTo(base.height * 1.5, .5));
+      // Magnified, not laid out again: the text style is unchanged.
+      expect(tamano(), tamanoBase);
+
+      // Now wider than the screen, it pans sideways with one finger.
+      final antes = tester.getRect(versos).left;
+      await tester.dragFrom(centro, const Offset(-100, 0));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(versos).left, lessThan(antes));
+
+      // The next poem opens at 1x.
+      await tester.pumpWidget(const SizedBox());
+      await abrir();
+      expect(tester.getRect(versos).size, base.size);
+    });
   });
 
   group('BusquedaScreen', () {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import '../widgets/versos_ajustados.dart';
 import '../widgets/autor_link.dart';
 import '../widgets/linea_oro.dart';
 import '../widgets/ornamento.dart';
+import '../widgets/pellizco.dart';
 
 /// Reading view for a single poem.
 ///
@@ -31,6 +33,11 @@ import '../widgets/ornamento.dart';
 /// * the favourite snackbar wording is derived from the value the toggle
 ///   returns rather than from the pre-toggle read, which could show the
 ///   opposite message if a rebuild landed in between.
+///
+/// Pinching magnifies the page as a picture: the poem keeps its lines and
+/// shape, and one finger pans it both ways. Text size proper is the system
+/// setting, which the page follows; the magnification starts at 1× for every
+/// poem and isn't saved. The text stays selectable when magnified.
 class PoemaScreen extends StatefulWidget {
   final Poema poema;
 
@@ -41,11 +48,65 @@ class PoemaScreen extends StatefulWidget {
 }
 
 class _PoemaScreenState extends State<PoemaScreen> {
+  static const _aumentoMaximo = 3.0;
+
   /// Read to anchor the iPad share popover.
   final _claveBotonCompartir = GlobalKey();
   bool _compartiendo = false;
 
+  final _vertical = ScrollController();
+  final _horizontal = ScrollController();
+  late final _fisica = _FisicaPellizco(() => _pellizcando);
+
+  double _aumento = 1;
+  bool _pellizcando = false;
+
+  // At the start of a pinch: the magnification, and the point of the page
+  // between the fingers, at 1×.
+  double _aumentoInicial = 1;
+  Offset _puntoInicial = Offset.zero;
+
   Poema get _poema => widget.poema;
+
+  @override
+  void dispose() {
+    _vertical.dispose();
+    _horizontal.dispose();
+    super.dispose();
+  }
+
+  Offset get _desplazamiento => Offset(
+        _horizontal.hasClients ? _horizontal.offset : 0,
+        _vertical.hasClients ? _vertical.offset : 0,
+      );
+
+  void _empezarPellizco(Offset foco) {
+    _pellizcando = true;
+    _aumentoInicial = _aumento;
+    _puntoInicial = (_desplazamiento + foco) / _aumento;
+  }
+
+  void _pellizcar(double escala, Offset foco) {
+    final aumento =
+        (_aumentoInicial * escala).clamp(1.0, _aumentoMaximo).toDouble();
+    setState(() => _aumento = aumento);
+    // The point that was between the fingers stays between them, wherever
+    // they have moved: pinching also pans.
+    final destino = _puntoInicial * aumento - foco;
+    if (_horizontal.hasClients) _horizontal.jumpTo(math.max(0, destino.dx));
+    if (_vertical.hasClients) _vertical.jumpTo(math.max(0, destino.dy));
+    // Shrinking can leave either scroll past its new end; pull it back once
+    // the page is laid out.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final c in [_horizontal, _vertical]) {
+        if (c.hasClients && c.offset > c.position.maxScrollExtent) {
+          c.jumpTo(c.position.maxScrollExtent);
+        }
+      }
+    });
+  }
+
+  void _terminarPellizco() => _pellizcando = false;
 
   Rect _rectBotonCompartir() {
     final box =
@@ -86,8 +147,8 @@ class _PoemaScreenState extends State<PoemaScreen> {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(
-            guardado ? l10n.favoritosAnadido : l10n.favoritosEliminado),
+        content:
+            Text(guardado ? l10n.favoritosAnadido : l10n.favoritosEliminado),
         duration: const Duration(seconds: 2),
       ));
   }
@@ -143,51 +204,124 @@ class _PoemaScreenState extends State<PoemaScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(28, 36, 28, 48),
-        child: Column(
-          children: [
-            const Ornamento(),
-            const SizedBox(height: 28),
-            SelectableText(
-              _poema.etiqueta,
-              textAlign: TextAlign.center,
-              style: t.tituloPoema.copyWith(color: c.texto),
-            ),
-            if (_poema.mostrarPrimerVerso)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: SelectableText(
-                  '«${_poema.primerVerso}»',
-                  textAlign: TextAlign.center,
-                  style: t.cuerpoPequeno.copyWith(
-                      fontSize: 13,
-                      color: c.textoSuave,
-                      fontStyle: FontStyle.italic),
-                ),
-              ),
-            const SizedBox(height: 6),
-            AutorLink(autor: _poema.autor),
-            const SizedBox(height: 26),
-            const Filete(),
-            const SizedBox(height: 34),
-            Semantics(
-              label: l10n.semPoema(_poema.etiqueta, _poema.autor),
-              child: TextoDePoema(
-                poema: _poema,
-                builder: (_) => _CuerpoPoema(
-                  poema: _poema,
-                  estilo: t.verso.copyWith(color: c.texto),
-                ),
+      body: Pellizco(
+        alEmpezar: _empezarPellizco,
+        alCambiar: _pellizcar,
+        alTerminar: _terminarPellizco,
+        child: LayoutBuilder(
+          builder: (context, limites) => SingleChildScrollView(
+            controller: _vertical,
+            physics: _fisica,
+            child: SingleChildScrollView(
+              controller: _horizontal,
+              physics: _fisica,
+              scrollDirection: Axis.horizontal,
+              child: _Lupa(
+                aumento: _aumento,
+                ancho: limites.maxWidth,
+                child: _pagina(context),
               ),
             ),
-            const SizedBox(height: 52),
-            const Ornamento(),
-          ],
+          ),
         ),
       ),
     );
   }
+
+  /// The page as laid out at 1×.
+  Widget _pagina(BuildContext context) {
+    final c = context.colores;
+    final t = context.tipos;
+    final l10n = L10n.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 36, 28, 48),
+      child: Column(
+        children: [
+          const Ornamento(),
+          const SizedBox(height: 28),
+          SelectableText(
+            _poema.etiqueta,
+            textAlign: TextAlign.center,
+            style: t.tituloPoema.copyWith(color: c.texto),
+          ),
+          if (_poema.mostrarPrimerVerso)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: SelectableText(
+                '«${_poema.primerVerso}»',
+                textAlign: TextAlign.center,
+                style: t.cuerpoPequeno.copyWith(
+                    fontSize: 13,
+                    color: c.textoSuave,
+                    fontStyle: FontStyle.italic),
+              ),
+            ),
+          const SizedBox(height: 6),
+          AutorLink(autor: _poema.autor),
+          const SizedBox(height: 26),
+          const Filete(),
+          const SizedBox(height: 34),
+          Semantics(
+            label: l10n.semPoema(_poema.etiqueta, _poema.autor),
+            child: TextoDePoema(
+              poema: _poema,
+              builder: (_) => _CuerpoPoema(
+                poema: _poema,
+                estilo: t.verso.copyWith(color: c.texto),
+              ),
+            ),
+          ),
+          const SizedBox(height: 52),
+          const Ornamento(),
+        ],
+      ),
+    );
+  }
+}
+
+/// [child] laid out at [ancho] and drawn [aumento] times larger, taking up
+/// the magnified size so the scroll views around it reach every part.
+/// [FittedBox] carries the transform into hit testing and selection, so
+/// taps, long presses and selection handles land on the magnified text.
+class _Lupa extends StatelessWidget {
+  final double aumento;
+  final double ancho;
+  final Widget child;
+
+  const _Lupa(
+      {required this.aumento, required this.ancho, required this.child});
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+        width: ancho * aumento,
+        child: FittedBox(
+          fit: BoxFit.fitWidth,
+          alignment: Alignment.topLeft,
+          child: SizedBox(width: ancho, child: child),
+        ),
+      );
+}
+
+/// The platform's scroll physics, holding still while a pinch is on: the
+/// fingers are magnifying, not scrolling, and the screen moves the page
+/// itself to keep their point under them.
+class _FisicaPellizco extends ScrollPhysics {
+  final bool Function() enPellizco;
+
+  const _FisicaPellizco(this.enPellizco, {super.parent});
+
+  @override
+  _FisicaPellizco applyTo(ScrollPhysics? ancestor) =>
+      _FisicaPellizco(enPellizco, parent: buildParent(ancestor));
+
+  @override
+  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) =>
+      enPellizco() ? 0 : super.applyPhysicsToUserOffset(position, offset);
+
+  @override
+  Simulation? createBallisticSimulation(
+          ScrollMetrics position, double velocity) =>
+      super.createBallisticSimulation(position, enPellizco() ? 0 : velocity);
 }
 
 /// The verses.
