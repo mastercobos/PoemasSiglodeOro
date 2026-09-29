@@ -15,7 +15,7 @@ void main() {
       nombreApp: 'Antología Poética',
       firmaCompartir: 'Poemario · Siglo de Oro',
       assetPoemas: 'assets/poemas.json',
-      assetOrnamento: 'assets/icon/gafas_bigote_splash_mini.png',
+      assetOrnamento: 'assets/icon/gafas_bigote_transparente.png',
       // The "- XIV -" numbering convention only makes sense for this corpus.
       ordenTitulos: EstrategiaOrden.romanosPrimero,
       fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
