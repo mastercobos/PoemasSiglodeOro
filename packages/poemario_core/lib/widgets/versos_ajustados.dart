@@ -6,12 +6,19 @@ import 'package:flutter/rendering.dart' show SelectedContent;
 import '../theme/poema_colors.dart';
 
 /// A stanza that is only a section mark: a numeral ("II", "3."), an asterism
-/// or a row of dots. Editions print these between the parts of a poem.
-/// The French pipeline (`asset.py`) uses the same pattern.
+/// or a row of dots, which editions print between the parts of a poem; or a
+/// line with two letters or more and none in lower case, the name of who
+/// speaks next in a dialogue poem ("LA SŒUR.") or a heading.
+/// The French pipeline (`asset.py`) uses the same test.
 final _marca = RegExp(r'^\s*([IVXLCDM]+\.?|\d+\.?|[*∗⁂](\s*[*∗])*|[-—–_.\s]{3,})\s*$');
+final _letra = RegExp(r'\p{L}', unicode: true);
+final _minuscula = RegExp(r'\p{Ll}', unicode: true);
 
 bool esMarcaDeSeccion(List<String> estrofa) =>
-    estrofa.length == 1 && _marca.hasMatch(estrofa.single);
+    estrofa.length == 1 &&
+    (_marca.hasMatch(estrofa.single) ||
+        (_letra.allMatches(estrofa.single).length >= 2 &&
+            !_minuscula.hasMatch(estrofa.single)));
 
 /// Verses sized for the screen they are on ([DisposicionVersos.ajustada]).
 ///

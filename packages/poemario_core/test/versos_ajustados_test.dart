@@ -100,6 +100,11 @@ void main() {
     expect(esMarcaDeSeccion(['⁂']), isTrue);
     expect(esMarcaDeSeccion(['Il pleure']), isFalse);
     expect(esMarcaDeSeccion(['I', 'verso']), isFalse);
+    // The name of who speaks next in a dialogue poem.
+    expect(esMarcaDeSeccion(['LA SŒUR.']), isTrue);
+    expect(esMarcaDeSeccion(['LE CHŒUR DE FEMMES.']), isTrue);
+    expect(esMarcaDeSeccion(['Ô Muses !']), isFalse);
+    expect(esMarcaDeSeccion(['Ô !']), isFalse);
   });
 
   testWidgets('copying gives back the poem text', (tester) async {
