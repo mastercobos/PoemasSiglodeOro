@@ -112,8 +112,8 @@ TextosAviso textosAviso(BuildContext context) {
     titulo: l10n.notifTitulo,
     // An untitled poem's label *is* its first verse; don't print it twice.
     linea: (p) => p.mostrarPrimerVerso
-        ? l10n.notifLinea(p.titulo, p.autor, p.primerVerso)
-        : l10n.notifLineaSinTitulo(p.primerVerso, p.autor),
+        ? l10n.notifLinea(p.titulo, p.autor, p.primerVersoSinComillas)
+        : l10n.notifLineaSinTitulo(p.primerVersoSinComillas, p.autor),
     cuerpoGenerico: l10n.notifCuerpoGenerico,
   );
 }

@@ -192,7 +192,7 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
                       if (poema.mostrarPrimerVerso)
                         Padding(
                           padding: const EdgeInsets.only(top: 3),
-                          child: Text('«${poema.primerVerso}»',
+                          child: Text('«${poema.primerVersoSinComillas}»',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: t.cuerpoPequeno.copyWith(

@@ -86,5 +86,18 @@ void main() {
       expect(entreComillas.mostrarPrimerVerso, isFalse);
       expect(conComa.mostrarPrimerVerso, isFalse);
     });
+
+    test('primerVersoSinComillas drops the verse\'s own quotation marks', () {
+      final cita = construir({
+        'titulo': 'Le Gui de chêne',
+        'texto': '«\u00a0Minerve combattra !… Sur son casque divin\ndos',
+      });
+      final cerrada = construir({'texto': '“Hope” is the thing with feathers”\ndos'});
+      final normal = construir({'texto': 'Il pleure dans mon cœur\ndos'});
+      expect(cita.primerVersoSinComillas, 'Minerve combattra !… Sur son casque divin');
+      expect(cita.primerVerso, startsWith('«')); // the id still hashes it
+      expect(cerrada.primerVersoSinComillas, 'Hope” is the thing with feathers');
+      expect(normal.primerVersoSinComillas, 'Il pleure dans mon cœur');
+    });
   });
 }

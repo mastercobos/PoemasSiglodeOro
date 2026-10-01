@@ -73,7 +73,7 @@ class PoemaListTile extends StatelessWidget {
                       ),
                       if (poema.mostrarPrimerVerso)
                         Text(
-                          '«${poema.primerVerso}»',
+                          '«${poema.primerVersoSinComillas}»',
                           style: t.cuerpoPequeno.copyWith(
                               color: c.textoSuave,
                               fontStyle: FontStyle.italic),

@@ -187,6 +187,17 @@ class Poema {
       primerVerso.isNotEmpty &&
       _soloPalabras(primerVerso) != _soloPalabras(titulo);
 
+  /// [primerVerso] without a quotation mark it opens or closes with, for
+  /// showing it between the app's own «…» (or “…”): a verse that is itself
+  /// the start of a quotation ("« Minerve combattra !… ") would otherwise
+  /// read «« Minerve…». Display only; the id hashes [primerVerso].
+  String get primerVersoSinComillas => primerVerso
+      .replaceFirst(_comillaInicial, '')
+      .replaceFirst(_comillaFinal, '');
+
+  static final _comillaInicial = RegExp(r'^[«“"‹„]\s*');
+  static final _comillaFinal = RegExp(r'\s*[»”"›]$');
+
   static final _noPalabra = RegExp(r'[^\p{L}\p{N}]+', unicode: true);
   static String _soloPalabras(String s) =>
       s.replaceAll(_noPalabra, '').toLowerCase();

@@ -248,7 +248,7 @@ class _PoemaScreenState extends State<PoemaScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: SelectableText(
-                '«${_poema.primerVerso}»',
+                '«${_poema.primerVersoSinComillas}»',
                 textAlign: TextAlign.center,
                 style: t.cuerpoPequeno.copyWith(
                     fontSize: 13,
