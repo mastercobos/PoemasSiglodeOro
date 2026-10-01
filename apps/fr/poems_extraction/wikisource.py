@@ -13,7 +13,7 @@ the output can be rebuilt offline.
 
 Authors come from recueils.AUTEURS. Each one's death date is checked on
 Wikidata (via the author's Wikisource page, so the date and the texts belong
-to the same person) and anyone who died in 1900 or later is refused - see
+to the same person) and anyone who died in 1926 or later is refused - see
 auteurs_verifies.json for what Wikidata said.
 
 A collection is a Wikisource page. Its table of contents is followed to its
@@ -49,7 +49,16 @@ CACHE = AQUI / 'corpus' / 'cache'
 API = 'https://fr.wikisource.org/w/api.php'
 WIKIDATA = 'https://www.wikidata.org/w/api.php'
 UA = {'User-Agent': 'PoemarioFR/0.1 (poetry anthology corpus builder; python urllib)'}
-ANNEE_LIMITE = 1900
+# Copyright. In France and the EU a work is free 70 years after its author's
+# death, 100 for one "mort pour la France" (Apollinaire, Péguy): anyone who
+# died in 1925 or earlier is free in 2026 either way. In the US what counts
+# is publication: before 1931 is free, so a collection is taken only from an
+# edition dated before 1931 (EDITION_LIMITE, read from Wikisource's header),
+# unless recueils.py marks it as a later reprint of a text printed before
+# then ('reimpression', with the reason). A modern edition of an old text
+# (a critical edition, which establishes the text) is refused.
+ANNEE_LIMITE = 1926
+EDITION_LIMITE = 1931
 # Wikisource proofreading level every scanned page of a poem must reach:
 # 3 = proofread once, 4 = validated by a second person. Below that the text
 # is raw OCR ("hélas 1" for "hélas !", line numbers glued to verses).
@@ -192,7 +201,7 @@ def qualite_des_pages(pages):
     pages = sorted(set(pages) - set(qualite))
     for i in range(0, len(pages), 50):
         d = _requete(API, dict(action='query', prop='proofread', titles='|'.join(pages[i:i + 50]),
-                               format='json', formatversion=2))
+                               format='json', formatversion=2), post=True)  # long titles: no GET
         q = d.get('query', {})
         noms = {n['to']: n['from'] for n in q.get('normalized', [])}
         for pg in q.get('pages', []):
@@ -809,11 +818,18 @@ class Collecte:
         self.trop_courts = []
         self.non_relus = []
         self.remplaces = 0
+        self.editions = []       # (author, collection, year printed in the header, taken)
 
     def recueil(self, auteur, rec):
         titre, html = page_html(rec['page'])
         if html is None:
             self.manquantes.append((rec['page'], rec['page']))
+            return
+        m = re.search(r'class="ws-year">\D*(\d{4})', html)
+        annee = int(m.group(1)) if m else None
+        pris = annee is None or annee < EDITION_LIMITE or bool(rec.get('reimpression'))
+        self.editions.append((auteur['nom'], rec['page'], annee, pris, rec.get('reimpression')))
+        if not pris:
             return
         self.vues.add(titre)
         segs = self._segments(rec, html)
@@ -903,7 +919,10 @@ class Collecte:
             return
         nom = (rec.get('titre') if titre_page == page_html(rec['page'])[0] else None) or _nom_de_page(titre_page)
         if len(segs) == 1:
-            self.poemes.append(self._poeme(auteur, rec, nom, segs[0][1], url, sections, segs[0][2]))
+            # One poem: its own page's name, even when the collection is
+            # given another ('titre', the book a single poem belongs to).
+            nom = _nom_de_page(titre_page)
+            self.poemes.append(self._poeme(auteur, rec, self._titre(nom, segs[0][1]), segs[0][1], url, sections, segs[0][2]))
             return
         # A collection printed on one page (Villon's Testament, the Regrets):
         # one poem per heading. The first takes the collection's name with
@@ -1011,6 +1030,17 @@ def sans_entete(texte, titre):
     return '\n\n'.join(strophes)
 
 
+# Longer poems are left out: a poem of the day is read on a phone. 300 is
+# already long (Le Lac has 64 verses, La Mort du loup 88).
+VERS_MAX = 300
+
+
+def nombre_de_vers(texte):
+    """Verses, not counting part numerals, ornaments or speakers' names."""
+    return sum(1 for l in texte.split('\n')
+               if l.strip() and not rubrique(l) and not re.fullmatch(r'\s*([IVXLCDM]+\.?|\d+\.?|[*∗⁂ ]+)\s*', l))
+
+
 SOURCE = re.compile(r'\n\n(\((?:Tiré|Imité|Traduit|Trad\.) d[’\'e][^)]*\)\.?)\s*\Z')
 
 
@@ -1040,6 +1070,10 @@ def finaliser(poemes):
                 continue
             p['texto'] = p['texto'][:note.start()].rstrip('\n')
         if sum(1 for l in p['texto'].split('\n') if l.strip()) < 3:
+            courts.append(p)
+            continue
+        if nombre_de_vers(p['texto']) > VERS_MAX:
+            p['trop_long'] = True
             courts.append(p)
             continue
         if p['titulo'].startswith('«'):
@@ -1185,6 +1219,11 @@ def rapport(c, verifies, chemin):
     l += ['', '## Poems per collection', '', '| Author | Collection | Poems |', '|---|---|---:|']
     for (a, r), n in Counter((p['autor'], p['recueil']) for p in c.poemes).items():
         l.append(f'| {a} | {r} | {n} |')
+    l += ['', '## Editions (year in the Wikisource header)', '',
+          f'Taken only if dated before {EDITION_LIMITE}, or a later reprint of a text printed before then.',
+          'No year: check by hand.', '', '| Author | Collection | Year | Taken |', '|---|---|---:|---|']
+    l += [f"| {a} | {r} | {y or '?'} | {'yes' if ok else '**no**'}{' (reprint: ' + why + ')' if why else ''} |"
+          for a, r, y, ok, why in c.editions]
     l += ['', f'## Pages with no verse ({len(c.sans_vers)})', '',
           'Prose, notes, prefaces, or verse Wikisource does not mark as a poem. Not guessed at.', '']
     l += [f'* {r} → {p}' for r, p in c.sans_vers]
@@ -1209,7 +1248,10 @@ def rapport(c, verifies, chemin):
     l += [f'| {a} | {r} | {n} |' for (a, r), n in sans_scan.most_common()]
     doublons = [p for p in c.trop_courts if p.get('doublon')]
     traductions = [p for p in c.trop_courts if p.get('traduction')]
-    courts = [p for p in c.trop_courts if not p.get('doublon') and not p.get('traduction')]
+    longs = [p for p in c.trop_courts if p.get('trop_long')]
+    courts = [p for p in c.trop_courts if not (p.get('doublon') or p.get('traduction') or p.get('trop_long'))]
+    l += ['', f'## Set aside: longer than {VERS_MAX} verses ({len(longs)})', '']
+    l += [f"* {p['autor']} — {p['recueil']} — {p['titulo']} ({nombre_de_vers(p['texto'])})" for p in longs]
     l += ['', f'## Set aside: translations ({len(traductions)})', '',
           'The edition notes the poem is translated from another poet.', '']
     l += [f"* {p['autor']} — {p['recueil']} — {p['titulo']}" for p in traductions]

@@ -23,9 +23,13 @@ The poems set aside as unproofread, with their scan pages, are dumped to
   `Retry-After` ≈ 36 s), so poem pages are rendered ~20 per call and cut
   apart again; see `precharger()`.
 * **Authors**: `recueils.py`. Each author's death year is read from Wikidata
-  through their Wikisource author page, and anyone who died in 1900 or later is
-  refused. `auteurs_verifies.json` records what Wikidata said. José-Maria de
-  Heredia (d. 1905) is refused by this rule.
+  through their Wikisource author page, and anyone who died in 1926 or later is
+  refused: free in France and the EU in 2026 even with the 30 extra years of
+  a "mort pour la France". `auteurs_verifies.json` records what Wikidata said.
+* **Editions dated before 1931** (free in the US), read from each collection's
+  Wikisource header; a later reprint of a text printed before then is taken
+  only when `recueils.py` says so (`reimpression`), a modern critical edition
+  never. The report lists every collection's edition year.
 * **Only proofread text**: every scanned page a poem comes from must be at
   least "proofread" (level 3) on Wikisource. Below that it is raw OCR, and
   the poem is set aside (listed per collection in the report).
@@ -45,7 +49,7 @@ The poems set aside as unproofread, with their scan pages, are dumped to
   are an editor's note of the poem's source ("(Tiré de Thomson.)"). Pages
   with no verse are listed in the report, never guessed at.
 * **Out**: verse plays and scenes from plays, prose poems, book-length
-  narratives, and translations (also when only the editor's note says so,
+  narratives, poems of more than 300 verses (`VERS_MAX`), and translations (also when only the editor's note says so,
   "(Traduit de Gessner.)"). Per author, in the comment in `recueils.py`.
 * **Dialogue poems keep their speakers**: a name Wikisource sets with the
   `personnage` template ("LA MUSE.") is a one-line stanza in capitals, which

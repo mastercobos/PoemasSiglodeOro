@@ -14,6 +14,11 @@
   "deces": 1544,
   "retenu": true
  },
+ "Pernette du Guillet": {
+  "wikidata": "Q451859",
+  "deces": 1545,
+  "retenu": true
+ },
  "Louise Labé": {
   "wikidata": "Q237098",
   "deces": 1566,
@@ -24,9 +29,24 @@
   "deces": 1585,
   "retenu": true
  },
+ "Rémy Belleau": {
+  "wikidata": "Q561709",
+  "deces": 1577,
+  "retenu": true
+ },
  "Joachim du Bellay": {
   "wikidata": "Q18420",
   "deces": 1560,
+  "retenu": true
+ },
+ "Agrippa d’Aubigné": {
+  "wikidata": "Q334950",
+  "deces": 1630,
+  "retenu": true
+ },
+ "Jean de Sponde": {
+  "wikidata": "Q981932",
+  "deces": 1595,
   "retenu": true
  },
  "François de Malherbe": {
@@ -39,6 +59,21 @@
   "deces": 1626,
   "retenu": true
  },
+ "Saint-Amant": {
+  "wikidata": "Q1238681",
+  "deces": 1661,
+  "retenu": true
+ },
+ "Tristan L’Hermite": {
+  "wikidata": "Q1451213",
+  "deces": 1655,
+  "retenu": true
+ },
+ "Vincent Voiture": {
+  "wikidata": "Q729846",
+  "deces": 1648,
+  "retenu": true
+ },
  "Jean de La Fontaine": {
   "wikidata": "Q49496",
   "deces": 1695,
@@ -47,6 +82,11 @@
  "André Chénier": {
   "wikidata": "Q295548",
   "deces": 1794,
+  "retenu": true
+ },
+ "Pierre-Jean de Béranger": {
+  "wikidata": "Q324998",
+  "deces": 1857,
   "retenu": true
  },
  "Alphonse de Lamartine": {
@@ -62,6 +102,21 @@
  "Alfred de Vigny": {
   "wikidata": "Q309702",
   "deces": 1863,
+  "retenu": true
+ },
+ "Auguste Barbier": {
+  "wikidata": "Q738494",
+  "deces": 1882,
+  "retenu": true
+ },
+ "Pétrus Borel": {
+  "wikidata": "Q530375",
+  "deces": 1859,
+  "retenu": true
+ },
+ "Hégésippe Moreau": {
+  "wikidata": "Q3087481",
+  "deces": 1838,
   "retenu": true
  },
  "Alfred de Musset": {
@@ -84,6 +139,16 @@
   "deces": 1859,
   "retenu": true
  },
+ "Louise Ackermann": {
+  "wikidata": "Q295022",
+  "deces": 1890,
+  "retenu": true
+ },
+ "Louis Bouilhet": {
+  "wikidata": "Q761705",
+  "deces": 1869,
+  "retenu": true
+ },
  "Charles Baudelaire": {
   "wikidata": "Q501",
   "deces": 1867,
@@ -94,6 +159,11 @@
   "deces": 1894,
   "retenu": true
  },
+ "Joséphin Soulary": {
+  "wikidata": "Q1709755",
+  "deces": 1891,
+  "retenu": true
+ },
  "Théodore de Banville": {
   "wikidata": "Q312630",
   "deces": 1891,
@@ -102,7 +172,17 @@
  "José-Maria de Heredia": {
   "wikidata": "Q334970",
   "deces": 1905,
-  "retenu": false
+  "retenu": true
+ },
+ "Sully Prudhomme": {
+  "wikidata": "Q42247",
+  "deces": 1907,
+  "retenu": true
+ },
+ "François Coppée": {
+  "wikidata": "Q380277",
+  "deces": 1908,
+  "retenu": true
  },
  "Paul Verlaine": {
   "wikidata": "Q755",
@@ -119,6 +199,11 @@
   "deces": 1875,
   "retenu": true
  },
+ "Germain Nouveau": {
+  "wikidata": "Q611066",
+  "deces": 1920,
+  "retenu": true
+ },
  "Arthur Rimbaud": {
   "wikidata": "Q493",
   "deces": 1891,
@@ -129,9 +214,49 @@
   "deces": 1887,
   "retenu": true
  },
+ "Georges Rodenbach": {
+  "wikidata": "Q378240",
+  "deces": 1898,
+  "retenu": true
+ },
  "Stéphane Mallarmé": {
   "wikidata": "Q767",
   "deces": 1898,
+  "retenu": true
+ },
+ "Émile Verhaeren": {
+  "wikidata": "Q193680",
+  "deces": 1916,
+  "retenu": true
+ },
+ "Jean Moréas": {
+  "wikidata": "Q353857",
+  "deces": 1910,
+  "retenu": true
+ },
+ "Albert Samain": {
+  "wikidata": "Q982041",
+  "deces": 1900,
+  "retenu": true
+ },
+ "Charles Guérin": {
+  "wikidata": "Q332458",
+  "deces": 1907,
+  "retenu": true
+ },
+ "Renée Vivien": {
+  "wikidata": "Q275628",
+  "deces": 1909,
+  "retenu": true
+ },
+ "Guillaume Apollinaire": {
+  "wikidata": "Q133855",
+  "deces": 1918,
+  "retenu": true
+ },
+ "Paul-Jean Toulet": {
+  "wikidata": "Q2627812",
+  "deces": 1920,
   "retenu": true
  }
 }

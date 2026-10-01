@@ -45,7 +45,8 @@ AUTEURS = [
          'exclure': [r'/Vie de Charles', r'/Glossaire$', r'^Poésies attribués']},  # attributed, not his
         {'page': 'Le temps a laissié son manteau'},  # a rondeau
     ]},
-    # The Testament, the Lais and the separate ballades. The La Monnoye
+    # The Testament, the Lais and the separate ballades. Out: the Ballade de
+    # bon conseil, whose only copy is a 1991 critical edition. The La Monnoye
     # edition's notes are on separate pages and never followed.
     {'nom': 'François Villon', 'wikisource': 'Auteur:François Villon', 'recueils': [
         {'page': 'Le Lais', 'titre': 'Le Lais'},
@@ -54,7 +55,6 @@ AUTEURS = [
         {'page': 'Ballade du concours de Blois'},
         {'page': 'Ballade des Menus Propos'},
         {'page': 'Ballade des Proverbes'},
-        {'page': 'Ballade de bon conseil'},
         {'page': 'Ballade des pendus'},
     ]},
     # L'Adolescence clémentine and its Suite. Out: the eclogue and the Temple
@@ -75,6 +75,10 @@ AUTEURS = [
         {'page': 'La Suite de l’Adolescence Clémentine', 'titres_simples': True, 'sequences': [r'.'],
          'exclure': [r'/L’Eglogue sur le trepas'],  # a long pastoral elegy
          'exclure_titres': [r'^Perdiderat']},  # Lucian's Amour fugitif, translated
+    ]},
+    # The Rymes (1545), published by her husband after her death.
+    {'nom': 'Pernette du Guillet', 'wikisource': 'Auteur:Pernette du Guillet', 'recueils': [
+        {'page': 'Rymes', 'edition': '1545'},
     ]},
     # Élégies and Sonnets; the Débat de Folie et d'Amour is prose, and the
     # Escriz de divers poëtes are other poets' tributes to her.
@@ -104,6 +108,12 @@ AUTEURS = [
         {'page': 'Hinne à la Nuit'},
         {'page': 'Hymne de la Mort (Ronsard)', 'titre': 'Hymne de la Mort'},
     ]},
+    # Two short pieces from the Bergerie; the rest of his work is not on
+    # Wikisource in a usable form.
+    {'nom': 'Rémy Belleau', 'wikisource': 'Auteur:Rémy Belleau', 'recueils': [
+        {'page': 'Avril (Belleau)', 'titre': 'La Bergerie'},
+        {'page': 'Le Désir (Belleau)', 'titre': 'La Bergerie'},
+    ]},
     # Out: the Deffence (prose manifesto).
     {'nom': 'Joachim du Bellay', 'wikisource': 'Auteur:Joachim du Bellay', 'recueils': [
         {'page': 'L’Olive', 'sequences': [r'^L’Olive/L’Olive$'], 'titres_centres': True,
@@ -112,6 +122,24 @@ AUTEURS = [
         {'page': 'Œuvres de l’Invention de l’auteur', 'prefixe': '*'},
         {'page': 'Les Regrets (du Bellay)', 'titre': 'Les Regrets'},
         {'page': 'Les Antiquités de Rome'},
+    ]},
+    # The love poetry of Le Printemps (Hécatombe à Diane, Stances, Odes).
+    # Out: Les Tragiques (an epic in seven books).
+    {'nom': 'Agrippa d’Aubigné', 'wikisource': 'Auteur:Théodore Agrippa d’Aubigné', 'recueils': [
+        {'page': "Agrippa d'Aubigné - Œuvres complètes tome troisième, 1874/Hécatombe à Diane",
+         'titre': 'Hécatombe à Diane', 'edition': 'Lemerre, 1874'},
+        {'page': "Agrippa d'Aubigné - Œuvres complètes tome troisième, 1874/Stances",
+         'titre': 'Stances', 'edition': 'Lemerre, 1874'},
+        {'page': "Agrippa d'Aubigné - Œuvres complètes tome troisième, 1874/ODES",
+         'titre': 'Odes', 'edition': 'Lemerre, 1874', 'separer_blocs': True},
+    ]},
+    # Les Amours and the poems on death, from the 1604 Recueil.
+    {'nom': 'Jean de Sponde', 'wikisource': 'Auteur:Jean de Sponde', 'recueils': [
+        {'page': 'Les Amours (Jean de Sponde)', 'titre': 'Les Amours', 'edition': 'Du Petit Val, 1604'},
+        {'page': 'Premier recueil de diverses poésies tant du feu sieur de Sponde que des sieurs Du Perron, de Bertaud, de Porchères et autres, non encor imprimées, recueillies par Raphaël Du Petit Val, 1604/Sonnets sur la mort',
+         'titre': 'Sonnets de la mort', 'edition': 'Du Petit Val, 1604'},
+        {'page': 'Premier recueil de diverses poésies tant du feu sieur de Sponde que des sieurs Du Perron, de Bertaud, de Porchères et autres, non encor imprimées, recueillies par Raphaël Du Petit Val, 1604/Stances de la mort',
+         'titre': 'Stances de la mort', 'edition': 'Du Petit Val, 1604'},
     ]},
     # Out: Les Larmes de saint Pierre (a long early poem, translated from
     # Tansillo).
@@ -123,6 +151,29 @@ AUTEURS = [
     {'nom': 'Théophile de Viau', 'wikisource': 'Auteur:Théophile de Viau', 'recueils': [
         {'page': 'Œuvres complètes de Théophile', 'titre': 'Œuvres poétiques', 'edition': 'Jannet, 1856',
          'prefixe': 'Œuvres complètes de Theophile (Jannet)/'},
+    ]},
+    # Single poems, each on its own page. Out: Moïse sauvé (an epic).
+    {'nom': 'Saint-Amant', 'wikisource': 'Auteur:Marc-Antoine Girard de Saint-Amant', 'recueils': [
+        {'page': 'La Solitude (Saint Amant)', 'titre': 'Œuvres'},
+        {'page': 'Plainte sur la mort de Sylvie', 'titre': 'Œuvres'},
+        {'page': 'Le Paresseux', 'titre': 'Œuvres'},
+        {'page': 'Le Printemps des environs de Paris', 'titre': 'Œuvres'},
+        {'page': 'L’Esté de Rome', 'titre': 'Œuvres'},
+        {'page': 'L’Hyver des Alpes', 'titre': 'Œuvres'},
+        {'page': 'L’Autonne des Canaries', 'titre': 'Œuvres'},
+        {'page': 'La Vigne (Girard de Saint-Amant)', 'titre': 'Œuvres'},
+        {'page': 'Chanson à boire (Saint-Amant)', 'titre': 'Œuvres'},
+        {'page': 'Assis sur un fagot, une pipe à la main', 'titre': 'Œuvres'},
+        {'page': 'Fagotté plaisamment comme un vray Simonnet', 'titre': 'Œuvres'},
+        {'page': 'Voicy le rendez-vous des enfans sans soucy', 'titre': 'Œuvres'},
+    ]},
+    # Les Amours (1638).
+    {'nom': 'Tristan L’Hermite', 'wikisource': 'Auteur:Tristan L’Hermite', 'recueils': [
+        {'page': 'Les Amours de Tristan', 'titre': 'Les Amours', 'edition': '1638'},
+    ]},
+    {'nom': 'Vincent Voiture', 'wikisource': 'Auteur:Vincent Voiture', 'recueils': [
+        {'page': "Sonnet d'Uranie", 'titre': 'Poésies'},
+        {'page': 'Les Demoiselles de ce temps', 'titre': 'Poésies'},
     ]},
     # The Fables: books I-VI from the original edition (Barbin, 1668, the
     # only one Wikisource has), books VII-XII from the complete 1874 one.
@@ -136,6 +187,10 @@ AUTEURS = [
     # (1907) gives the Bucoliques, Élégies and Iambes from the manuscripts.
     {'nom': 'André Chénier', 'wikisource': 'Auteur:André Chénier', 'recueils': [
         {'page': 'Poésies choisies de André Chénier/Derocquigny, 1907', 'titre': 'Poésies', 'edition': 'Derocquigny, 1907'},
+    ]},
+    # The Chansons. Out: the prose (Ma biographie) and the music.
+    {'nom': 'Pierre-Jean de Béranger', 'wikisource': 'Auteur:Pierre-Jean de Béranger', 'recueils': [
+        {'page': 'Œuvres complètes de Béranger', 'titre': 'Chansons', 'edition': 'Perrotin, 1839'},
     ]},
     # Out: Jocelyn and La Chute d'un ange (book-length), La Mort de Socrate,
     # the Dernier Chant du pèlerinage d'Harold (long single poems).
@@ -173,11 +228,13 @@ AUTEURS = [
         # subpages. After the collective edition, so its text is the one kept.
         {'page': 'La Légende des siècles/1e série, 1859', 'titre': 'La Légende des siècles',
          'prefixe': 'La Légende des siècles/'},
-        {'page': 'Les Chansons des rues et des bois', 'prefixe': '*'},
+        {'page': 'Les Chansons des rues et des bois', 'prefixe': '*',
+         'reimpression': 'Imprimerie nationale, 1933, of the 1865 book; verse only'},
         {'page': 'L’Année terrible'},
         {'page': 'L’Art d’être grand-père', 'prefixe': '*'},
         {'page': 'Les Quatre Vents de l’esprit', 'exclure': [r'/Le Livre dramatique', r'/Manuscrit', r'/Illustrations']},
-        {'page': 'Toute la lyre', 'exclure': [r'/Les manuscrits', r'/Variantes', r'/Historique']},
+        {'page': 'Toute la lyre', 'exclure': [r'/Les manuscrits', r'/Variantes', r'/Historique'],
+         'reimpression': 'Imprimerie nationale, 1935, of the 1888-1893 books; verse only'},
         {'page': 'Les Années funestes'},
         {'page': 'Dernière Gerbe'},
     ]},
@@ -187,6 +244,18 @@ AUTEURS = [
         {'page': 'Poèmes antiques et modernes/éd. Estève 1914', 'titre': 'Poèmes antiques et modernes',
          'edition': 'éd. Estève, 1914', 'prefixe': 'Poèmes antiques et modernes/'},
         {'page': 'Les Destinées (recueil)', 'titre': 'Les Destinées', 'edition': 'Lévy, 1864'},
+    ]},
+    # Iambes et Poèmes, with Il Pianto and Lazare.
+    {'nom': 'Auguste Barbier', 'wikisource': 'Auteur:Auguste Barbier', 'recueils': [
+        {'page': 'Iambes et Poèmes', 'edition': 'Dentu, 1841', 'prefixe': '*'},
+    ]},
+    # Out: Madame Putiphar and Champavert (prose).
+    {'nom': 'Pétrus Borel', 'wikisource': 'Auteur:Pétrus Borel', 'recueils': [
+        {'page': 'Rapsodies', 'prefixe': '*'},
+    ]},
+    # Le Myosotis and the other poems. Out: the contes in prose.
+    {'nom': 'Hégésippe Moreau', 'wikisource': 'Auteur:Hégésippe Moreau', 'recueils': [
+        {'page': 'Poésies (Hégésippe Moreau)', 'titre': 'Poésies', 'prefixe': '*'},
     ]},
     # The Contes d'Espagne et d'Italie are inside the Premières Poésies. Out:
     # the three verse plays in it (La Coupe et les Lèvres, À quoi rêvent les
@@ -234,6 +303,15 @@ AUTEURS = [
         # Not in Wikisource's copy of the 1860 book; transcribed from Lemerre's.
         {'page': 'Les Séparés', 'edition': 'Lemerre'},
     ]},
+    {'nom': 'Louise Ackermann', 'wikisource': 'Auteur:Louise-Victorine Ackermann', 'recueils': [
+        {'page': 'Premières Poésies (Ackermann)', 'titre': 'Premières Poésies', 'prefixe': '*'},
+        {'page': 'Poésies philosophiques', 'prefixe': '*'},
+    ]},
+    # Out: Melaenis (a long narrative poem).
+    {'nom': 'Louis Bouilhet', 'wikisource': 'Auteur:Louis Bouilhet', 'recueils': [
+        {'page': 'Festons et astragales'},
+        {'page': 'Dernières chansons'},
+    ]},
     # The 1868 Fleurs du mal (the last text Baudelaire prepared) plus Les
     # Épaves, which holds the six poems condemned in 1857. Out: the Petits
     # Poèmes en prose (prose poems).
@@ -252,6 +330,22 @@ AUTEURS = [
         {'page': 'Derniers Poèmes', 'edition': 'Lemerre, 1895',
          'exclure': [r'/L’Apollonide$']},  # a lyric drama in scenes
     ]},
+    {'nom': 'Joséphin Soulary', 'wikisource': 'Auteur:Joséphin Soulary', 'recueils': [
+        {'page': 'Sonnet de décembre', 'titre': 'Sonnets'},
+        {'page': '« Dans la Bresse au sol gris »', 'titre': 'Sonnets'},
+        {'page': 'Les Ironies de la mort', 'titre': 'Sonnets'},
+        {'page': 'Une grande douleur', 'titre': 'Sonnets'},
+        {'page': 'Les Deux Cortèges', 'titre': 'Sonnets'},
+        {'page': 'Le Faiseur de cercueils', 'titre': 'Sonnets'},
+        {'page': 'Rêves ambitieux', 'titre': 'Sonnets'},
+        {'page': 'Oaristys', 'titre': 'Sonnets'},
+        {'page': 'Dame la Paix', 'titre': 'Sonnets'},
+        {'page': 'Aline', 'titre': 'Sonnets'},
+        {'page': 'Néant peuplé', 'titre': 'Sonnets'},
+        {'page': 'L’Immobile', 'titre': 'Sonnets'},
+        {'page': 'Naufragé converti', 'titre': 'Sonnets'},
+        {'page': 'Sonnet d’août', 'titre': 'Sonnets'},
+    ]},
     # The main books of verse. Out: the plays (Gringoire and the rest), the
     # prose.
     {'nom': 'Théodore de Banville', 'wikisource': 'Auteur:Théodore de Banville', 'recueils': [
@@ -263,11 +357,28 @@ AUTEURS = [
         {'page': 'Trente-six Ballades joyeuses', 'exclure': [r'/Histoire de la Ballade']},  # Asselineau's essay
         {'page': 'Rondels composés à la manière de Charles d’Orléans', 'titre': 'Rondels'},
     ]},
-    # José-Maria de Heredia was on the list; Wikidata gives his death as
-    # 1905, after the cut-off, so he is refused (kept here so the report says
-    # so rather than silently leaving him out).
+    # Les Trophées (1893), his one book.
     {'nom': 'José-Maria de Heredia', 'wikisource': 'Auteur:José-Maria de Heredia', 'recueils': [
         {'page': 'Les Trophées'},
+    ]},
+    # The books of verse of the Œuvres. Out: La Justice and Le Bonheur (long
+    # philosophical poems), the prose, the Lucretius translation. Les Vaines
+    # Tendresses' page holds no verse markup: not read yet.
+    {'nom': 'Sully Prudhomme', 'wikisource': 'Auteur:Sully Prudhomme', 'recueils': [
+        {'page': 'Œuvres de Sully Prudhomme/Poésies 1865-1866', 'titre': 'Stances et Poèmes', 'prefixe': '*'},
+        {'page': 'Les Épreuves', 'prefixe': '*'},
+        {'page': 'Les Solitudes', 'prefixe': '*'},
+    ]},
+    # Out: the plays (Le Passant), the Contes en prose, Olivier (a long
+    # narrative). Intimités and Promenades et Intérieurs are transcribed as
+    # one run of verse with no break between the poems: not read yet.
+    {'nom': 'François Coppée', 'wikisource': 'Auteur:François Coppée', 'recueils': [
+        {'page': 'Le Reliquaire', 'prefixe': '*'},
+        {'page': 'Les Humbles (Coppée)', 'titre': 'Les Humbles', 'prefixe': '*'},
+        {'page': 'Le Cahier rouge', 'prefixe': '*'},
+        {'page': 'Les Récits et les Élégies', 'prefixe': '*'},
+        {'page': 'Arrière-saison', 'prefixe': '*'},
+        {'page': 'Les Paroles sincères', 'prefixe': '*'},
     ]},
     # Out: Les Amies, Femmes, Hombres (erotica), the Sonnet du Trou du Cul.
     {'nom': 'Paul Verlaine', 'wikisource': 'Auteur:Paul Verlaine', 'recueils': [
@@ -301,6 +412,11 @@ AUTEURS = [
     {'nom': 'Tristan Corbière', 'wikisource': 'Auteur:Tristan Corbière', 'recueils': [
         {'page': 'Les Amours jaunes', 'prefixe': '*'},
     ]},
+    # Les Valentines (1922) and Savoir aimer (La Doctrine de l'amour).
+    {'nom': 'Germain Nouveau', 'wikisource': 'Auteur:Germain Nouveau', 'recueils': [
+        {'page': 'Valentines et autres vers', 'edition': 'Messein, 1922'},
+        {'page': 'La Doctrine de l’Amour', 'titre': 'Savoir aimer'},
+    ]},
     # The Poésies and the 1872 verse. Out: Une saison en enfer and the
     # Illuminations (prose poems), Les Stupra and the Album zutique (obscene parodies).
     {'nom': 'Arthur Rimbaud', 'wikisource': 'Auteur:Arthur Rimbaud', 'recueils': [
@@ -316,11 +432,60 @@ AUTEURS = [
         {'page': 'Poésies complètes de Jules Laforgue', 'titre': 'Poésies', 'exclure': [r'/Le Concile féerique']},
         {'page': 'Des Fleurs de bonne volonté'},
     ]},
+    {'nom': 'Georges Rodenbach', 'wikisource': 'Auteur:Georges Rodenbach', 'recueils': [
+        # Each section page holds a numbered sequence: one poem per numeral.
+        {'page': 'Le Règne du silence', 'sequences': [r'.']},
+        {'page': 'Les Vies encloses', 'prefixe': '*', 'sequences': [r'.']},
+        {'page': 'Le Miroir du ciel natal', 'sequences': [r'.']},
+    ]},
     # The 1899 Deman edition, the one Mallarmé prepared. Out: the Poe
     # translations, Igitur and the Divagations (prose), Vers de circonstance.
     {'nom': 'Stéphane Mallarmé', 'wikisource': 'Auteur:Stéphane Mallarmé', 'recueils': [
         {'page': 'Poésies (Mallarmé)/Édition 1899', 'titre': 'Poésies', 'edition': 'Deman, 1899',
          'titres_centres': True, 'separer_blocs': True},
+    ]},
+    # Out: the plays and the prose.
+    {'nom': 'Émile Verhaeren', 'wikisource': 'Auteur:Émile Verhaeren', 'recueils': [
+        {'page': 'Les Flamandes', 'prefixe': '*'},
+        {'page': 'Les Soirs', 'prefixe': '*'},
+        {'page': 'Les Villes tentaculaires, précédées des Campagnes hallucinées (Verhaeren)',
+         'titre': 'Les Campagnes hallucinées. Les Villes tentaculaires', 'prefixe': '*'},
+        {'page': 'Les Heures claires', 'prefixe': '*'},
+        {'page': 'Les Villes à pignons'},
+        {'page': 'Les Blés mouvants', 'prefixe': '*'},
+    ]},
+    {'nom': 'Jean Moréas', 'wikisource': 'Auteur:Jean Moréas', 'recueils': [
+        {'page': 'Les Syrtes'},
+        {'page': 'Les Cantilènes'},
+        {'page': 'Les Stances (Jean Moréas)', 'titre': 'Les Stances'},
+    ]},
+    {'nom': 'Albert Samain', 'wikisource': 'Auteur:Albert Samain', 'recueils': [
+        {'page': 'Au jardin de l’infante'},
+        {'page': 'Aux flancs du vase'},
+        {'page': 'Le Chariot d’or'},
+    ]},
+    {'nom': 'Charles Guérin', 'wikisource': 'Auteur:Charles Guérin', 'recueils': [
+        {'page': 'Le Semeur de cendres', 'prefixe': '*'},
+    ]},
+    # The books she published, 1901-1908. Out: the prose poems.
+    {'nom': 'Renée Vivien', 'wikisource': 'Auteur:Renée Vivien', 'recueils': [
+        {'page': 'Études et Préludes (1901)', 'titre': 'Études et Préludes'},
+        {'page': 'Cendres et Poussières (1902)', 'titre': 'Cendres et Poussières'},
+        {'page': 'Évocations (Vivien)', 'titre': 'Évocations'},
+        {'page': 'À l’heure des mains jointes (1906)', 'titre': 'À l’heure des mains jointes'},
+        {'page': 'Sillages'},
+    ]},
+    # Mort pour la France (1918): free in France from 2019. Alcools and the
+    # Bestiaire. Out: Calligrammes (the calligrams are drawings, lost as
+    # text), the Poèmes à Lou and à Madeleine (first printed 1947 and 1952,
+    # not free in the US), the prose.
+    {'nom': 'Guillaume Apollinaire', 'wikisource': 'Auteur:Guillaume Apollinaire', 'recueils': [
+        {'page': 'Alcools'},
+        {'page': 'Le Bestiaire, ou Cortège d’Orphée', 'titre': 'Le Bestiaire'},
+    ]},
+    # Les Contrerimes (1921).
+    {'nom': 'Paul-Jean Toulet', 'wikisource': 'Auteur:Paul-Jean Toulet', 'recueils': [
+        {'page': 'Les Contrerimes', 'sequences': [r'.']},  # sections of numbered poems
     ]},
 ]
 
