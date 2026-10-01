@@ -34,6 +34,10 @@ class AppConfig {
   /// declared in the app's pubspec. Null falls back to a generic book glyph.
   final String? assetOrnamento;
 
+  /// The ornament for light mode, when [assetOrnamento] is too pale to read
+  /// on the light background. Null uses [assetOrnamento] in both modes.
+  final String? assetOrnamentoClaro;
+
   final PoemaColors coloresClaro;
   final PoemaColors coloresOscuro;
   final FontPair fuentes;
@@ -64,6 +68,7 @@ class AppConfig {
     required this.fuentes,
     this.assetPoemas = 'assets/poemas.json',
     this.assetOrnamento,
+    this.assetOrnamentoClaro,
     this.ordenTitulos = EstrategiaOrden.alfabetico,
     this.prefijoPreferencias = '',
     this.idsPropinas = const {},
@@ -88,6 +93,12 @@ class AppConfig {
       );
 
   String clave(String nombre) => '$prefijoPreferencias$nombre';
+
+  /// The ornament for a theme of [brillo]: the reader and the share card,
+  /// which follows the app's theme.
+  String? ornamentoPara(Brightness brillo) => brillo == Brightness.light
+      ? assetOrnamentoClaro ?? assetOrnamento
+      : assetOrnamento;
 }
 
 /// How the reader and the home cards lay out a poem's verses.

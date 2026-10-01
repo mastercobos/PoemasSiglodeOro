@@ -24,6 +24,7 @@ flutter:
   assets:
     - assets/poemas.json
     - assets/icon/gafas_bigote_transparente.png
+    - assets/icon/gafas_bigote_transparente_claro.png
   # Fonts are bundled, not downloaded. This removes google_fonts, which
   # fetched Playfair and Lato over the network on first launch — so an
   # offline first run rendered the whole anthology in Roboto.

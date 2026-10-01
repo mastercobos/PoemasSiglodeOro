@@ -53,7 +53,8 @@ class CompartirPoema {
     // The card is captured two frames after mounting, which is not enough for
     // an image to load and decode; without this the emblem would be missing
     // from the shared PNG. A failure just means the fallback glyph is used.
-    final asset = config.assetOrnamento;
+    // The card is drawn in [tema], so it shows that theme's ornament.
+    final asset = config.ornamentoPara(tema.brightness);
     final precarga = asset == null
         ? Future<void>.value()
         : precacheImage(AssetImage(asset), context).catchError((_) {});

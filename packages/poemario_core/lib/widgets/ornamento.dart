@@ -7,7 +7,8 @@ import '../theme/poema_colors.dart';
 /// image, where it used to be hand-drawn on a canvas as a rectangle with a
 /// line through it because the two implementations had drifted apart.
 ///
-/// The emblem is the app's own icon when [AppConfig.assetOrnamento] is set,
+/// The emblem is the app's own icon when [AppConfig.assetOrnamento] is set
+/// (in light mode [AppConfig.assetOrnamentoClaro], if there is one),
 /// otherwise a generic book glyph.
 class Ornamento extends StatelessWidget {
   final double anchoLinea;
@@ -20,7 +21,8 @@ class Ornamento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final oro = context.colores.oro;
-    final asset = context.config.assetOrnamento;
+    final asset =
+        context.config.ornamentoPara(Theme.of(context).brightness);
     final glifo = Icon(Icons.auto_stories, color: oro, size: tamanoIcono);
     return ExcludeSemantics(
       child: Row(

@@ -16,6 +16,7 @@ void main() {
       firmaCompartir: 'Poemario · Siglo de Oro',
       assetPoemas: 'assets/poemas.json',
       assetOrnamento: 'assets/icon/gafas_bigote_transparente.png',
+      assetOrnamentoClaro: 'assets/icon/gafas_bigote_transparente_claro.png',
       // The "- XIV -" numbering convention only makes sense for this corpus.
       ordenTitulos: EstrategiaOrden.romanosPrimero,
       fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
