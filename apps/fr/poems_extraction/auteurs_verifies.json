@@ -74,9 +74,19 @@
   "deces": 1648,
   "retenu": true
  },
+ "Nicolas Boileau": {
+  "wikidata": "Q188857",
+  "deces": 1711,
+  "retenu": true
+ },
  "Jean de La Fontaine": {
   "wikidata": "Q49496",
   "deces": 1695,
+  "retenu": true
+ },
+ "Florian": {
+  "wikidata": "Q551740",
+  "deces": 1794,
   "retenu": true
  },
  "André Chénier": {
@@ -257,6 +267,11 @@
  "Paul-Jean Toulet": {
   "wikidata": "Q2627812",
   "deces": 1920,
+  "retenu": true
+ },
+ "Charles Péguy": {
+  "wikidata": "Q334965",
+  "deces": 1914,
   "retenu": true
  }
 }

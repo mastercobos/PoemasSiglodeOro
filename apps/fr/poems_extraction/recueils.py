@@ -99,6 +99,10 @@ AUTEURS = [
         {'page': 'Le premier livre des Sonnets pour Hélène', 'titre': 'Sonnets pour Hélène, I'},
         {'page': 'Le second livre des Sonnets pour Hélène', 'titre': 'Sonnets pour Hélène, II'},
         {'page': 'Les Amours diverses', 'prefixe': '*'},
+        # The poems to Marie as the Garnier edition groups them (Marie,
+        # levez-vous; Petite pucelle angevine); copies of poems already taken
+        # are set aside by first line.
+        {'page': 'Second Livre des amours', 'titre': 'Second Livre des Amours', 'prefixe': '*', 'edition': 'Garnier, 1923'},
         {'page': 'Les Odes (Ronsard)', 'titre': 'Les Odes', 'exclure': [r'^Odes$', r'Avantentrée']},
         {'page': 'Le Bocage', 'prefixe': '*'},
         {'page': 'Les Meslanges', 'prefixe': '*'},
@@ -175,6 +179,18 @@ AUTEURS = [
         {'page': "Sonnet d'Uranie", 'titre': 'Poésies'},
         {'page': 'Les Demoiselles de ce temps', 'titre': 'Poésies'},
     ]},
+    # The Satires, Épîtres, Art poétique and the short poems. Out: Le Lutrin
+    # (a mock epic), Chapelain décoiffé (a parody in dialogue), the prefaces.
+    {'nom': 'Nicolas Boileau', 'wikisource': 'Auteur:Nicolas Boileau', 'recueils': [
+        {'page': 'Boileau - Œuvres poétiques/Satires', 'titre': 'Satires', 'edition': '1872'},
+        {'page': 'Boileau - Œuvres poétiques/Épîtres', 'titre': 'Épîtres', 'edition': '1872'},
+        {'page': 'Boileau - Œuvres poétiques/L’Art poétique', 'titre': 'L’Art poétique', 'edition': '1872'},
+        {'page': 'Boileau - Œuvres poétiques/Odes', 'titre': 'Odes', 'edition': '1872', 'prefixe': '*',
+         'exclure': [r'Discours sur l’ode']},
+        {'page': 'Boileau - Œuvres poétiques/Chansons, Stances, Sonnets, Épitaphes, etc.', 'titre': 'Poésies diverses',
+         'edition': '1872', 'prefixe': '*'},
+        {'page': 'Boileau - Œuvres poétiques/Épigrammes', 'titre': 'Épigrammes', 'edition': '1872'},
+    ]},
     # The Fables: books I-VI from the original edition (Barbin, 1668, the
     # only one Wikisource has), books VII-XII from the complete 1874 one.
     # Out: the Contes (long bawdy verse tales) and the theatre.
@@ -182,6 +198,11 @@ AUTEURS = [
         {'page': 'Fables de La Fontaine (éd. Barbin)', 'titre': 'Fables', 'edition': 'Barbin, 1668'},
         {'page': 'Fables de La Fontaine (éd. 1874)', 'titre': 'Fables', 'edition': 'Hachette, 1874',
          'complement': True},
+    ]},
+    # The Fables (1792). Out: the prose (Essai sur la fable, the novels).
+    {'nom': 'Florian', 'wikisource': 'Auteur:Jean-Pierre Claris de Florian', 'recueils': [
+        {'page': 'Fables de Florian (1838)', 'titre': 'Fables', 'edition': '1838',
+         'exclure': [r'/Essai sur la fable']},
     ]},
     # Almost nothing was printed in his lifetime; Derocquigny's selection
     # (1907) gives the Bucoliques, Élégies and Iambes from the manuscripts.
@@ -232,6 +253,7 @@ AUTEURS = [
          'reimpression': 'Imprimerie nationale, 1933, of the 1865 book; verse only'},
         {'page': 'L’Année terrible'},
         {'page': 'L’Art d’être grand-père', 'prefixe': '*'},
+        {'page': 'Grand âge et bas âge mêlés', 'titre': 'L’Art d’être grand-père'},  # not linked from the book's page
         {'page': 'Les Quatre Vents de l’esprit', 'exclure': [r'/Le Livre dramatique', r'/Manuscrit', r'/Illustrations']},
         {'page': 'Toute la lyre', 'exclure': [r'/Les manuscrits', r'/Variantes', r'/Historique'],
          'reimpression': 'Imprimerie nationale, 1935, of the 1888-1893 books; verse only'},
@@ -487,6 +509,12 @@ AUTEURS = [
     {'nom': 'Paul-Jean Toulet', 'wikisource': 'Auteur:Paul-Jean Toulet', 'recueils': [
         {'page': 'Les Contrerimes', 'sequences': [r'.']},  # sections of numbered poems
     ]},
+    # Mort pour la France (1914). The two Tapisseries of 1912-1913. Out: the
+    # Mystères (dramatic), Ève (8,000 lines), the prose.
+    {'nom': 'Charles Péguy', 'wikisource': 'Auteur:Charles Péguy', 'recueils': [
+        {'page': 'La Tapisserie de sainte Geneviève et de Jeanne d’Arc', 'edition': 'Gallimard, 1919'},
+        {'page': 'La Tapisserie de Notre Dame', 'edition': 'Gallimard, 1919', 'prefixe': '*'},
+    ]},
 ]
 
 
@@ -500,6 +528,17 @@ CORRECTIONS = {
     # Two alexandrines run together on one line.
     ('Alphonse de Lamartine', 'Épitaphe des prisonniers français'): [
         (r'rêve\. (?=Patience)', 'rêve.\n')],
+}
+
+
+# Poems let in although longer than wikisource.VERS_MAX (300 verses), by
+# name: among the best known in French, and not much over the limit.
+LONGS_PERMIS = {
+    ('Victor Hugo', 'L’Expiation'),  # 386: "Il neigeait", "Waterloo ! Waterloo !"
+    ('Victor Hugo', 'À l’obéissance passive'),  # 322: "Ô soldats de l'an deux"
+    ('Alfred de Vigny', 'La Maison du berger'),  # 336
+    ('Alphonse de Lamartine', 'Milly ou la terre natale'),  # 318
+    ('Charles Péguy', 'Présentation de la Beauce à Notre Dame de Chartres'),  # 356
 }
 
 
@@ -525,4 +564,7 @@ VERIFIES = {
     ('Victor Hugo', 'Puisque j’ai mis ma lèvre'): 'hugo-puisque-j-ai-mis-ma-levre.txt',
     ('Victor Hugo', 'L’été, lorsque le jour'): 'hugo-nuits-de-juin.txt',
     ('Victor Hugo', 'Dans les vieilles forêts'): 'hugo-a-albert-durer.txt',
+    ('Victor Hugo', 'Les champs n’étaient point noirs'): 'hugo-tristesse-d-olympio.txt',
+    ('Victor Hugo', 'Jeanne était au pain sec'): 'hugo-jeanne-etait-au-pain-sec.txt',
+    ('Pierre de Ronsard', 'Marie, levez-vous'): 'ronsard-marie-levez-vous.txt',
 }

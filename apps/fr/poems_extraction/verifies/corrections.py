@@ -31,6 +31,15 @@ FIX=[
   [('XLIII\n\n',''),('entrouverte','entr’ouverte')]),
  ('Hugo','X\n\nDans les vieilles forêts','hugo-a-albert-durer.txt',
   [('X\n\nDans','Dans'),('pensif !\n\nOn','pensif !\nOn'),('Ô mon maître Albert Dure','O mon maître Albert Düre'),('Ô végétation','O végétation'),('erré,\n\nMaître','erré,\nMaître'),('remplissent les bois\n\n20 avril 1837','remplissent les bois.')]),
+ ('Hugo','XXXIV\n\nTRISTESSE','hugo-tristesse-d-olympio.txt',
+  [("XXXIV\n\nTRISTESSE D'OLYMPIO\n\n",''),("l’amour,\n\nEt, remuant","l’amour,\nEt, remuant"),
+   ('sautent le fossé !','sautent le fossé.'),('du tombeau ;','du tombeau,'),('vous pourriez','vous pourrez'),
+   ('profonds et sourds\n','profonds et sourds,\n'),('nos amours !\n','nos amours ;\n'),('par les larmes ;','par les larmes.'),
+   ('sous un voile…','sous un voile… —'),('souvenir ! "','souvenir !\u00a0»'),('Ô douleur','O douleur'),('Ô nature abritée','O nature abritée'),
+   ('\n"Mais toi','\n«\u00a0Mais toi'),('REPLACE_QUOTES','')]),
+ ('Hugo','Jeanne était au pain sec','hugo-jeanne-etait-au-pain-sec.txt',
+  [('de la société\n','de la société,\n'),('voix douce :\n\n—','voix douce :\n—'),('À chaque instant','A chaque instant')]),
+ ('Ronsard','Marie, levez-vous','ronsard-marie-levez-vous.txt', []),
 ]
 for a,start,f,fx in FIX:
     h=[p for p in N if a in p['autor'] and (p['texto'].startswith(start) or p['texto'].startswith(nb(start)))]
@@ -38,6 +47,9 @@ for a,start,f,fx in FIX:
     if os.path.exists('verifies/'+f): continue
     assert h,(a,start); p=h[0]; t=p['texto']
     for old,new in fx:
+        if old == 'REPLACE_QUOTES':  # the opening quote of each stanza, printed «
+            t = re.sub(r'(?m)^" ', '«\u00a0', t)
+            continue
         if old not in t: old,new=nb(old),nb(new)
         n=t.count(old); assert n==1,(f,old,n)
         t=t.replace(old,new)

@@ -42,7 +42,7 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 
-from recueils import AUTEURS, CORRECTIONS, VERIFIES
+from recueils import AUTEURS, CORRECTIONS, LONGS_PERMIS, VERIFIES
 
 AQUI = Path(__file__).resolve().parent
 CACHE = AQUI / 'corpus' / 'cache'
@@ -1072,7 +1072,7 @@ def finaliser(poemes):
         if sum(1 for l in p['texto'].split('\n') if l.strip()) < 3:
             courts.append(p)
             continue
-        if nombre_de_vers(p['texto']) > VERS_MAX:
+        if nombre_de_vers(p['texto']) > VERS_MAX and (p['autor'], p['titulo']) not in LONGS_PERMIS:
             p['trop_long'] = True
             courts.append(p)
             continue
@@ -1201,6 +1201,8 @@ def main():
         p.pop('scans', None)
     c.poemes, c.trop_courts = finaliser(c.poemes)
     corriges = {(p['autor'], p['titulo']) for p in c.poemes}
+    if longs := {k for k in LONGS_PERMIS if k[0] in {a for a, _ in corriges}} - corriges:
+        sys.exit(f'LONGS_PERMIS entries for poems not in the corpus: {longs}')
     if oublies := {k for k in CORRECTIONS if k[0] in {a for a, _ in corriges}} - corriges:
         sys.exit(f'Corrections for poems not in the corpus: {oublies}')
     Path(args.out).write_text(json.dumps(c.poemes, ensure_ascii=False, indent=1) + '\n')

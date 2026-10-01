@@ -49,7 +49,8 @@ The poems set aside as unproofread, with their scan pages, are dumped to
   are an editor's note of the poem's source ("(Tiré de Thomson.)"). Pages
   with no verse are listed in the report, never guessed at.
 * **Out**: verse plays and scenes from plays, prose poems, book-length
-  narratives, poems of more than 300 verses (`VERS_MAX`), and translations (also when only the editor's note says so,
+  narratives, poems of more than 300 verses (`VERS_MAX`; a few classics let in
+  by name in `LONGS_PERMIS`), and translations (also when only the editor's note says so,
   "(Traduit de Gessner.)"). Per author, in the comment in `recueils.py`.
 * **Dialogue poems keep their speakers**: a name Wikisource sets with the
   `personnage` template ("LA MUSE.") is a one-line stanza in capitals, which
