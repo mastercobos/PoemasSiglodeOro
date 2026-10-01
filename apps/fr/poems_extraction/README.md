@@ -10,7 +10,11 @@ python3 asset.py                       # poemas_fr.json -> ../assets/poemas (ind
 ```
 
 Stdlib only. API responses are cached in `corpus/` (gitignored), so a rerun
-is offline and quick; delete the cache to pick up Wikisource corrections.
+is offline and quick (~3 min); delete the cache to pick up Wikisource
+corrections. Proofreading levels are cached per scanned page in
+`corpus/cache/qualites.json`: delete it alone to pick up new proofreading.
+The poems set aside as unproofread, with their scan pages, are dumped to
+`corpus/cache/non_relus.json` for choosing hand checks (`VERIFIES`).
 
 ## Sources and rules
 
@@ -25,14 +29,29 @@ is offline and quick; delete the cache to pick up Wikisource corrections.
 * **Only proofread text**: every scanned page a poem comes from must be at
   least "proofread" (level 3) on Wikisource. Below that it is raw OCR, and
   the poem is set aside (listed per collection in the report).
+* **Hand-checked exceptions**: a set-aside poem listed in
+  `recueils.VERIFIES` comes in with the text in `verifies/`, which is its OCR
+  with every error found against the scan corrected (punctuation, accents,
+  a stanza split by a page break). A page whose text is not the edition on
+  its scan (typed from another source) cannot be checked and stays out; the
+  refusals are noted above `VERIFIES`.
 * **Project Gutenberg fills gaps**: a set-aside poem is replaced by the same
   poem from a Gutenberg plain-text book when `gutenberg.py` has one (same
   author, collection and first line or title). The transcribers' `_italics_`
   and flattened ligatures (coeur → cœur, from a fixed word list) are undone.
   Gallica is not used.
 * **Only the verse**: headers, page numbers, footnote calls and footnotes,
-  prefaces, notices, commentaries and other apparatus are dropped. Pages with
-  no verse are listed in the report, never guessed at.
+  prefaces, notices, commentaries and other apparatus are dropped, and so
+  are an editor's note of the poem's source ("(Tiré de Thomson.)"). Pages
+  with no verse are listed in the report, never guessed at.
+* **Out**: verse plays and scenes from plays, prose poems, book-length
+  narratives, and translations (also when only the editor's note says so,
+  "(Traduit de Gessner.)"). Per author, in the comment in `recueils.py`.
+* **Dialogue poems keep their speakers**: a name Wikisource sets with the
+  `personnage` template ("LA MUSE.") is a one-line stanza in capitals, which
+  the app draws like a section numeral. A verse split between two speakers,
+  whose first half Wikisource repeats invisibly to indent the second, is
+  given once.
 * **Spelling as printed**: old spelling (Villon, Ronsard, the Barbin La
   Fontaine) is kept, `&` included. Only layout and typography are normalised:
   one verse per line, a blank line between stanzas, French non-breaking
@@ -58,9 +77,10 @@ A list of poems in reading order:
 | `fuente` | `wikisource` or `gutenberg` |
 | `edition` | Printed edition transcribed |
 | `url` | Wikisource page (with `#n` when several poems share one page), or Gutenberg ebook |
-| `relu` | `true`: every scanned page proofread; `null`: no scan to check (typed-in page, or Gutenberg) |
+| `relu` | `true`: every scanned page proofread; `null`: no scan to check (typed-in page, or Gutenberg); `"verifie"`: checked by hand against the scan (`VERIFIES`) |
 
 `informe_wikisource.md` lists poems per author and collection, what was
-replaced from Gutenberg, what was set aside (not proofread, second copies,
-fragments), pages without verse and missing pages. Check it after every
+replaced from Gutenberg, what was checked by hand, what was set aside (not
+proofread, translations, second copies, fragments), pages without verse and
+missing pages. Check it after every
 rebuild.

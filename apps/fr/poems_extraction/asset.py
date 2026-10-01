@@ -25,19 +25,25 @@ AQUI = Path(__file__).parent
 TROZO = 150_000  # bytes of text per chunk: opening a poem decodes one chunk
 
 
-# A stanza that is only a section mark: numeral, asterism or row of dots.
-# Same pattern as esMarcaDeSeccion in poemario_core (versos_ajustados.dart).
+# A stanza that is only a section mark: numeral, asterism or row of dots, or
+# a line with no lower-case letter (a speaker's name, a heading). Same test
+# as esMarcaDeSeccion in poemario_core (versos_ajustados.dart).
 MARCA = re.compile(r"^\s*([IVXLCDM]+\.?|\d+\.?|[*∗⁂](\s*[*∗])*|[-—–_.\s]{3,})\s*$")
+
+
+def es_marca(linea):
+    return bool(MARCA.match(linea)) or (
+        sum(c.isalpha() for c in linea) >= 2 and not any(c.islower() for c in linea))
 
 
 def primera_linea(texto):
     """The first verse, untrimmed: the first line with something on it,
-    skipping a leading stanza that is only a section mark ("I" before part
-    one of a poem). The app trims it to derive the poem's id and shows it as
+    skipping leading stanzas that are only a section mark ("I" before part
+    one of a poem) or a speaker's name. The app trims it to derive the poem's id and shows it as
     the first verse, so once the app ships this must not change."""
     for estrofa in re.split(r"\n\s*\n", texto):
         lineas = [l for l in estrofa.split("\n") if l.strip()]
-        if not lineas or (len(lineas) == 1 and MARCA.match(lineas[0])):
+        if not lineas or (len(lineas) == 1 and es_marca(lineas[0])):
             continue
         return lineas[0]
     return next((l for l in texto.split("\n") if l.strip()), "")

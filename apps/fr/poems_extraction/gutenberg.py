@@ -84,6 +84,8 @@ def nettoyer(lignes):
     for l in lignes:
         l = re.sub(r'_([^_]+)_', r'\1', l).replace('_', '')
         l = re.sub(r'\[Illustration[^\]]*\]', '', l)
+        if re.fullmatch(r'\s*--.*\bVoir\b.*--\s*', l):
+            continue  # the editor's cross-reference, "--_Voir page 7._--"
         sortie.append(ligatures(l.strip()))
     texte = re.sub(r'\n{3,}', '\n\n', '\n'.join(sortie)).strip('\n')
     return texte
@@ -108,6 +110,14 @@ def decouper_majuscules(lignes):
         if not s:
             if courant:
                 courant.append('')
+            continue
+        if est_majuscules(s) and s.startswith('(') and precedent == 'titre':
+            continue  # a subtitle: "(GARDE IMPÉRIALE SUISSE)"
+        if est_majuscules(s) and s.endswith('.') and titre:
+            # Who speaks next in a dialogue ("LE CHŒUR.", "L'HOMME."): titles
+            # in this edition have no full stop. Its own stanza.
+            courant += ['', s, '']
+            precedent = 'vers'
             continue
         if est_majuscules(s):
             if precedent in ('titre', 'numero') and not any(x for x in courant if x and not NUMERAL.fullmatch(x)):

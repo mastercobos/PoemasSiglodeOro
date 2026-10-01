@@ -1,7 +1,17 @@
 {
+ "Charles d’Orléans": {
+  "wikidata": "Q310146",
+  "deces": 1465,
+  "retenu": true
+ },
  "François Villon": {
   "wikidata": "Q849",
   "deces": 1464,
+  "retenu": true
+ },
+ "Clément Marot": {
+  "wikidata": "Q108926",
+  "deces": 1544,
   "retenu": true
  },
  "Louise Labé": {
@@ -19,9 +29,24 @@
   "deces": 1560,
   "retenu": true
  },
+ "François de Malherbe": {
+  "wikidata": "Q358574",
+  "deces": 1628,
+  "retenu": true
+ },
+ "Théophile de Viau": {
+  "wikidata": "Q462644",
+  "deces": 1626,
+  "retenu": true
+ },
  "Jean de La Fontaine": {
   "wikidata": "Q49496",
   "deces": 1695,
+  "retenu": true
+ },
+ "André Chénier": {
+  "wikidata": "Q295548",
+  "deces": 1794,
   "retenu": true
  },
  "Alphonse de Lamartine": {
@@ -49,6 +74,11 @@
   "deces": 1855,
   "retenu": true
  },
+ "Théophile Gautier": {
+  "wikidata": "Q183713",
+  "deces": 1872,
+  "retenu": true
+ },
  "Marceline Desbordes-Valmore": {
   "wikidata": "Q466987",
   "deces": 1859,
@@ -64,6 +94,11 @@
   "deces": 1894,
   "retenu": true
  },
+ "Théodore de Banville": {
+  "wikidata": "Q312630",
+  "deces": 1891,
+  "retenu": true
+ },
  "José-Maria de Heredia": {
   "wikidata": "Q334970",
   "deces": 1905,
@@ -74,9 +109,24 @@
   "deces": 1896,
   "retenu": true
  },
+ "Charles Cros": {
+  "wikidata": "Q356575",
+  "deces": 1888,
+  "retenu": true
+ },
+ "Tristan Corbière": {
+  "wikidata": "Q316536",
+  "deces": 1875,
+  "retenu": true
+ },
  "Arthur Rimbaud": {
   "wikidata": "Q493",
   "deces": 1891,
+  "retenu": true
+ },
+ "Jules Laforgue": {
+  "wikidata": "Q380275",
+  "deces": 1887,
   "retenu": true
  },
  "Stéphane Mallarmé": {

@@ -42,7 +42,7 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 
-from recueils import AUTEURS, CORRECTIONS
+from recueils import AUTEURS, CORRECTIONS, VERIFIES
 
 AQUI = Path(__file__).resolve().parent
 CACHE = AQUI / 'corpus' / 'cache'
@@ -159,14 +159,40 @@ def precharger(titres):
                 _fichier_cache(API, _params_page(fin)).write_text(reponse)
 
 
+QUALITES = CACHE / 'qualites.json'
+
+
+def _qualites_en_cache():
+    """Levels already known, per page: the file qualite_des_pages keeps, plus
+    any proofread query cached before it existed. Batches are cached by their
+    exact titles, so one poem more or less shifts every later batch; a cache
+    per page keeps a rebuild offline."""
+    if QUALITES.exists():
+        return json.loads(QUALITES.read_text())
+    connues = {}
+    for f in CACHE.glob('*.json'):
+        texte = f.read_text()
+        if '"proofread"' not in texte[:20000]:
+            continue
+        q = json.loads(texte).get('query', {})
+        noms = {n['to']: n['from'] for n in q.get('normalized', [])}
+        for pg in q.get('pages', []):
+            niveau = pg.get('proofread', {}).get('quality')
+            if niveau is not None:
+                connues[noms.get(pg['title'], pg['title'])] = niveau
+                connues[pg['title']] = niveau
+    return connues
+
+
 def qualite_des_pages(pages):
     """Proofreading level of scanned pages, 50 per query: 0 without text,
-    1 not proofread, 2 problematic, 3 proofread, 4 validated."""
-    qualite = {}
-    pages = sorted(set(pages))
+    1 not proofread, 2 problematic, 3 proofread, 4 validated. Delete
+    corpus/cache/qualites.json to pick up new proofreading."""
+    qualite = _qualites_en_cache()
+    pages = sorted(set(pages) - set(qualite))
     for i in range(0, len(pages), 50):
-        d = _get(API, dict(action='query', prop='proofread', titles='|'.join(pages[i:i + 50]),
-                           format='json', formatversion=2))
+        d = _requete(API, dict(action='query', prop='proofread', titles='|'.join(pages[i:i + 50]),
+                               format='json', formatversion=2))
         q = d.get('query', {})
         noms = {n['to']: n['from'] for n in q.get('normalized', [])}
         for pg in q.get('pages', []):
@@ -174,6 +200,8 @@ def qualite_des_pages(pages):
             if niveau is not None:
                 qualite[noms.get(pg['title'], pg['title'])] = niveau
                 qualite[pg['title']] = niveau
+    CACHE.mkdir(parents=True, exist_ok=True)
+    QUALITES.write_text(json.dumps(qualite, ensure_ascii=False))
     return qualite
 
 
@@ -260,6 +288,10 @@ def _a_jeter(n):
         return True
     if n.tag in ('style', 'script', 'sup'):
         return True  # a sup is a note call
+    if 'visibility:hidden' in (n.attrs.get('style') or '').replace(' ', ''):
+        # A verse split between two speakers: the first half repeated,
+        # invisible, only to indent the second.
+        return True
     if n.tag == 'table' and not any('poem' in e.classes for e in n.iter()):
         # Tables are navigation and tables of contents - except the
         # blockcenter layout, which wraps a poem in one.
@@ -344,18 +376,24 @@ def recoudre(blocs):
     the poem's usual stanza, that add up to exactly that length (a huitain
     split 6 + 2). Anything else is left as printed.
     """
-    strophes, sauts = [], set()
+    strophes, sauts, noms = [], set(), set()
     for b in blocs:
         if b.startswith(SAUT):
             if strophes:
                 sauts.add(len(strophes) - 1)
+            continue
+        if b.startswith(RUBRIQUE):
+            noms.add(len(strophes))
+            strophes.append([b[1:]])
             continue
         for st in normaliser(b).split('\n\n'):
             if st.strip():
                 strophes.append(st.split('\n'))
     if not strophes:
         return ''
-    tailles = [len(st) for st in strophes]
+    if all(i in noms for i in range(len(strophes))):
+        return ''  # a name with no verse
+    tailles = [len(st) for i, st in enumerate(strophes) if i not in noms]
     if len(tailles) >= 3 and sauts:
         from collections import Counter
         mode, freq = Counter(tailles).most_common(1)[0]
@@ -364,7 +402,7 @@ def recoudre(blocs):
             i = 0
             while i < len(strophes):
                 st = strophes[i]
-                if (i in sauts and i + 1 < len(strophes) and len(st) < mode
+                if (i in sauts and i + 1 < len(strophes) and not {i, i + 1} & noms and len(st) < mode
                         and len(strophes[i + 1]) < mode and len(st) + len(strophes[i + 1]) == mode):
                     sortie.append(st + strophes[i + 1])
                     i += 2
@@ -414,6 +452,75 @@ def _titre_centre(n):
     return t if re.search(r'[^\W\d_]{2}', t) else None
 
 
+RUBRIQUE = '\x0b'  # marks a speaker's name, a stanza of its own in the finished text
+
+
+def _personnage(n):
+    """The name of who speaks next in a dialogue poem, in capitals, as
+    Wikisource's personnage template sets it above their verse (« LA SŒUR. »).
+    Kept as a one-line stanza; the app draws it like a section numeral."""
+    if n.tag not in ('div', 'p') or 'poem' in n.classes:
+        return None
+    if not any('personnage' in e.classes for e in n.iter()) or any('poem' in e.classes for e in n.iter()):
+        return None
+    t = re.sub(r'\s+', ' ', normaliser(_lignes_de(n))).strip()
+    return t.upper() if re.search(r'[^\W\d_]{2}', t) else None
+
+
+def _titre_simple(n):
+    """A centred line outside the verse, in the plain layout of Guiffrey's
+    Marot: a poem's title; "(De la Suyte)", the book it came from, is None;
+    "Envoy" is returned as it is, for the caller to keep inside the poem."""
+    if n.tag not in ('div', 'p') or 'poem' in n.classes or any('poem' in e.classes for e in n.iter()):
+        return None
+    if 'text-align:center' not in (n.attrs.get('style') or '').replace(' ', ''):
+        return None
+    t = _titre_propre(n)
+    if not re.search(r'[^\W\d_]{2}', t) or re.fullmatch(r'[({].*[)}]', t):
+        return None
+    return t
+
+
+def _vers_par_paragraphe(racine, avec_titre=True):
+    """Verse set one line per paragraph, an empty paragraph between stanzas
+    (Marot's Adolescence clémentine on Wikisource). Each heading (a numeral)
+    starts a poem, and the paragraph under it is the poem's title, unless
+    avec_titre is False (the Chansons, untitled)."""
+    segs, page = [], [None]
+
+    def visite(n):
+        if isinstance(n, str):
+            return
+        if n.classes & {'pagenum', 'ws-pagenum'}:
+            page[0] = n.attrs.get('title')
+            return
+        if n.tag in TITRES:
+            segs.append([None, [], set()])
+            return
+        if n.tag == 'p' and segs:
+            for e in n.iter():
+                if e.classes & {'pagenum', 'ws-pagenum'} and e.attrs.get('title'):
+                    page[0] = e.attrs['title']
+            t = re.sub(r'\s+', ' ', normaliser(_lignes_de(n)).replace('\n', ' ')).strip()
+            seg = segs[-1]
+            if not t:
+                if seg[1] and seg[1][-1]:
+                    seg[1].append('')
+            elif seg[0] is None and avec_titre and not seg[1]:
+                seg[0] = t.strip(' .')
+            else:
+                seg[1].append(t)
+                if page[0]:
+                    seg[2].add(page[0])
+            return
+        for e in n.enfants:
+            visite(e)
+
+    visite(racine)
+    return [(titre, '\n'.join(lignes).strip('\n'), sorted(pages))
+            for titre, lignes, pages in segs if any(lignes)]
+
+
 def _separateur(n):
     """An empty paragraph (only line breaks): the gap an edition leaves
     between two untitled poems. A page break has none."""
@@ -421,7 +528,8 @@ def _separateur(n):
             and any(isinstance(e, Noeud) and e.tag == 'br' for e in n.enfants))
 
 
-def segments(racine, titres_centres=False, separer_blocs=False, reprise_numerotee=False):
+def segments(racine, titres_centres=False, separer_blocs=False, reprise_numerotee=False,
+             titres_simples=False, vers_par_paragraphe=False):
     """Headed segments of a page: [(heading or None, verse, scanned pages)].
 
     The scanned pages ("Page:….djvu/12") a segment's verse came from are
@@ -430,9 +538,13 @@ def segments(racine, titres_centres=False, separer_blocs=False, reprise_numerote
     With separer_blocs, an empty paragraph between poem blocks starts a new
     untitled segment; with titres_centres, a centred bold line is a heading
     and a centred numeral the next poem of a sequence; with reprise_numerotee,
-    a centred numeral returns to the page's main poem (Villon's Testament).
+    a centred numeral returns to the page's main poem (Villon's Testament);
+    with titres_simples, any centred line is a heading (_titre_simple); with
+    vers_par_paragraphe, see _vers_par_paragraphe.
     """
     _elaguer(racine)
+    if vers_par_paragraphe:
+        return _vers_par_paragraphe(racine, avec_titre=vers_par_paragraphe != 'sans_titre')
     segs = [[None, [], set()]]
     courant = [0]
     page = [None]
@@ -451,6 +563,15 @@ def segments(racine, titres_centres=False, separer_blocs=False, reprise_numerote
             if a_du_vers(courant[0]):
                 nouveau(None)
             return
+        if titres_simples and n.tag in ('div', 'p') and 'poem' not in n.classes \
+                and 'text-align:center' in (n.attrs.get('style') or '').replace(' ', '') \
+                and not any('poem' in e.classes for e in n.iter()):
+            t = _titre_simple(n)
+            if t and re.fullmatch(r'Envo[yi]e?\.?', t, re.IGNORECASE):
+                segs[courant[0]][1].append(RUBRIQUE + t.upper())
+            elif t:
+                nouveau(t)
+            return
         if titres_centres:
             t = _titre_centre(n)
             if t:
@@ -462,6 +583,10 @@ def segments(racine, titres_centres=False, separer_blocs=False, reprise_numerote
             return
         if n.tag in TITRES:
             nouveau(_titre_propre(n))
+            return
+        qui = _personnage(n)
+        if qui:
+            segs[courant[0]][1].append(RUBRIQUE + qui)
             return
         ancre = _ancre_de_titre(n)
         if ancre:
@@ -617,7 +742,7 @@ def liens(html, prefixe=None):
 # apparatus, and the "whole text" page that repeats every poem of a book.
 APPAREIL = re.compile(
     r'(Texte entier|Préface.*|Avant-propos|Avertissement.*|Avis.*|Notice.*|Introduction|Commentaires?|'
-    r'Notes?( .*)?|Table( des matières)?|Tables|Portrait|Titre|Errata|Achevé d.imprimer|Bibliographie|'
+    r'Notes?( .*)?|Tables?( .*)?|Portrait|Titre|Errata|Achevé d.imprimer|Bibliographie|'
     r'Appendice|Variantes|Index|Lettre à .*|Entretien avec le lecteur|Des Méditations|'
     r'Préface générale|Des Destinées de la Poésie)',
     re.IGNORECASE)
@@ -650,12 +775,20 @@ def _cle_titre(t):
 
 
 def premier_vers(texte):
-    """The first line of verse, past any part number ("I") set above it."""
+    """The first line of verse, past any part number ("I") or speaker's name
+    ("LA SŒUR.") set above it."""
     for ligne in texte.split('\n'):
         l = ligne.strip()
-        if re.search(r'[^\W\d_]', l) and not re.fullmatch(r'[IVXLCDM]+\.?', l):
-            return l  # past part numbers and ornaments ("*")
+        if re.search(r'[^\W\d_]', l) and not re.fullmatch(r'[IVXLCDM]+\.?', l) and not rubrique(l):
+            return l  # past part numbers, names and ornaments ("*")
     return texte.split('\n', 1)[0].strip()
+
+
+def rubrique(ligne):
+    """A line with two letters or more and none in lower case: a speaker's
+    name or a heading. Same test as asset.py and esMarcaDeSeccion in
+    poemario_core."""
+    return sum(c.isalpha() for c in ligne) >= 2 and not any(c.islower() for c in ligne)
 
 
 def incipit(texte):
@@ -737,7 +870,9 @@ class Collecte:
     def _segments(rec, html):
         return segments(dom(html), titres_centres=rec.get('titres_centres', False),
                         separer_blocs=rec.get('separer_blocs', False),
-                        reprise_numerotee=rec.get('reprise_numerotee', False))
+                        reprise_numerotee=rec.get('reprise_numerotee', False),
+                        titres_simples=rec.get('titres_simples', False),
+                        vers_par_paragraphe=rec.get('vers_par_paragraphe', False))
 
     def _titre(self, nom, texte):
         """A poem's title from its page name or heading. A bare number
@@ -775,6 +910,8 @@ class Collecte:
         # 'titre_premier'; untitled ones their first line.
         for i, (t, texte, pages) in enumerate(segs):
             if t and re.fullmatch(r'(Bibliographie|Table( des matières)?|Notes?)', t, re.IGNORECASE):
+                continue
+            if t and any(re.search(m, t) for m in rec.get('exclure_titres', [])):
                 continue
             if i == 0 and rec.get('titre_premier'):
                 titre = nom
@@ -843,7 +980,7 @@ def typographie(texte):
     ("LE Roy des animaux", "VOuloir tromper"). Spelling stays as printed."""
     texte = texte.replace('ſ', 's')
     m = re.match(r'([^\w]*)([^\W\d_]+)(?=[\s’\',;:.!?])', texte)
-    if m and len(m.group(2)) > 1 and any(c.isupper() for c in m.group(2)[1:]) \
+    if m and not rubrique(texte.split('\n', 1)[0]) and len(m.group(2)) > 1 and any(c.isupper() for c in m.group(2)[1:]) \
             and not ROMAIN.fullmatch(m.group(2)) and '\n' in texte[:200]:
         mot = m.group(2)
         texte = texte[:m.start(2)] + mot[0] + mot[1:].lower() + texte[m.end(2):]
@@ -874,6 +1011,9 @@ def sans_entete(texte, titre):
     return '\n\n'.join(strophes)
 
 
+SOURCE = re.compile(r'\n\n(\((?:Tiré|Imité|Traduit|Trad\.) d[’\'e][^)]*\)\.?)\s*\Z')
+
+
 def finaliser(poemes):
     """Typography normalised and printed headers dropped; titles printed in
     capitals set in sentence case; fragments of fewer than three lines
@@ -889,6 +1029,16 @@ def finaliser(poemes):
             p['texto'], n = re.subn(motif, remplacement, p['texto'])
             if n != 1:
                 sys.exit(f"Correction for {p['titulo']} matched {n} times: {motif}")
+        note = SOURCE.search(p['texto'])
+        if note:
+            # The editor's note of what the poem renders (Derocquigny's
+            # Chénier): a translation is set aside, an imitation kept
+            # without the note.
+            if re.match(r'\((Trad|Traduit)', note.group(1)):
+                p['traduction'] = True
+                courts.append(p)
+                continue
+            p['texto'] = p['texto'][:note.start()].rstrip('\n')
         if sum(1 for l in p['texto'].split('\n') if l.strip()) < 3:
             courts.append(p)
             continue
@@ -938,6 +1088,31 @@ def remplacer_par_gutenberg(poemes):
     return n
 
 
+def verifies_a_la_main(poemes):
+    """Lets in the unproofread poems recueils.VERIFIES lists: their text is
+    replaced by the file in verifies/, the OCR corrected by hand against the
+    scan, and `relu` becomes "verifie". An entry that matches nothing (the
+    poem was proofread on Wikisource since, or its first line changed) stops
+    the build. Returns how many were let in."""
+    auteurs = {p['autor'] for p in poemes}  # only those crawled (--auteur)
+    restants = {cle: v for cle, v in VERIFIES.items() if cle[0] in auteurs}
+    n = 0
+    for p in poemes:
+        if p['relu'] is not False:
+            continue
+        vers = _plier(premier_vers(typographie(p['texto'])))
+        for cle in list(restants):
+            auteur, debut = cle
+            if p['autor'] == auteur and vers.startswith(_plier(debut)):
+                p['texto'] = (AQUI / 'verifies' / restants.pop(cle)).read_text().strip('\n')
+                p['relu'] = 'verifie'
+                n += 1
+                break
+    if restants:
+        sys.exit(f'VERIFIES entries matching no set-aside poem: {list(restants)}')
+    return n
+
+
 def verifier_auteurs(filtre):
     verifies = {}
     for a in AUTEURS:
@@ -979,16 +1154,24 @@ def main():
 
     qualite = qualite_des_pages(pg for p in c.poemes for pg in p['pages'])
     for p in c.poemes:
-        niveaux = [qualite.get(pg, 0) for pg in p.pop('pages')]
+        pages = p.pop('pages')
+        niveaux = [qualite.get(pg, 0) for pg in pages]
         p['relu'] = min(niveaux) >= QUALITE_MINIMALE if niveaux else None
+        if p['relu'] is False:
+            p['scans'] = pages  # for checking by hand; not in the output
     c.remplaces = remplacer_par_gutenberg(c.poemes)
+    c.verifies = verifies_a_la_main(c.poemes)
     c.non_relus = [p for p in c.poemes if p['relu'] is False]
     c.poemes = [p for p in c.poemes if p['relu'] is not False]
+    for p in c.poemes:
+        p.pop('scans', None)
     c.poemes, c.trop_courts = finaliser(c.poemes)
     corriges = {(p['autor'], p['titulo']) for p in c.poemes}
-    if oublies := set(CORRECTIONS) - corriges:
+    if oublies := {k for k in CORRECTIONS if k[0] in {a for a, _ in corriges}} - corriges:
         sys.exit(f'Corrections for poems not in the corpus: {oublies}')
     Path(args.out).write_text(json.dumps(c.poemes, ensure_ascii=False, indent=1) + '\n')
+    # What was set aside as unproofread, for choosing hand-checked poems (VERIFIES).
+    (CACHE / 'non_relus.json').write_text(json.dumps(c.non_relus, ensure_ascii=False, indent=1))
     rapport(c, verifies, Path(args.rapport))
 
 
@@ -1011,6 +1194,11 @@ def rapport(c, verifies, chemin):
     l += ['', f'## Replaced from Project Gutenberg ({c.remplaces})', '',
           'Poems whose Wikisource scans are not proofread, taken instead from a Gutenberg text of the',
           'same book (gutenberg.py): `fuente` is "gutenberg".']
+    verifies = [p for p in c.poemes if p['relu'] == 'verifie']
+    l += ['', f'## Checked by hand against the scan ({len(verifies)})', '',
+          'Not proofread on Wikisource; let in by recueils.VERIFIES with the text read off the scan',
+          '(verifies/). `relu` is "verifie".', '']
+    l += [f"* {p['autor']} — {p['recueil']} — {p['titulo']}" for p in verifies]
     l += ['', f'## Set aside: not proofread on Wikisource ({len(c.non_relus)})', '',
           f'Some scanned page is below level {QUALITE_MINIMALE} (raw OCR). Proofreading them on Wikisource and',
           'rerunning brings them in.', '', '| Author | Collection | Poems |', '|---|---|---:|']
@@ -1020,7 +1208,11 @@ def rapport(c, verifies, chemin):
           'proofreading level for them. `relu` is null in the JSON.', '', '| Author | Collection | Poems |', '|---|---|---:|']
     l += [f'| {a} | {r} | {n} |' for (a, r), n in sans_scan.most_common()]
     doublons = [p for p in c.trop_courts if p.get('doublon')]
-    courts = [p for p in c.trop_courts if not p.get('doublon')]
+    traductions = [p for p in c.trop_courts if p.get('traduction')]
+    courts = [p for p in c.trop_courts if not p.get('doublon') and not p.get('traduction')]
+    l += ['', f'## Set aside: translations ({len(traductions)})', '',
+          'The edition notes the poem is translated from another poet.', '']
+    l += [f"* {p['autor']} — {p['recueil']} — {p['titulo']}" for p in traductions]
     l += ['', f'## Set aside: second copies ({len(doublons)})', '',
           'Same author and first line as a poem kept earlier (Ronsard moved sonnets between books).', '']
     l += [f"* {p['autor']} — {p['recueil']} — {p['titulo']}" for p in doublons]
