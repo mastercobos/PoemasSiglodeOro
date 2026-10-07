@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/poema_theme.dart';
+
 /// The fade transition that appeared, character for character, in five
 /// different screens.
 Route<T> rutaFundido<T>(
@@ -17,6 +19,12 @@ Route<T> rutaFundido<T>(
   );
 }
 
+/// Ceiling on the system text scale for the floating nav pill's labels.
+///
+/// The labels follow the phone's font size up to here; beyond it four labels
+/// no longer fit side by side on a phone-width pill.
+const escalaMaximaPildora = 1.6;
+
 /// Height reserved at the bottom of every scrollable so the last item isn't
 /// swallowed by the floating nav pill.
 ///
@@ -24,9 +32,28 @@ Route<T> rutaFundido<T>(
 /// the pill. Nothing compensated for that, and the final card in the index,
 /// author, search and favourites lists was unreadable and untappable.
 double espacioBarraFlotante(BuildContext context) {
-  const altoPildora = 64.0;
+  // The pill's fixed parts: 8 + 8 padding, 1 + 1 border, the 3 px selection
+  // bar and its 4 px gap, the 22 px icon and the 4 px under it.
+  const fijo = 8 + 8 + 1 + 1 + 3 + 4 + 22 + 4;
   const margenInferior = 16.0;
-  return altoPildora + margenInferior + MediaQuery.paddingOf(context).bottom;
+  // The label line grows with the text scale and depends on the app's font,
+  // so it is measured rather than guessed.
+  final escala = MediaQuery.textScalerOf(context)
+      .scale(1)
+      .clamp(1.0, escalaMaximaPildora);
+  final etiqueta = TextPainter(
+    text: TextSpan(
+      text: 'Ag',
+      // Merged the way the label's own Text widget merges it.
+      style: DefaultTextStyle.of(context).style.merge(context.tipos.navLabel),
+    ),
+    textScaler: TextScaler.linear(escala),
+    textDirection: TextDirection.ltr,
+    maxLines: 1,
+  )..layout();
+  final alto = fijo + etiqueta.height;
+  etiqueta.dispose();
+  return alto + margenInferior + MediaQuery.paddingOf(context).bottom;
 }
 
 /// Clamps text scaling to a ceiling, for layouts that genuinely can't grow

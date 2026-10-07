@@ -7,6 +7,7 @@ import 'package:poemario_core/screens/favoritos_screen.dart';
 import 'package:poemario_core/screens/indice_screen.dart';
 import 'package:poemario_core/screens/poema_screen.dart';
 import 'package:poemario_core/screens/root_screen.dart';
+import 'package:poemario_core/utils/navegacion.dart';
 import 'package:poemario_core/widgets/versos_ajustados.dart';
 
 import 'support/harness.dart';
@@ -128,6 +129,50 @@ void main() {
 
       expect(find.text('Poemas del día'), findsOneWidget);
       expect(solicitudes.value, isNull);
+    });
+
+    testWidgets('the nav labels follow the phone font size, up to a cap',
+        (tester) async {
+      // A narrow phone, so the widest Spanish label has the least room. The
+      // test font is far wider than the bundled ones, so here the labels are
+      // shrunk to fit; the space reserved under the lists must still cover
+      // the pill.
+      tester.view.physicalSize = const Size(360, 760);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      final etiqueta = find.text('Favoritos');
+      final pildora = find
+          .ancestor(of: etiqueta, matching: find.byType(EscalaLimitada))
+          .first;
+      Future<(double, double, double)> medir(double escala) async {
+        tester.platformDispatcher.textScaleFactorTestValue = escala;
+        await montar(tester, const RootScreen());
+        final contexto = tester.element(etiqueta);
+        final hueco = espacioBarraFlotante(contexto) - 16;
+        return (
+          MediaQuery.textScalerOf(contexto).scale(1),
+          tester.getSize(pildora).height,
+          hueco,
+        );
+      }
+
+      final (normal, altoNormal, huecoNormal) = await medir(1);
+      expect(normal, 1);
+      expect(altoNormal, lessThanOrEqualTo(huecoNormal));
+
+      final (grande, altoGrande, huecoGrande) = await medir(1.3);
+      expect(grande, 1.3);
+      expect(altoGrande, greaterThan(altoNormal));
+      expect(altoGrande, lessThanOrEqualTo(huecoGrande));
+
+      // At the phone's largest setting the labels stop at the cap, and the
+      // pill still fits all four without overflowing.
+      final (maxima, altoMaximo, huecoMaximo) = await medir(2);
+      expect(maxima, escalaMaximaPildora);
+      expect(altoMaximo, lessThanOrEqualTo(huecoMaximo));
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('a deep link to a poem that no longer exists is ignored',

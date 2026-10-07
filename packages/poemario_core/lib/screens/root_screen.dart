@@ -234,9 +234,8 @@ class _RootScreenState extends State<RootScreen>
                         );
                       },
                       // Built once, outside the animation callback.
-                      child: MediaQuery(
-                        data: MediaQuery.of(context)
-                            .copyWith(textScaler: TextScaler.noScaling),
+                      child: EscalaLimitada(
+                        maximo: escalaMaximaPildora,
                         child: _PildoraFlotante(
                           seleccionado: _tab,
                           alElegir: _alElegirPestana,
@@ -353,14 +352,18 @@ class _BotonNav extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               ExcludeSemantics(
-                child: Text(
-                  item.etiqueta,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: context.tipos.navLabel.copyWith(
-                    color: color,
-                    fontWeight:
-                        seleccionado ? FontWeight.w600 : FontWeight.normal,
+                // On a narrow phone at a large font size, shrink a label
+                // that won't fit rather than cut it to "Favo…".
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    item.etiqueta,
+                    maxLines: 1,
+                    style: context.tipos.navLabel.copyWith(
+                      color: color,
+                      fontWeight:
+                          seleccionado ? FontWeight.w600 : FontWeight.normal,
+                    ),
                   ),
                 ),
               ),

@@ -236,11 +236,14 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
                         children: [
                           Icon(Icons.menu_book_outlined, size: 16, color: c.oro),
                           const SizedBox(width: 6),
-                          Text(l10n.inicioLeerCompleto,
-                              style: t.cuerpoPequeno.copyWith(
-                                  fontSize: 13,
-                                  color: c.oro,
-                                  fontWeight: FontWeight.w600)),
+                          // Wraps rather than overflows at large font sizes.
+                          Flexible(
+                            child: Text(l10n.inicioLeerCompleto,
+                                style: t.cuerpoPequeno.copyWith(
+                                    fontSize: 13,
+                                    color: c.oro,
+                                    fontWeight: FontWeight.w600)),
+                          ),
                         ],
                       ),
                     ),
