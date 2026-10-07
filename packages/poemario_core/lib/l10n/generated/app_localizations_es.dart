@@ -271,4 +271,11 @@ class L10nEs extends L10n {
   @override
   String get propinasError =>
       'No se pudo completar el pago. No se ha hecho ningún cargo.';
+
+  @override
+  String get creditosTitulo => 'Fuentes de los textos';
+
+  @override
+  String get creditosIntro =>
+      'Los poemas son de dominio público. Estas son las ediciones y transcripciones de las que proceden; los textos se han seleccionado y corregido para esta aplicación.';
 }

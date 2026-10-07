@@ -384,9 +384,12 @@ void main() {
 
       expect(find.text('4 de 4 autores'), findsOneWidget);
       // The reminder card above the list has a Switch of its own, so aim at the
-      // one inside the first author's row.
+      // one inside the first author's row. The sections above push that row
+      // past the list's build extent, so scroll to it first.
+      final fila = find.widgetWithText(ListTile, 'Autor 0');
+      await tester.scrollUntilVisible(fila, 200);
       final interruptor = find.descendant(
-        of: find.widgetWithText(ListTile, 'Autor 0'),
+        of: fila,
         matching: find.byType(Switch),
       );
       await tester.ensureVisible(interruptor);
@@ -394,6 +397,24 @@ void main() {
       await tester.tap(interruptor);
       await tester.pumpAndSettle();
       expect(find.text('3 de 4 autores'), findsOneWidget);
+    });
+
+    testWidgets('the sources entry opens the credits with each link',
+        (tester) async {
+      await montar(tester, const AjustesScreen());
+
+      // Last in the screen, below the author list.
+      final entrada = find.text('Fuente de prueba');
+      await tester.scrollUntilVisible(entrada, 200);
+      await tester.ensureVisible(entrada);
+      await tester.pumpAndSettle();
+      await tester.tap(entrada);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Fuentes de los textos'), findsOneWidget);
+      expect(find.text('Textos de prueba, bajo una licencia de prueba.'),
+          findsOneWidget);
+      expect(find.text('https://example.org'), findsOneWidget);
     });
   });
 }

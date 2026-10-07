@@ -27,6 +27,24 @@ void main() {
       // Long lines (alexandrines, blank verse) would wrap on a phone: each
       // poem is shrunk to fit its longest verse, measured per device.
       disposicionVersos: DisposicionVersos.ajustada,
+      // CC BY-SA asks for this credit inside the app, beside the material.
+      creditos: [
+        CreditoFuente(
+          nombre: 'Wikisource',
+          descripcion: 'La plupart des poèmes proviennent de Wikisource en '
+              'français, transcrits et relus par ses contributeurs, puis '
+              'choisis et corrigés pour cette application. Textes sous '
+              'licence CC BY-SA 4.0 (creativecommons.org/licenses/by-sa/4.0)'
+              '\u00a0; nos textes adaptés sont partagés sous la même licence.',
+          enlace: 'https://fr.wikisource.org',
+        ),
+        CreditoFuente(
+          nombre: 'Projet Gutenberg',
+          descripcion: 'Livres du domaine public, pour les poèmes dont '
+              'Wikisource n\u2019a pas de version relue.',
+          enlace: 'https://www.gutenberg.org',
+        ),
+      ],
       fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
       coloresClaro: PoemaColors(
         oro: Color(0xFF2E4A7D),

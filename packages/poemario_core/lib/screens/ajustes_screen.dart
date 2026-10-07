@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../config/app_config.dart';
 import '../data/poema_repository.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../providers/ajustes_provider.dart';
@@ -10,8 +11,10 @@ import '../providers/propinas_provider.dart';
 import '../providers/tema_provider.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
+import '../utils/navegacion.dart';
 import '../widgets/avatar_autor.dart';
 import '../widgets/linea_oro.dart';
+import 'creditos_screen.dart';
 
 /// Appearance and the author filter.
 ///
@@ -66,7 +69,11 @@ class AjustesScreen extends StatelessWidget {
               itemBuilder: (context, i) => _FilaAutor(autor: autores[i]),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          const SliverToBoxAdapter(child: _SeccionCreditos()),
+          // Clears the floating nav pill, which would otherwise cover the
+          // last card.
+          SliverToBoxAdapter(
+              child: SizedBox(height: espacioBarraFlotante(context))),
         ],
       ),
     );
@@ -358,6 +365,49 @@ class _SeccionRecordatorio extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Sources of the texts. Absent when the app lists none.
+class _SeccionCreditos extends StatelessWidget {
+  const _SeccionCreditos();
+
+  @override
+  Widget build(BuildContext context) {
+    final creditos = context.config.creditos;
+    if (creditos.isEmpty) return const SizedBox.shrink();
+
+    final c = context.colores;
+    final t = context.tipos;
+    final l10n = L10n.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        _Encabezado(l10n.creditosTitulo),
+        // See _SeccionTema: Material so ink splashes stay visible.
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          child: Material(
+            color: c.tarjeta,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: c.oroClaro.withValues(alpha: 0.6)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              leading: Icon(Icons.menu_book_outlined, color: c.oro),
+              title: Text(creditos.map((f) => f.nombre).join(' · '),
+                  style: t.cuerpo.copyWith(color: c.texto)),
+              trailing: Icon(Icons.chevron_right, color: c.oroClaro),
+              onTap: () => Navigator.of(context)
+                  .push(rutaFundido((_) => const CreditosScreen())),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

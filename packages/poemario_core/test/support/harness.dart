@@ -36,6 +36,13 @@ const configPrueba = AppConfig(
   fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
   coloresClaro: PoemaColors.claroPorDefecto,
   coloresOscuro: PoemaColors.oscuroPorDefecto,
+  creditos: [
+    CreditoFuente(
+      nombre: 'Fuente de prueba',
+      descripcion: 'Textos de prueba, bajo una licencia de prueba.',
+      enlace: 'https://example.org',
+    ),
+  ],
 );
 
 /// A small anthology with predictable content.

@@ -120,5 +120,7 @@
   "propinasTitulo": "Apoya la antología",
   "propinasTexto": "La aplicación es gratuita y no tiene anuncios. Si te gusta, puedes invitarnos a un café. Es solo un gesto de agradecimiento: no desbloquea nada.",
   "propinasGracias": "¡Gracias por tu apoyo!",
-  "propinasError": "No se pudo completar el pago. No se ha hecho ningún cargo."
+  "propinasError": "No se pudo completar el pago. No se ha hecho ningún cargo.",
+  "creditosTitulo": "Fuentes de los textos",
+  "creditosIntro": "Los poemas son de dominio público. Estas son las ediciones y transcripciones de las que proceden; los textos se han seleccionado y corregido para esta aplicación."
 }

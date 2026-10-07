@@ -30,6 +30,31 @@ void main() {
       // Long lines (alexandrines, blank verse) would wrap on a phone: each
       // poem is shrunk to fit its longest verse, measured per device.
       disposicionVersos: DisposicionVersos.ajustada,
+      // CC BY-SA asks for this credit inside the app, beside the material.
+      creditos: [
+        CreditoFuente(
+          nombre: 'Laurel',
+          descripcion: 'Most poems come from the Laurel corpus of '
+              'public-domain English verse, by Garrett Dome, re-selected, '
+              'corrected and re-edited for this app. Laurel\'s selection and '
+              'encoding are licensed under CC BY-SA 4.0 '
+              '(creativecommons.org/licenses/by-sa/4.0); our adapted texts '
+              'are shared under the same licence.',
+          enlace: 'https://laurelpoetry.com',
+        ),
+        CreditoFuente(
+          nombre: 'Project Gutenberg',
+          descripcion: 'Public-domain books, for poems and editions not in '
+              'Laurel.',
+          enlace: 'https://www.gutenberg.org',
+        ),
+        CreditoFuente(
+          nombre: 'Wikisource',
+          descripcion: 'A few poems transcribed by the contributors of '
+              'English Wikisource, licensed under CC BY-SA 4.0.',
+          enlace: 'https://en.wikisource.org',
+        ),
+      ],
       fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
       coloresClaro: PoemaColors(
         oro: Color(0xFF8C2F45),

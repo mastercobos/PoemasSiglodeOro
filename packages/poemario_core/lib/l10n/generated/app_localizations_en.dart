@@ -271,4 +271,11 @@ class L10nEn extends L10n {
   @override
   String get propinasError =>
       'The payment couldn\'t be completed. You have not been charged.';
+
+  @override
+  String get creditosTitulo => 'Sources of the texts';
+
+  @override
+  String get creditosIntro =>
+      'The poems are in the public domain. These are the editions and transcriptions they come from; the texts were selected and corrected for this app.';
 }

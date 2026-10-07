@@ -59,6 +59,11 @@ class AppConfig {
   /// is harmless.
   final Set<String> idsPropinas;
 
+  /// Where the anthology's texts come from, shown under Settings → Sources.
+  /// Licences such as CC BY-SA require this credit to travel with the app,
+  /// not only on the store page. Empty hides the entry.
+  final List<CreditoFuente> creditos;
+
   const AppConfig({
     required this.locale,
     required this.nombreApp,
@@ -72,6 +77,7 @@ class AppConfig {
     this.ordenTitulos = EstrategiaOrden.alfabetico,
     this.prefijoPreferencias = '',
     this.idsPropinas = const {},
+    this.creditos = const [],
     this.disposicionVersos = DisposicionVersos.centrada,
   });
 
@@ -99,6 +105,25 @@ class AppConfig {
   String? ornamentoPara(Brightness brillo) => brillo == Brightness.light
       ? assetOrnamentoClaro ?? assetOrnamento
       : assetOrnamento;
+}
+
+/// One source of the anthology's texts, written in the app's language.
+@immutable
+class CreditoFuente {
+  /// The source's name as its licence asks to be credited, e.g. "Laurel".
+  final String nombre;
+
+  /// What came from it, under which licence, and what was changed.
+  final String descripcion;
+
+  /// The source's address. Shown as selectable text, so it can be copied.
+  final String? enlace;
+
+  const CreditoFuente({
+    required this.nombre,
+    required this.descripcion,
+    this.enlace,
+  });
 }
 
 /// How the reader and the home cards lay out a poem's verses.

@@ -70,5 +70,7 @@
   "propinasTitulo": "Soutenir l’anthologie",
   "propinasTexto": "L’application est gratuite et sans publicité. Si elle vous plaît, vous pouvez nous offrir un café. C’est juste un merci : cela ne débloque rien.",
   "propinasGracias": "Merci de votre soutien !",
-  "propinasError": "Le paiement n’a pas pu aboutir. Aucun montant n’a été débité."
+  "propinasError": "Le paiement n’a pas pu aboutir. Aucun montant n’a été débité.",
+  "creditosTitulo": "Sources des textes",
+  "creditosIntro": "Les poèmes sont dans le domaine public. Voici les éditions et transcriptions dont ils proviennent ; les textes ont été choisis et corrigés pour cette application."
 }

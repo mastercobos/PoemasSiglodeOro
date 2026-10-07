@@ -524,6 +524,18 @@ abstract class L10n {
   /// In es, this message translates to:
   /// **'No se pudo completar el pago. No se ha hecho ningún cargo.'**
   String get propinasError;
+
+  /// No description provided for @creditosTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Fuentes de los textos'**
+  String get creditosTitulo;
+
+  /// No description provided for @creditosIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Los poemas son de dominio público. Estas son las ediciones y transcripciones de las que proceden; los textos se han seleccionado y corregido para esta aplicación.'**
+  String get creditosIntro;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {
