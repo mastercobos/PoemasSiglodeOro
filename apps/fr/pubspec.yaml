@@ -26,7 +26,8 @@ flutter:
     # read when a poem is shown (see poemario_core's PoemaRepository).
     - assets/poemas/
     - assets/poemas/textos/
-    - assets/icon/quill_icon.png
+    - assets/icon/victorhugo_transparente.png
+    - assets/icon/victorhugo_transparente_claro.png
   # Fonts are bundled, not downloaded. This removes google_fonts, which
   # fetched Playfair and Lato over the network on first launch — so an
   # offline first run rendered the whole anthology in Roboto.
@@ -47,19 +48,20 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icon/quill_icon.png"
+  image_path: "assets/icon/victorhugo_icono.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#11151F"
-  adaptive_icon_foreground: "assets/icon/quill_icon.png"
-  image_fill_color: "#11151F"
+  adaptive_icon_background: "#1F3366"
+  adaptive_icon_foreground: "assets/icon/victorhugo_adaptativo.png"
+  image_fill_color: "#1F3366"
   remove_alpha_ios: true
+  background_color_ios: "#1F3366"
 
 flutter_native_splash:
-  color: "#11151F"
-  image: assets/icon/quill_icon.png
+  color: "#1F3366"
+  image: assets/icon/victorhugo_splash.png
   android: true
   ios: true
   android_12:
-    color: "#11151F"
-    image: assets/icon/quill_icon.png
-    icon_background_color: "#11151F"
+    color: "#1F3366"
+    image: assets/icon/victorhugo_splash.png
+    icon_background_color: "#1F3366"

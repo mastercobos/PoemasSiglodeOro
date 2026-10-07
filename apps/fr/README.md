@@ -15,6 +15,8 @@ Still to do:
 * The corpus. `assets/poemas/` expects the split format the English app uses:
   `indice.json` plus `textos/<n>.json` chunks (see `TextosPoemas` in core).
   Until it exists the app opens on the "couldn't load" screen.
-* An icon of its own. `assets/icon/quill_icon.png` is the English quill as a
-  placeholder; replace it, then `dart run flutter_launcher_icons` and
+* The icon is `assets/icon/victorhugo.png` (the original drawing), recoloured
+  into `victorhugo_transparente.png` (#D3DEF2, dark backgrounds),
+  `_transparente_claro.png` (#2E4A7D, light), `_icono.png` and `_splash.png`
+  on #1F3366. After changing them, `dart run flutter_launcher_icons` and
   `dart run flutter_native_splash:create`.

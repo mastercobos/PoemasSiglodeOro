@@ -19,7 +19,8 @@ void main() {
       nombreApp: 'Poésie française',
       firmaCompartir: 'Poésie française · Une anthologie quotidienne',
       assetPoemas: 'assets/poemas/indice.json',
-      assetOrnamento: 'assets/icon/quill_icon.png',
+      assetOrnamento: 'assets/icon/victorhugo_transparente.png',
+      assetOrnamentoClaro: 'assets/icon/victorhugo_transparente_claro.png',
       // French sequences number inline too ("Les Regrets, XXXI", "Sonnet
       // IV"), as in the English corpus, so numerals sort by value.
       ordenTitulos: EstrategiaOrden.numeralesNaturales,

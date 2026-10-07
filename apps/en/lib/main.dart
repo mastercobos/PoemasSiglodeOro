@@ -19,7 +19,8 @@ void main() {
       nombreApp: 'English Verse',
       firmaCompartir: 'English Verse · A daily anthology',
       assetPoemas: 'assets/poemas/indice.json',
-      assetOrnamento: 'assets/icon/quill_icon.png',
+      assetOrnamento: 'assets/icon/shakespeare_transparente.png',
+      assetOrnamentoClaro: 'assets/icon/shakespeare_transparente_claro.png',
       // Sequences are numbered inline ("Sonnet I", "Sonnets from the
       // Portuguese, I") rather than with the Spanish corpus's leading
       // "- N -", so romanosPrimero doesn't apply — but the numerals still
