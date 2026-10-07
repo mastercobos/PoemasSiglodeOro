@@ -116,7 +116,10 @@ class _SinAutores extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colores;
-    return Padding(
+    // Full width: the Scaffold body's width is loose, so with no cards to
+    // stretch the column, the whole page would otherwise hug the left edge.
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 64),
       child: Column(
         children: [
