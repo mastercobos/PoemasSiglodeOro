@@ -28,8 +28,8 @@ class AutorScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(autor,
-            style: context.tipos.appBarTituloPequeno
-                .copyWith(color: c.sobreSepia),
+            style:
+                context.tipos.appBarTituloPequeno.copyWith(color: c.sobreSepia),
             overflow: TextOverflow.ellipsis),
         bottom: const LineaOro(),
       ),
@@ -38,7 +38,11 @@ class AutorScreen extends StatelessWidget {
           BandaSubtitulo(L10n.of(context).poemasContador(poemas.length)),
           Expanded(
             child: ListView.separated(
-              padding: EdgeInsets.only(bottom: espacioBarraFlotante(context)),
+              padding: EdgeInsets.only(
+                left: margenLateral(context),
+                right: margenLateral(context),
+                bottom: espacioBarraFlotante(context),
+              ),
               itemCount: poemas.length,
               separatorBuilder: (_, __) => Divider(
                 height: 1,

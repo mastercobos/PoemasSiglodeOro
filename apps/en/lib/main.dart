@@ -12,75 +12,78 @@ import 'package:poemario_core/theme/poema_theme.dart';
 /// published apps. That is the test of whether the white-label split worked:
 /// if adding a language ever needs an edit inside `poemario_core`, something
 /// app-specific has leaked into core and belongs in [AppConfig] instead.
-void main() {
-  bootstrap(
-    const AppConfig(
-      locale: Locale('en'),
-      nombreApp: 'English Verse',
-      firmaCompartir: 'English Verse · A daily anthology',
-      assetPoemas: 'assets/poemas/indice.json',
-      assetOrnamento: 'assets/icon/shakespeare_transparente.png',
-      assetOrnamentoClaro: 'assets/icon/shakespeare_transparente_claro.png',
-      // Sequences are numbered inline ("Sonnet I", "Sonnets from the
-      // Portuguese, I") rather than with the Spanish corpus's leading
-      // "- N -", so romanosPrimero doesn't apply — but the numerals still
-      // need to sort as numbers, not as text ("Sonnet IX" before "Sonnet V"
-      // is wrong).
-      ordenTitulos: EstrategiaOrden.numeralesNaturales,
-      // Long lines (alexandrines, blank verse) would wrap on a phone: each
-      // poem is shrunk to fit its longest verse, measured per device.
-      disposicionVersos: DisposicionVersos.ajustada,
-      // CC BY-SA asks for this credit inside the app, beside the material.
-      creditos: [
-        CreditoFuente(
-          nombre: 'Laurel',
-          descripcion: 'Most poems come from the Laurel corpus of '
-              'public-domain English verse, by Garrett Dome, re-selected, '
-              'corrected and re-edited for this app. Laurel\'s selection and '
-              'encoding are licensed under CC BY-SA 4.0 '
-              '(creativecommons.org/licenses/by-sa/4.0); our adapted texts '
-              'are shared under the same licence.',
-          enlace: 'https://laurelpoetry.com',
-        ),
-        CreditoFuente(
-          nombre: 'Project Gutenberg',
-          descripcion: 'Public-domain books, for poems and editions not in '
-              'Laurel.',
-          enlace: 'https://www.gutenberg.org',
-        ),
-        CreditoFuente(
-          nombre: 'Wikisource',
-          descripcion: 'A few poems transcribed by the contributors of '
-              'English Wikisource, licensed under CC BY-SA 4.0.',
-          enlace: 'https://en.wikisource.org',
-        ),
-      ],
-      fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
-      coloresClaro: PoemaColors(
-        oro: Color(0xFF8C2F45),
-        oroClaro: Color(0xFFC98A9A),
-        sepia: Color(0xFF2A1B1F),
-        fondo: Color(0xFFFAF5F4),
-        tarjeta: Colors.white,
-        texto: Color(0xFF2A1B1F),
-        textoSuave: Color(0xFF7A6068),
-        sobreSepia: Colors.white,
-        fondoCompartir: Color(0xFFF3E8E6),
-        sombra: Color(0x142A1B1F),
-      ),
-      coloresOscuro: PoemaColors(
-        oro: Color(0xFFE08AA0),
-        oroClaro: Color(0xFFEBA9BA),
-        sepia: Color(0xFF120A0D),
-        fondo: Color(0xFF1A1114),
-        tarjeta: Color(0xFF271A1F),
-        texto: Color(0xFFF1E6E8),
-        textoSuave: Color(0xFFA8939A),
-        sobreSepia: Colors.white,
-        fondoCompartir: Color(0xFF120A0D),
-        sombra: Color(0x4D000000),
-      ),
+const configApp = AppConfig(
+  locale: Locale('en'),
+  nombreApp: 'English Verse',
+  firmaCompartir: 'English Verse · A daily anthology',
+  nombreTienda: 'English Verse',
+  // The longest verse of any sonnet here: Hopkins, "Henry Purcell".
+  versoMasLargo:
+      'Have an eye to the sakes of him, quaint moonmarks, to his pelted plumage under',
+  assetPoemas: 'assets/poemas/indice.json',
+  assetOrnamento: 'assets/icon/shakespeare_transparente.png',
+  assetOrnamentoClaro: 'assets/icon/shakespeare_transparente_claro.png',
+  // Sequences are numbered inline ("Sonnet I", "Sonnets from the
+  // Portuguese, I") rather than with the Spanish corpus's leading
+  // "- N -", so romanosPrimero doesn't apply — but the numerals still
+  // need to sort as numbers, not as text ("Sonnet IX" before "Sonnet V"
+  // is wrong).
+  ordenTitulos: EstrategiaOrden.numeralesNaturales,
+  // Long lines (alexandrines, blank verse) would wrap on a phone: each
+  // poem is shrunk to fit its longest verse, measured per device.
+  disposicionVersos: DisposicionVersos.ajustada,
+  // CC BY-SA asks for this credit inside the app, beside the material.
+  creditos: [
+    CreditoFuente(
+      nombre: 'Laurel',
+      descripcion: 'Most poems come from the Laurel corpus of '
+          'public-domain English verse, by Garrett Dome, re-selected, '
+          'corrected and re-edited for this app. Laurel\'s selection and '
+          'encoding are licensed under CC BY-SA 4.0 '
+          '(creativecommons.org/licenses/by-sa/4.0); our adapted texts '
+          'are shared under the same licence.',
+      enlace: 'https://laurelpoetry.com',
     ),
-    home: (_) => const RootScreen(),
-  );
+    CreditoFuente(
+      nombre: 'Project Gutenberg',
+      descripcion: 'Public-domain books, for poems and editions not in '
+          'Laurel.',
+      enlace: 'https://www.gutenberg.org',
+    ),
+    CreditoFuente(
+      nombre: 'Wikisource',
+      descripcion: 'A few poems transcribed by the contributors of '
+          'English Wikisource, licensed under CC BY-SA 4.0.',
+      enlace: 'https://en.wikisource.org',
+    ),
+  ],
+  fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
+  coloresClaro: PoemaColors(
+    oro: Color(0xFF8C2F45),
+    oroClaro: Color(0xFFC98A9A),
+    sepia: Color(0xFF2A1B1F),
+    fondo: Color(0xFFFAF5F4),
+    tarjeta: Colors.white,
+    texto: Color(0xFF2A1B1F),
+    textoSuave: Color(0xFF7A6068),
+    sobreSepia: Colors.white,
+    fondoCompartir: Color(0xFFF3E8E6),
+    sombra: Color(0x142A1B1F),
+  ),
+  coloresOscuro: PoemaColors(
+    oro: Color(0xFFE08AA0),
+    oroClaro: Color(0xFFEBA9BA),
+    sepia: Color(0xFF120A0D),
+    fondo: Color(0xFF1A1114),
+    tarjeta: Color(0xFF271A1F),
+    texto: Color(0xFFF1E6E8),
+    textoSuave: Color(0xFFA8939A),
+    sobreSepia: Colors.white,
+    fondoCompartir: Color(0xFF120A0D),
+    sombra: Color(0x4D000000),
+  ),
+);
+
+void main() {
+  bootstrap(configApp, home: (_) => const RootScreen());
 }

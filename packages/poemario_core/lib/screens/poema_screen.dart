@@ -11,6 +11,7 @@ import '../providers/favoritos_provider.dart';
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
 import '../utils/compartir_poema.dart';
+import '../utils/navegacion.dart';
 import '../config/app_config.dart';
 import '../widgets/texto_de_poema.dart';
 import '../widgets/versos_ajustados.dart';
@@ -130,6 +131,8 @@ class _PoemaScreenState extends State<PoemaScreen> {
         poema: _poema,
         origen: _rectBotonCompartir(),
         mensajeError: L10n.of(context).compartirError,
+        avisoCompleto:
+            L10n.of(context).compartirLeerCompleto(context.config.nombreTienda),
       );
     } finally {
       if (mounted) setState(() => _compartiendo = false);
@@ -234,7 +237,12 @@ class _PoemaScreenState extends State<PoemaScreen> {
     final t = context.tipos;
     final l10n = L10n.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 36, 28, 48),
+      padding: EdgeInsets.fromLTRB(
+        margenLateral(context, base: 28),
+        36,
+        margenLateral(context, base: 28),
+        48,
+      ),
       child: Column(
         children: [
           const Ornamento(),

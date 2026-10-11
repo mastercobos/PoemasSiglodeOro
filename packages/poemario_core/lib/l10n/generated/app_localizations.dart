@@ -536,6 +536,12 @@ abstract class L10n {
   /// In es, this message translates to:
   /// **'Los poemas son de dominio público. Estas son las ediciones y transcripciones de las que proceden; los textos se han seleccionado y corregido para esta aplicación.'**
   String get creditosIntro;
+
+  /// No description provided for @compartirLeerCompleto.
+  ///
+  /// In es, this message translates to:
+  /// **'Lee el poema completo en la aplicación {app}'**
+  String compartirLeerCompleto(String app);
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

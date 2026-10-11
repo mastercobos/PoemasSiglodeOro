@@ -74,7 +74,12 @@ class _InicioScreenState extends State<InicioScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(18, 24, 18, espacioBarraFlotante(context)),
+        padding: EdgeInsets.fromLTRB(
+          margenLateral(context, base: 18),
+          24,
+          margenLateral(context, base: 18),
+          espacioBarraFlotante(context),
+        ),
         child: Column(
           children: [
             Text(fecha.toUpperCase(),
@@ -93,8 +98,8 @@ class _InicioScreenState extends State<InicioScreen> {
                   ? l10n.inicioTodosLosAutores
                   : l10n.inicioAutoresSeleccionados(ajustes.totalActivos),
               textAlign: TextAlign.center,
-              style: t.cuerpoPequeno
-                  .copyWith(fontSize: 11, color: c.textoSuave, letterSpacing: .5),
+              style: t.cuerpoPequeno.copyWith(
+                  fontSize: 11, color: c.textoSuave, letterSpacing: .5),
             ),
             const SizedBox(height: 24),
             if (destacados.isEmpty)
@@ -213,8 +218,8 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
                   child: TextoDePoema(
                     poema: poema,
                     builder: (_) {
-                      final estilo = t.verso.copyWith(
-                          fontSize: 15, height: 1.85, color: c.texto);
+                      final estilo = t.verso
+                          .copyWith(fontSize: 15, height: 1.85, color: c.texto);
                       if (context.config.disposicionVersos ==
                           DisposicionVersos.ajustada) {
                         return VersosAjustados(
@@ -237,7 +242,8 @@ class _TarjetaPoemaDelDia extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.menu_book_outlined, size: 16, color: c.oro),
+                          Icon(Icons.menu_book_outlined,
+                              size: 16, color: c.oro),
                           const SizedBox(width: 6),
                           // Wraps rather than overflows at large font sizes.
                           Flexible(

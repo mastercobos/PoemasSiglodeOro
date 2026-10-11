@@ -32,6 +32,8 @@ const configPrueba = AppConfig(
   locale: Locale('es'),
   nombreApp: 'Antología de prueba',
   firmaCompartir: 'Prueba',
+  nombreTienda: 'Antología de prueba',
+  versoMasLargo: 'un verso largo de prueba',
   ordenTitulos: EstrategiaOrden.romanosPrimero,
   fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
   coloresClaro: PoemaColors.claroPorDefecto,

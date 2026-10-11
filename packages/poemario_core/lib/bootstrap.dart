@@ -19,6 +19,7 @@ import 'providers/favoritos_provider.dart';
 import 'providers/poema_del_dia_provider.dart';
 import 'providers/propinas_provider.dart';
 import 'providers/tema_provider.dart';
+import 'widgets/escala_tableta.dart';
 
 /// Starts an anthology app.
 ///
@@ -207,6 +208,7 @@ class _AppPoemario extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           navigatorKey: _claveNavegador,
+          builder: (_, app) => EscalaTableta(child: app!),
           home: Builder(builder: home),
         ),
       ),

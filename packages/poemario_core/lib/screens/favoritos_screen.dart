@@ -49,7 +49,10 @@ class FavoritosScreen extends StatelessWidget {
               Expanded(
                 child: ListView.builder(
                   padding: EdgeInsets.fromLTRB(
-                      14, 14, 14, espacioBarraFlotante(context)),
+                      margenLateral(context, base: 14),
+                      14,
+                      margenLateral(context, base: 14),
+                      espacioBarraFlotante(context)),
                   itemCount: autores.length,
                   itemBuilder: (context, i) => _GrupoAutor(
                     key: ValueKey(autores[i]),

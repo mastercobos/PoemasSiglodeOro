@@ -217,8 +217,10 @@ class _RootScreenState extends State<RootScreen>
                     children: List.generate(_tabs, _pestana),
                   ),
                   Positioned(
-                    left: 24,
-                    right: 24,
+                    // Phone-sized on a tablet too: four labels spread over a
+                    // tablet's width read as unrelated buttons.
+                    left: margenLateral(context, base: 24, maximo: 480),
+                    right: margenLateral(context, base: 24, maximo: 480),
                     bottom: MediaQuery.paddingOf(context).bottom + 16,
                     child: AnimatedBuilder(
                       animation: _animacion,

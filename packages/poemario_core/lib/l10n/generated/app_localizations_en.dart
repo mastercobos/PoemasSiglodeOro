@@ -278,4 +278,9 @@ class L10nEn extends L10n {
   @override
   String get creditosIntro =>
       'The poems are in the public domain. These are the editions and transcriptions they come from; the texts were selected and corrected for this app.';
+
+  @override
+  String compartirLeerCompleto(String app) {
+    return 'Read the full poem in the $app app';
+  }
 }

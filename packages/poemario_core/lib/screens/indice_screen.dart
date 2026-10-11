@@ -97,7 +97,10 @@ class _IndiceScreenState extends State<IndiceScreen> {
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
                     padding: EdgeInsets.fromLTRB(
-                        14, 14, 14, espacioBarraFlotante(context)),
+                        margenLateral(context, base: 14),
+                        14,
+                        margenLateral(context, base: 14),
+                        espacioBarraFlotante(context)),
                     itemCount: autores.length,
                     itemBuilder: (context, i) {
                       final autor = autores[i];
@@ -138,8 +141,7 @@ class _TarjetaAutor extends StatelessWidget {
             onTap: () => Navigator.of(context)
                 .push(rutaFundido((_) => AutorScreen(autor: autor))),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               // A fixed-size avatar beside a name genuinely can't grow without
               // bound, so scaling is capped here — and only here.
               child: EscalaLimitada(
@@ -156,8 +158,7 @@ class _TarjetaAutor extends StatelessWidget {
                               style: t.autorTarjeta.copyWith(color: c.texto)),
                           const SizedBox(height: 2),
                           Text(L10n.of(context).poemasContador(totalPoemas),
-                              style:
-                                  t.cuerpoPequeno.copyWith(color: c.oro)),
+                              style: t.cuerpoPequeno.copyWith(color: c.oro)),
                         ],
                       ),
                     ),

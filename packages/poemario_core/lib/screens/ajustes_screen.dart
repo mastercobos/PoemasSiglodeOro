@@ -43,33 +43,40 @@ class AjustesScreen extends StatelessWidget {
       ),
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: _Encabezado(l10n.ajustesApariencia)),
-          const SliverToBoxAdapter(child: _SeccionTema()),
-          SliverToBoxAdapter(child: _Encabezado(l10n.ajustesRecordatorio)),
-          const SliverToBoxAdapter(child: _SeccionRecordatorio()),
-          const SliverToBoxAdapter(child: _SeccionPropinas()),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const SizedBox(height: 16),
-                _Encabezado(l10n.ajustesPoemasDelDia),
-                const _BarraAcciones(),
-              ],
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            sliver: SliverList.separated(
-              itemCount: autores.length,
-              separatorBuilder: (_, __) => Divider(
-                height: 1,
-                indent: 72,
-                color: c.oroClaro.withValues(alpha: 0.3),
+          for (final sliver in <Widget>[
+            SliverToBoxAdapter(child: _Encabezado(l10n.ajustesApariencia)),
+            const SliverToBoxAdapter(child: _SeccionTema()),
+            SliverToBoxAdapter(child: _Encabezado(l10n.ajustesRecordatorio)),
+            const SliverToBoxAdapter(child: _SeccionRecordatorio()),
+            const SliverToBoxAdapter(child: _SeccionPropinas()),
+            SliverToBoxAdapter(
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _Encabezado(l10n.ajustesPoemasDelDia),
+                  const _BarraAcciones(),
+                ],
               ),
-              itemBuilder: (context, i) => _FilaAutor(autor: autores[i]),
             ),
-          ),
-          const SliverToBoxAdapter(child: _SeccionCreditos()),
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              sliver: SliverList.separated(
+                itemCount: autores.length,
+                separatorBuilder: (_, __) => Divider(
+                  height: 1,
+                  indent: 72,
+                  color: c.oroClaro.withValues(alpha: 0.3),
+                ),
+                itemBuilder: (context, i) => _FilaAutor(autor: autores[i]),
+              ),
+            ),
+            const SliverToBoxAdapter(child: _SeccionCreditos()),
+          ])
+            // A centred column on a tablet; nothing on a phone.
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: margenLateral(context)),
+              sliver: sliver,
+            ),
           // Clears the floating nav pill, which would otherwise cover the
           // last card.
           SliverToBoxAdapter(
@@ -456,9 +463,8 @@ class _SeccionPropinas extends StatelessWidget {
                         OutlinedButton.icon(
                           onPressed: propinas.comprando
                               ? null
-                              : () => context
-                                  .read<PropinasProvider>()
-                                  .comprar(p),
+                              : () =>
+                                  context.read<PropinasProvider>().comprar(p),
                           icon: const Icon(Icons.coffee_outlined, size: 18),
                           label: Text(p.precio),
                         ),

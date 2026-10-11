@@ -33,6 +33,8 @@ void main() {
       locale: Locale('es'),
       nombreApp: 'Antología Poética',
       firmaCompartir: 'Poemario · Siglo de Oro',
+      nombreTienda: 'Poemario - Siglo de Oro',
+      versoMasLargo: 'muero.» «¡Ya sé lo que es!» «¿Qué es, pues?» «Ausencia.»',
       ordenTitulos: EstrategiaOrden.romanosPrimero,
       fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
       coloresClaro: PoemaColors.claroPorDefecto,

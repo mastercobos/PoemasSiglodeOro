@@ -72,5 +72,6 @@
   "propinasGracias": "Merci de votre soutien !",
   "propinasError": "Le paiement n’a pas pu aboutir. Aucun montant n’a été débité.",
   "creditosTitulo": "Sources des textes",
-  "creditosIntro": "Les poèmes sont dans le domaine public. Voici les éditions et transcriptions dont ils proviennent ; les textes ont été choisis et corrigés pour cette application."
+  "creditosIntro": "Les poèmes sont dans le domaine public. Voici les éditions et transcriptions dont ils proviennent ; les textes ont été choisis et corrigés pour cette application.",
+  "compartirLeerCompleto": "Lisez le poème complet dans l’application {app}"
 }

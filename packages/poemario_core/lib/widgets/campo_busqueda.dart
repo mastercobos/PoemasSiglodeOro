@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/poema_colors.dart';
 import '../theme/poema_theme.dart';
+import '../utils/navegacion.dart';
 import 'linea_oro.dart';
 
 /// The search field that sits in a sepia app bar: the Search tab's full-text
@@ -37,7 +38,12 @@ class CampoBusqueda extends StatelessWidget implements PreferredSizeWidget {
 
     return Column(mainAxisSize: MainAxisSize.min, children: [
       Padding(
-        padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+        padding: EdgeInsets.fromLTRB(
+          margenLateral(context, base: 14),
+          0,
+          margenLateral(context, base: 14),
+          12,
+        ),
         child: SearchBar(
           controller: controlador,
           focusNode: focusNode,

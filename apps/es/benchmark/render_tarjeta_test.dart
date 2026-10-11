@@ -47,6 +47,8 @@ void main() {
       locale: Locale('es'),
       nombreApp: 'Antología Poética',
       firmaCompartir: 'Poemario · Siglo de Oro',
+      nombreTienda: 'Poemario - Siglo de Oro',
+      versoMasLargo: 'muero.» «¡Ya sé lo que es!» «¿Qué es, pues?» «Ausencia.»',
       assetOrnamento: _icono,
       fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
       coloresClaro: PoemaColors.claroPorDefecto,
@@ -94,8 +96,12 @@ void main() {
                   key: clave,
                   child: Material(
                     type: MaterialType.transparency,
-                    child:
-                        TarjetaCompartir(poema: p, firma: config.firmaCompartir),
+                    child: TarjetaCompartir(
+                      poema: p,
+                      firma: config.firmaCompartir,
+                      avisoCompleto: 'Lee el poema completo en la aplicación '
+                          '${config.nombreTienda}',
+                    ),
                   ),
                 ),
               ),

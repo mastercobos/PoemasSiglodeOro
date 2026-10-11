@@ -17,6 +17,8 @@ Poema _poema(List<int> estrofas, {String titulo = 'Título'}) {
       index: 0);
 }
 
+const _aviso = 'Lee el poema completo en la aplicación Prueba';
+
 Future<void> _montar(WidgetTester tester, Poema poema) async {
   tester.view.physicalSize = const Size(1200, 1400);
   tester.view.devicePixelRatio = 1;
@@ -27,7 +29,13 @@ Future<void> _montar(WidgetTester tester, Poema poema) async {
       theme: configPrueba.temaClaro,
       home: MediaQuery(
         data: const MediaQueryData(textScaler: TextScaler.noScaling),
-        child: Center(child: TarjetaCompartir(poema: poema, firma: 'Firma')),
+        child: Center(
+          child: TarjetaCompartir(
+            poema: poema,
+            firma: 'Firma',
+            avisoCompleto: _aviso,
+          ),
+        ),
       ),
     ),
   ));
@@ -59,15 +67,18 @@ void main() {
       await _montar(tester, _poema([4, 4, 3, 3], titulo: 'Muy largo ' * 30));
       expect(_versosPintados(tester), 14);
       expect(find.text('…'), findsNothing);
+      expect(find.text(_aviso), findsNothing);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a long poem fills the card and ends in an ellipsis',
-        (tester) async {
+    testWidgets(
+        'a long poem fills the card and ends in an ellipsis and a pointer '
+        'to the app', (tester) async {
       await _montar(tester, _poema([60]));
       expect(_versosPintados(tester), greaterThan(4));
       expect(_versosPintados(tester), lessThan(60));
       expect(find.text('…'), findsOneWidget);
+      expect(find.text(_aviso), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

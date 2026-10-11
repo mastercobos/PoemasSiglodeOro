@@ -120,8 +120,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     final idx = _indice![p.indiceOriginal].indexOf(_consulta);
     if (idx == -1) return '';
     // The index is "titulo autor texto"; offset back into the body.
-    final desplazamiento =
-        plegarParaOrden('${p.titulo} ${p.autor} ').length;
+    final desplazamiento = plegarParaOrden('${p.titulo} ${p.autor} ').length;
     final enTexto = idx - desplazamiento;
     if (enTexto < 0 || enTexto >= p.texto.length) return '';
     final inicio = (enTexto - 40).clamp(0, p.texto.length);
@@ -159,7 +158,9 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     final c = context.colores;
     final t = context.tipos;
 
-    if (_pendiente != null && _indice == null && _controlador.text.trim().isNotEmpty) {
+    if (_pendiente != null &&
+        _indice == null &&
+        _controlador.text.trim().isNotEmpty) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -214,8 +215,8 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
       // Resetting the scroll position on a new query: without this the list
       // stays halfway down when the results change under it.
       key: ValueKey(_consulta),
-      padding:
-          EdgeInsets.fromLTRB(14, 10, 14, espacioBarraFlotante(context)),
+      padding: EdgeInsets.fromLTRB(margenLateral(context, base: 14), 10,
+          margenLateral(context, base: 14), espacioBarraFlotante(context)),
       itemCount: _resultados.length,
       itemBuilder: (context, i) {
         final p = _resultados[i];

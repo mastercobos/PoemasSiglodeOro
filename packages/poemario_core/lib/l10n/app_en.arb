@@ -84,5 +84,6 @@
   "propinasGracias": "Thank you for your support!",
   "propinasError": "The payment couldn't be completed. You have not been charged.",
   "creditosTitulo": "Sources of the texts",
-  "creditosIntro": "The poems are in the public domain. These are the editions and transcriptions they come from; the texts were selected and corrected for this app."
+  "creditosIntro": "The poems are in the public domain. These are the editions and transcriptions they come from; the texts were selected and corrected for this app.",
+  "compartirLeerCompleto": "Read the full poem in the {app} app"
 }

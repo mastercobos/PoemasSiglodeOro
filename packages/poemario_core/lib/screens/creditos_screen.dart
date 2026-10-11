@@ -28,7 +28,12 @@ class CreditosScreen extends StatelessWidget {
         bottom: const LineaOro(),
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(14, 18, 14, espacioBarraFlotante(context)),
+        padding: EdgeInsets.fromLTRB(
+          margenLateral(context, base: 14),
+          18,
+          margenLateral(context, base: 14),
+          espacioBarraFlotante(context),
+        ),
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(6, 0, 6, 12),

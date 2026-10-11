@@ -42,6 +42,7 @@ class CompartirPoema {
     required Poema poema,
     required Rect origen,
     required String mensajeError,
+    required String avisoCompleto,
   }) async {
     // Resolve everything that needs a BuildContext *before* the first await:
     // the context may be gone by the time we come back.
@@ -68,6 +69,7 @@ class CompartirPoema {
         tema: tema,
         poema: poema,
         firma: config.firmaCompartir,
+        avisoCompleto: avisoCompleto,
       );
 
       if (bytes != null && bytes.isNotEmpty) {
@@ -110,6 +112,7 @@ class CompartirPoema {
     required ThemeData tema,
     required Poema poema,
     required String firma,
+    required String avisoCompleto,
   }) async {
     final clave = GlobalKey();
     final entrada = OverlayEntry(
@@ -129,7 +132,11 @@ class CompartirPoema {
                 key: clave,
                 child: Material(
                   type: MaterialType.transparency,
-                  child: TarjetaCompartir(poema: poema, firma: firma),
+                  child: TarjetaCompartir(
+                    poema: poema,
+                    firma: firma,
+                    avisoCompleto: avisoCompleto,
+                  ),
                 ),
               ),
             ),
@@ -196,8 +203,9 @@ class CompartirPoema {
 /// * A poem of up to [_umbralVersos] verses — a sonnet, which is nearly the
 ///   whole Spanish anthology — is always shown whole. If a long title leaves
 ///   it short of room it is scaled down slightly rather than losing a verse.
-/// * A longer poem fills the frame with as many verses as fit, then "…".
-///   The cut falls at a stanza break when that keeps most of what would fit
+/// * A longer poem fills the frame with as many verses as fit, then "…" and
+///   [avisoCompleto], which sends the reader to the app for the rest. The
+///   cut falls at a stanza break when that keeps most of what would fit
 ///   (see [seleccionarVersos]), so the preview reads as a complete thought.
 ///
 /// The preview is a feature, not a fallback: a card plus the app's own
@@ -207,12 +215,24 @@ class TarjetaCompartir extends StatelessWidget {
   final Poema poema;
   final String firma;
 
-  const TarjetaCompartir({super.key, required this.poema, required this.firma});
+  /// Shown under the "…" of a poem cut short, e.g. "Lee el poema completo
+  /// en la aplicación Poemario - Siglo de Oro".
+  final String avisoCompleto;
+
+  const TarjetaCompartir({
+    super.key,
+    required this.poema,
+    required this.firma,
+    required this.avisoCompleto,
+  });
 
   /// Poems this short are never cut, only scaled down if they must be.
   static const _umbralVersos = 14;
 
   static const _huecoEstrofa = 16.0;
+
+  /// Between the "…" and [avisoCompleto].
+  static const _huecoAviso = 10.0;
 
   @override
   Widget build(BuildContext context) {
@@ -284,9 +304,16 @@ class TarjetaCompartir extends StatelessWidget {
   ) {
     final escalado = MediaQuery.textScalerOf(context);
     final direccion = Directionality.of(context);
-    double alto(String verso) {
+    final c = context.colores;
+    final estiloAviso = context.tipos.cuerpo.copyWith(
+      fontSize: 20,
+      height: 1.35,
+      fontWeight: FontWeight.w600,
+      color: c.oro,
+    );
+    double alto(String verso, [TextStyle? otro]) {
       final pintor = TextPainter(
-        text: TextSpan(text: verso, style: estilo),
+        text: TextSpan(text: verso, style: otro ?? estilo),
         textAlign: TextAlign.center,
         textDirection: direccion,
         textScaler: escalado,
@@ -303,7 +330,10 @@ class TarjetaCompartir extends StatelessWidget {
             altoVerso: alto,
             altoDisponible: restricciones.maxHeight,
             huecoEstrofa: _huecoEstrofa,
-            altoPuntos: _huecoEstrofa + alto('…'),
+            altoPuntos: _huecoEstrofa +
+                alto('…') +
+                _huecoAviso +
+                alto(avisoCompleto, estiloAviso),
           );
     final esPreview =
         estrofas.fold<int>(0, (n, e) => n + e.length) < poema.versos.length;
@@ -320,7 +350,9 @@ class TarjetaCompartir extends StatelessWidget {
           const SizedBox(height: _huecoEstrofa),
           Text('…',
               textAlign: TextAlign.center,
-              style: estilo.copyWith(color: context.colores.oro)),
+              style: estilo.copyWith(color: c.oro)),
+          const SizedBox(height: _huecoAviso),
+          Text(avisoCompleto, textAlign: TextAlign.center, style: estiloAviso),
         ],
       ],
     );
@@ -336,7 +368,8 @@ class TarjetaCompartir extends StatelessWidget {
   }
 
   /// The leading verses of [estrofas] that fit in [altoDisponible], stanza
-  /// structure preserved, leaving room for the "…" line ([altoPuntos]).
+  /// structure preserved, leaving room for the "…" line and the notice under
+  /// it ([altoPuntos]).
   ///
   /// Cuts at the last stanza break that fits when that keeps at least three
   /// quarters of the verses that would fit; otherwise mid-stanza, since one

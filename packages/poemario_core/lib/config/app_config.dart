@@ -26,6 +26,15 @@ class AppConfig {
   /// share, e.g. "Poemario · Siglo de Oro".
   final String firmaCompartir;
 
+  /// The app's name as the stores list it, e.g. "Poemario - Siglo de Oro".
+  /// A shared card cut short tells the reader to find the rest under it.
+  final String nombreTienda;
+
+  /// The longest verse of any sonnet in this anthology. On a tablet the text
+  /// grows until a whole sonnet no longer fits the reader's height or this
+  /// verse its width (see EscalaTableta).
+  final String versoMasLargo;
+
   /// Asset path of this app's anthology, declared in the app's own pubspec.
   final String assetPoemas;
 
@@ -68,6 +77,8 @@ class AppConfig {
     required this.locale,
     required this.nombreApp,
     required this.firmaCompartir,
+    required this.nombreTienda,
+    required this.versoMasLargo,
     required this.coloresClaro,
     required this.coloresOscuro,
     required this.fuentes,
