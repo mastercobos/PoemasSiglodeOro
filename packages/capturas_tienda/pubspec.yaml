@@ -1,0 +1,24 @@
+name: capturas_tienda
+description: Renders App Store screenshots of an anthology app from its real config, fonts and poems, without a device.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+# A dev-only package: each app lists it under dev_dependencies and runs it with
+# `flutter test capturas/`, so flutter_test is a regular dependency here.
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  provider: ^6.1.2
+  shared_preferences: ^2.3.0
+  poemario_core:
+    path: ../poemario_core
+
+dev_dependencies:
+  flutter_lints: ^6.0.0

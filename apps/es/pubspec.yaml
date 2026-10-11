@@ -15,6 +15,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  # App Store screenshots: `flutter test capturas/`.
+  capturas_tienda:
+    path: ../../packages/capturas_tienda
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.0
   flutter_native_splash: ^2.3.0
