@@ -154,7 +154,7 @@ void generarCapturas(
 
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    await _cargarFuentes(guion.config.fuentes.body);
+    await cargarFuentes(guion.config.fuentes.body);
     anthology = await PoemaRepository(
       assetPath: guion.config.assetPoemas,
       compararTitulos: guion.config.compararTitulos,
@@ -435,7 +435,7 @@ class _TiendaCerrada implements TiendaPropinas {
 /// The few widgets that keep the platform's own font (a [TextButton]'s
 /// label) get [cuerpo], the app's body face: the iPhone's SF Pro isn't
 /// available here.
-Future<void> _cargarFuentes(String cuerpo) async {
+Future<void> cargarFuentes(String cuerpo) async {
   final familias = <String, List<String>>{};
   String? actual;
   for (final linea in File('pubspec.yaml').readAsLinesSync()) {

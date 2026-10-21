@@ -18,6 +18,9 @@ dev_dependencies:
   # App Store screenshots: `flutter test capturas/`.
   capturas_tienda:
     path: ../../packages/capturas_tienda
+  # The daily Tumblr bot: `flutter test publicacion/`.
+  publicador_diario:
+    path: ../../packages/publicador_diario
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.0
   flutter_native_splash: ^2.3.0

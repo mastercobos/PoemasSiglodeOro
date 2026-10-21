@@ -1,0 +1,25 @@
+name: publicador_diario
+description: Posts each app's poems of the day, as share cards, to the app's Tumblr blog.
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+# Like capturas_tienda, it runs under `flutter test` from an app's folder (the
+# card is drawn by the real widget, which needs the engine), so flutter_test
+# is a regular dependency.
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  crypto: ^3.0.3
+  provider: ^6.1.2
+  poemario_core:
+    path: ../poemario_core
+  capturas_tienda:
+    path: ../capturas_tienda
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
