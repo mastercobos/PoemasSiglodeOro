@@ -23,9 +23,10 @@ const configApp = AppConfig(
   fuentes: FontPair(display: 'PlayfairDisplay', body: 'Lato'),
   coloresClaro: PoemaColors.claroPorDefecto,
   coloresOscuro: PoemaColors.oscuroPorDefecto,
-  // Must match the consumable products created in Play Console and App
-  // Store Connect. Ids that don't exist yet are skipped.
-  idsPropinas: {'propina_cafe_1', 'propina_cafe_3', 'propina_cafe_5'},
+  // Tip jar off for now: with no ids the app never queries the store and
+  // Settings shows no tips section. To turn it on, uncomment; the ids must
+  // match the consumable products in Play Console and App Store Connect.
+  // idsPropinas: {'propina_cafe_1', 'propina_cafe_3', 'propina_cafe_5'},
 );
 
 void main() {
