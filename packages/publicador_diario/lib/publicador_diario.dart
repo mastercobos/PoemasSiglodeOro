@@ -56,8 +56,10 @@ export 'src/tumblr.dart';
 class GuionPublicacion {
   final AppConfig config;
 
-  /// Tags after the poem's title, its author and [AppConfig.nombreTienda]:
-  /// the language's poetry tags, the period.
+  /// Tags after the poem's author and before its title and
+  /// [AppConfig.nombreTienda]: the language's poetry tags, the period. The
+  /// most searched go first, as Tumblr's tag pages and search weigh a post's
+  /// first tags most.
   final List<String> etiquetas;
 
   /// The closing line of each post, linked to [enlaceTienda].
@@ -114,13 +116,13 @@ String tituloPara(Poema poema) {
 
 final _numeracion = RegExp(r'^\s*[-–—]\s*[0-9IVXLCDM]*\s*[-–—]\s*');
 
-/// [poema]'s tags: its title, its author, the app's name, then [extra].
-/// Tumblr separates tags with commas and caps them at 140 characters; a
-/// repeated tag is dropped.
+/// [poema]'s tags: its author, then [extra], then its title and the app's
+/// name, which few people search for. Tumblr separates tags with commas and
+/// caps them at 140 characters; a repeated tag is dropped.
 List<String> etiquetasPara(Poema poema, String nombreApp, List<String> extra) {
   final vistas = <String>{};
   return [
-    for (final bruta in [tituloPara(poema), poema.autor, nombreApp, ...extra])
+    for (final bruta in [poema.autor, ...extra, tituloPara(poema), nombreApp])
       if (_limpiarEtiqueta(bruta) case final e
           when e.isNotEmpty && vistas.add(e.toLowerCase()))
         e,

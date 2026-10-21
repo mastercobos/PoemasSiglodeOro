@@ -10,10 +10,10 @@ void main() {
     config: configApp,
     etiquetas: [
       'poésie',
-      'poème du jour',
+      'french poetry',
       'poésie française',
       'littérature française',
-      'french poetry',
+      'poème du jour',
     ],
     invitacion: 'Deux poèmes par jour dans l’application Poésie française',
     // Not on the stores yet.

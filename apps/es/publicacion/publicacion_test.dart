@@ -10,11 +10,11 @@ void main() {
     config: configApp,
     etiquetas: [
       'poesía',
-      'poema del día',
+      'spanish poetry',
       'Siglo de Oro',
       'poesía española',
       'literatura española',
-      'spanish poetry',
+      'poema del día',
     ],
     invitacion: 'Dos poemas del Siglo de Oro cada día en la aplicación '
         'Poemario - Siglo de Oro',

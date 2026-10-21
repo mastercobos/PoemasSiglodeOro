@@ -10,10 +10,10 @@ void main() {
     config: configApp,
     etiquetas: [
       'poetry',
-      'poem of the day',
       'classic poetry',
       'english poetry',
       'literature',
+      'poem of the day',
     ],
     invitacion: 'Two poems a day in the English Verse app',
     // Not on the stores yet.

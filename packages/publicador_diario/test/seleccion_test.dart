@@ -36,7 +36,8 @@ void main() {
     expect(seleccionPara(pool, DateTime(2026, 9, 1)).poemas, hasLength(2));
   });
 
-  test('tags: title, author, app, then the extras, without commas or repeats',
+  test(
+      'tags: author, the extras, then title and app, without commas or repeats',
       () {
     final poema =
         _poema(1, 'Quevedo', titulo: '«Cerrar podrá mis ojos, la postrera…»');
@@ -44,11 +45,11 @@ void main() {
       etiquetasPara(poema, 'Poemario - Siglo de Oro',
           ['poesía', 'quevedo', 'Siglo de Oro']),
       [
-        'Cerrar podrá mis ojos la postrera',
         'Quevedo',
-        'Poemario - Siglo de Oro',
         'poesía',
         'Siglo de Oro',
+        'Cerrar podrá mis ojos la postrera',
+        'Poemario - Siglo de Oro',
       ],
     );
   });
@@ -57,8 +58,8 @@ void main() {
     final poema = _poema(2, 'Villamediana',
         titulo: '- CXLVIII - Josefa Vaca, comedianta');
     expect(tituloPara(poema), 'Josefa Vaca, comedianta');
-    expect(
-        etiquetasPara(poema, 'App', const []).first, 'Josefa Vaca comedianta');
+    expect(etiquetasPara(poema, 'App', const []),
+        ['Villamediana', 'Josefa Vaca comedianta', 'App']);
     expect(
         tituloPara(_poema(4, 'Lope',
             titulo: '- 1329 - Jornada II, INFANTE De Mirad a quién alabáis')),
@@ -68,8 +69,8 @@ void main() {
   test('a title that is only numbering gives way to the first verse', () {
     final poema = _poema(5, 'Sor Juana', titulo: '- 96 -');
     expect(tituloPara(poema), 'Verso primero del poema 5,');
-    expect(etiquetasPara(poema, 'App', const []).first,
-        'Verso primero del poema 5');
+    expect(etiquetasPara(poema, 'App', const []),
+        ['Sor Juana', 'Verso primero del poema 5', 'App']);
   });
 
   test('a blank number is numbering too', () {
@@ -85,7 +86,7 @@ void main() {
   });
 
   test('an untitled poem is tagged with its first verse', () {
-    expect(etiquetasPara(_poema(3, 'Garcilaso'), 'App', const []).first,
-        'Verso primero del poema 3');
+    expect(etiquetasPara(_poema(3, 'Garcilaso'), 'App', const []),
+        ['Garcilaso', 'Verso primero del poema 3', 'App']);
   });
 }
