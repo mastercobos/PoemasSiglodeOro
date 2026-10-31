@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
 import '../data/poema_repository.dart';
@@ -71,6 +72,7 @@ class AjustesScreen extends StatelessWidget {
               ),
             ),
             const SliverToBoxAdapter(child: _SeccionCreditos()),
+            const SliverToBoxAdapter(child: _SeccionPrivacidad()),
           ])
             // A centred column on a tablet; nothing on a phone.
             SliverPadding(
@@ -411,6 +413,62 @@ class _SeccionCreditos extends StatelessWidget {
               trailing: Icon(Icons.chevron_right, color: c.oroClaro),
               onTap: () => Navigator.of(context)
                   .push(rutaFundido((_) => const CreditosScreen())),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Link to the privacy policy, opened in the browser: the app itself has no
+/// network access. Absent when the app has no address set.
+class _SeccionPrivacidad extends StatelessWidget {
+  const _SeccionPrivacidad();
+
+  Future<void> _abrir(BuildContext context, String url) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final error = L10n.of(context).privacidadError(url);
+    var abierto = false;
+    try {
+      abierto = await launchUrl(Uri.parse(url),
+          mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('Privacidad: $e');
+    }
+    if (!abierto) messenger.showSnackBar(SnackBar(content: Text(error)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final url = context.config.urlPrivacidad;
+    if (url == null) return const SizedBox.shrink();
+
+    final c = context.colores;
+    final t = context.tipos;
+    final l10n = L10n.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        _Encabezado(l10n.privacidadTitulo),
+        // See _SeccionTema: Material so ink splashes stay visible.
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          child: Material(
+            color: c.tarjeta,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: c.oroClaro.withValues(alpha: 0.6)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              leading: Icon(Icons.privacy_tip_outlined, color: c.oro),
+              title: Text(l10n.privacidadPolitica,
+                  style: t.cuerpo.copyWith(color: c.texto)),
+              trailing: Icon(Icons.open_in_new, color: c.oroClaro),
+              onTap: () => _abrir(context, url),
             ),
           ),
         ),

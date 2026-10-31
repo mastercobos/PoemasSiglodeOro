@@ -280,6 +280,17 @@ class L10nEs extends L10n {
       'Los poemas son de dominio público. Estas son las ediciones y transcripciones de las que proceden; los textos se han seleccionado y corregido para esta aplicación.';
 
   @override
+  String get privacidadTitulo => 'Privacidad';
+
+  @override
+  String get privacidadPolitica => 'Política de privacidad';
+
+  @override
+  String privacidadError(String url) {
+    return 'No se pudo abrir el navegador. La política está en $url';
+  }
+
+  @override
   String compartirLeerCompleto(String app) {
     return 'Lee el poema completo en la aplicación $app';
   }

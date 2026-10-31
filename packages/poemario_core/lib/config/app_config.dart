@@ -73,6 +73,10 @@ class AppConfig {
   /// not only on the store page. Empty hides the entry.
   final List<CreditoFuente> creditos;
 
+  /// Address of this app's privacy policy, linked from Settings. Play requires
+  /// the link inside the app as well as in the Console. Null hides the entry.
+  final String? urlPrivacidad;
+
   const AppConfig({
     required this.locale,
     required this.nombreApp,
@@ -89,6 +93,7 @@ class AppConfig {
     this.prefijoPreferencias = '',
     this.idsPropinas = const {},
     this.creditos = const [],
+    this.urlPrivacidad,
     this.disposicionVersos = DisposicionVersos.centrada,
   });
 

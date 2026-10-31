@@ -45,6 +45,7 @@ const configPrueba = AppConfig(
       enlace: 'https://example.org',
     ),
   ],
+  urlPrivacidad: 'https://example.org/privacidad',
 );
 
 /// A small anthology with predictable content.

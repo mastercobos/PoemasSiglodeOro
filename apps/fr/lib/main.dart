@@ -47,6 +47,8 @@ const configApp = AppConfig(
       enlace: 'https://www.gutenberg.org',
     ),
   ],
+  urlPrivacidad:
+      'https://mastercobos.github.io/website/confidentialite-poesie-francaise.html',
   fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
   coloresClaro: PoemaColors(
     oro: Color(0xFF2E4A7D),

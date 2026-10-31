@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poemario_core/notifications/agenda_avisos.dart';
 import 'package:poemario_core/screens/ajustes_screen.dart';
@@ -396,6 +397,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(interruptor);
       await tester.pumpAndSettle();
+      // The row now sits at the top of the screen, with the count above it and
+      // past the build extent, so scroll back up to read it.
+      await tester.scrollUntilVisible(find.text('3 de 4 autores'), -200);
       expect(find.text('3 de 4 autores'), findsOneWidget);
     });
 
@@ -415,6 +419,32 @@ void main() {
       expect(find.text('Textos de prueba, bajo una licencia de prueba.'),
           findsOneWidget);
       expect(find.text('https://example.org'), findsOneWidget);
+    });
+
+    testWidgets('the privacy entry opens the policy in the browser',
+        (tester) async {
+      final abiertos = <String>[];
+      const canal = MethodChannel('plugins.flutter.io/url_launcher');
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(canal,
+          (llamada) async {
+        if (llamada.method == 'launch') {
+          abiertos.add((llamada.arguments as Map)['url'] as String);
+        }
+        return true;
+      });
+      addTearDown(() => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(canal, null));
+
+      await montar(tester, const AjustesScreen());
+
+      final entrada = find.text('Política de privacidad');
+      await tester.scrollUntilVisible(entrada, 200);
+      await tester.ensureVisible(entrada);
+      await tester.pumpAndSettle();
+      await tester.tap(entrada);
+      await tester.pumpAndSettle();
+
+      expect(abiertos, ['https://example.org/privacidad']);
     });
   });
 }

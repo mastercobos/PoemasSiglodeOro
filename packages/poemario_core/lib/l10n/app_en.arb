@@ -85,5 +85,8 @@
   "propinasError": "The payment couldn't be completed. You have not been charged.",
   "creditosTitulo": "Sources of the texts",
   "creditosIntro": "The poems are in the public domain. These are the editions and transcriptions they come from; the texts were selected and corrected for this app.",
+  "privacidadTitulo": "Privacy",
+  "privacidadPolitica": "Privacy policy",
+  "privacidadError": "The browser couldn't be opened. The policy is at {url}",
   "compartirLeerCompleto": "Read the full poem in the {app} app"
 }

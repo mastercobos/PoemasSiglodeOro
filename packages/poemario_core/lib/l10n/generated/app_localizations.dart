@@ -537,6 +537,24 @@ abstract class L10n {
   /// **'Los poemas son de dominio público. Estas son las ediciones y transcripciones de las que proceden; los textos se han seleccionado y corregido para esta aplicación.'**
   String get creditosIntro;
 
+  /// No description provided for @privacidadTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Privacidad'**
+  String get privacidadTitulo;
+
+  /// No description provided for @privacidadPolitica.
+  ///
+  /// In es, this message translates to:
+  /// **'Política de privacidad'**
+  String get privacidadPolitica;
+
+  /// No description provided for @privacidadError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el navegador. La política está en {url}'**
+  String privacidadError(String url);
+
   /// No description provided for @compartirLeerCompleto.
   ///
   /// In es, this message translates to:

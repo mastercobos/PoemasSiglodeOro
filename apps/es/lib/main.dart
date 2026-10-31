@@ -27,6 +27,9 @@ const configApp = AppConfig(
   // Settings shows no tips section. To turn it on, uncomment; the ids must
   // match the consumable products in Play Console and App Store Connect.
   // idsPropinas: {'propina_cafe_1', 'propina_cafe_3', 'propina_cafe_5'},
+  // Set once the policy is hosted: until then Settings shows no link, and
+  // Play requires one.
+  urlPrivacidad: null,
 );
 
 void main() {

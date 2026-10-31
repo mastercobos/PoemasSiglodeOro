@@ -123,6 +123,14 @@
   "propinasError": "No se pudo completar el pago. No se ha hecho ningún cargo.",
   "creditosTitulo": "Fuentes de los textos",
   "creditosIntro": "Los poemas son de dominio público. Estas son las ediciones y transcripciones de las que proceden; los textos se han seleccionado y corregido para esta aplicación.",
+  "privacidadTitulo": "Privacidad",
+  "privacidadPolitica": "Política de privacidad",
+  "privacidadError": "No se pudo abrir el navegador. La política está en {url}",
+  "@privacidadError": {
+    "placeholders": {
+      "url": {"type": "String"}
+    }
+  },
   "compartirLeerCompleto": "Lee el poema completo en la aplicación {app}",
   "@compartirLeerCompleto": {
     "placeholders": {

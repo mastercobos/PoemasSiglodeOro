@@ -57,6 +57,8 @@ const configApp = AppConfig(
       enlace: 'https://en.wikisource.org',
     ),
   ],
+  urlPrivacidad:
+      'https://mastercobos.github.io/website/privacy-english-verse.html',
   fuentes: FontPair(display: 'EBGaramond', body: 'SourceSans3'),
   coloresClaro: PoemaColors(
     oro: Color(0xFF8C2F45),
