@@ -1,4 +1,4 @@
-// App Store screenshots, rendered without a device:
+// Store screenshots and Play's feature graphic, rendered without a device:
 //   cd apps/fr && flutter test capturas/
 // Output goes to $SALIDA (default: build/capturas). See capturas_tienda.
 import 'package:app_fr/main.dart';
@@ -18,5 +18,6 @@ void main() {
     ],
     autor: 'Victor Hugo',
     busqueda: 'rossignol',
+    lema: 'Deux grands poèmes, chaque jour.',
   ));
 }

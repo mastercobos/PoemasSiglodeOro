@@ -1,4 +1,4 @@
-/// App Store screenshots of an anthology app, drawn without a device.
+/// Store screenshots of an anthology app, drawn without a device.
 ///
 /// Each app calls [generarCapturas] from `capturas/capturas_test.dart` with
 /// its own [AppConfig] and a [GuionCapturas] naming the poems to show, then
@@ -7,11 +7,13 @@
 ///     flutter test capturas/
 ///
 /// The real [RootScreen] is mounted with the app's real anthology, fonts and
-/// icons, at the exact pixel size Apple asks for, laid out as on iOS. Every
-/// screen is reached the way a reader would reach it (tabs, the inner
-/// navigators), so the floating nav pill and the app bars are the real ones.
+/// icons, at the exact pixel size each store asks for, laid out as on that
+/// platform. Every screen is reached the way a reader would reach it (tabs,
+/// the inner navigators), so the floating nav pill and the app bars are the
+/// real ones. PNGs carry no alpha channel, which both stores reject.
 /// Output goes to `$SALIDA` (default `build/capturas`):
-/// `<device>/<claro|oscuro>/NN_screen.png`.
+/// `<device>/<claro|oscuro>/NN_screen.png`, plus `grafico_destacado.png`
+/// when [GuionCapturas.lema] is set.
 library;
 
 import 'dart:io';
@@ -22,6 +24,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:poemario_core/config/app_config.dart';
 import 'package:poemario_core/data/poema.dart';
 import 'package:poemario_core/data/poema_repository.dart';
@@ -50,7 +53,7 @@ import 'package:poemario_core/widgets/escala_tableta.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// A screen size App Store Connect asks screenshots for.
+/// A screen size a store asks screenshots for.
 class Dispositivo {
   final String nombre;
 
@@ -64,6 +67,9 @@ class Dispositivo {
   final double margenSuperior;
   final double margenInferior;
 
+  /// Sets the back chevrons, scroll physics and page transitions.
+  final TargetPlatform plataforma;
+
   const Dispositivo({
     required this.nombre,
     required this.ancho,
@@ -71,6 +77,7 @@ class Dispositivo {
     required this.escala,
     required this.margenSuperior,
     required this.margenInferior,
+    this.plataforma = TargetPlatform.iOS,
   });
 }
 
@@ -93,6 +100,40 @@ const ipad13 = Dispositivo(
   escala: 2,
   margenSuperior: 24,
   margenInferior: 20,
+);
+
+/// Android phone: 1080 × 1920. Play's recommendation formats ask for 9:16 at
+/// 1080 px or more.
+const telefonoAndroid = Dispositivo(
+  nombre: 'android_telefono',
+  ancho: 432,
+  alto: 768,
+  escala: 2.5,
+  margenSuperior: 24,
+  margenInferior: 16,
+  plataforma: TargetPlatform.android,
+);
+
+/// Android 7″ tablet: 1224 × 2176, 9:16 as Play asks of tablets.
+const tabletaAndroid7 = Dispositivo(
+  nombre: 'android_tableta_7',
+  ancho: 612,
+  alto: 1088,
+  escala: 2,
+  margenSuperior: 24,
+  margenInferior: 16,
+  plataforma: TargetPlatform.android,
+);
+
+/// Android 10″ tablet: 1620 × 2880, 9:16 as Play asks of tablets.
+const tabletaAndroid10 = Dispositivo(
+  nombre: 'android_tableta_10',
+  ancho: 810,
+  alto: 1440,
+  escala: 2,
+  margenSuperior: 24,
+  margenInferior: 16,
+  plataforma: TargetPlatform.android,
 );
 
 /// A poem named by its author and the start of its first verse, which stays
@@ -133,6 +174,9 @@ class GuionCapturas {
   /// A word typed into search.
   final String busqueda;
 
+  /// The line on Play's feature graphic. Null draws no graphic.
+  final String? lema;
+
   const GuionCapturas({
     required this.config,
     required this.primero,
@@ -140,13 +184,20 @@ class GuionCapturas {
     required this.favoritos,
     required this.autor,
     required this.busqueda,
+    this.lema,
   });
 }
 
 /// Declares one test per device and theme, each writing every screenshot.
 void generarCapturas(
   GuionCapturas guion, {
-  List<Dispositivo> dispositivos = const [iphone69, ipad13],
+  List<Dispositivo> dispositivos = const [
+    iphone69,
+    ipad13,
+    telefonoAndroid,
+    tabletaAndroid7,
+    tabletaAndroid10,
+  ],
 }) {
   late Anthology anthology;
   late List<Poema> delDia;
@@ -184,12 +235,145 @@ void generarCapturas(
           delDia: delDia,
           favoritos: favoritos,
         ),
-        // iOS back chevrons, scroll physics and page transitions.
-        variant: TargetPlatformVariant.only(TargetPlatform.iOS),
+        variant: TargetPlatformVariant.only(d.plataforma),
         timeout: const Timeout(Duration(minutes: 5)),
       );
     }
   }
+
+  final lema = guion.lema;
+  if (lema != null) {
+    testWidgets(
+      'gráfico destacado',
+      (tester) => _graficoDestacado(tester, guion.config, lema),
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+  }
+}
+
+/// Encodes what [limite] shows as a PNG without an alpha channel.
+Future<List<int>> _pngSinAlfa(
+    RenderRepaintBoundary limite, double escala) async {
+  final imagen = await limite.toImage(pixelRatio: escala);
+  final datos = await imagen.toByteData(format: ui.ImageByteFormat.rawRgba);
+  final rgba = img.Image.fromBytes(
+    width: imagen.width,
+    height: imagen.height,
+    bytes: datos!.buffer,
+    numChannels: 4,
+  );
+  imagen.dispose();
+  return img.encodePng(rgba.convert(numChannels: 3));
+}
+
+Future<ui.Image> _imagenDeArchivo(String ruta) async {
+  final codec = await ui.instantiateImageCodec(File(ruta).readAsBytesSync());
+  final imagen = (await codec.getNextFrame()).image;
+  codec.dispose();
+  return imagen;
+}
+
+/// Play's feature graphic, 1024 × 500: the app's dark palette, emblem, name
+/// and [lema], beside a phone showing the screenshot of the first poem. Runs
+/// after the phone's screenshots, which it reads back from `$SALIDA`.
+Future<void> _graficoDestacado(
+    WidgetTester tester, AppConfig config, String lema) async {
+  tester.view
+    ..physicalSize = const Size(1024, 500)
+    ..devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+
+  final salida = Platform.environment['SALIDA'] ?? 'build/capturas';
+  final (emblema, pantalla) = (await tester.runAsync(() async => (
+        await _imagenDeArchivo(config.assetOrnamento!),
+        await _imagenDeArchivo(
+            '$salida/${telefonoAndroid.nombre}/oscuro/02_poema.png'),
+      )))!;
+
+  final c = config.coloresOscuro;
+  final clave = GlobalKey();
+  await tester.pumpWidget(RepaintBoundary(
+    key: clave,
+    child: Directionality(
+      textDirection: TextDirection.ltr,
+      child: ColoredBox(
+        color: c.sepia,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 64,
+              top: 0,
+              bottom: 0,
+              width: 560,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  RawImage(image: emblema, width: 150, height: 150),
+                  const SizedBox(height: 12),
+                  Text(
+                    config.nombreApp,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: config.fuentes.display,
+                      fontSize: 68,
+                      height: 1.1,
+                      color: c.oro,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Container(width: 72, height: 1.5, color: c.oroClaro),
+                  const SizedBox(height: 18),
+                  Text(
+                    lema,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: config.fuentes.body,
+                      fontSize: 30,
+                      height: 1.25,
+                      color: c.texto,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Runs off the bottom edge, so only the top of the poem shows.
+            Positioned(
+              right: 72,
+              top: 40,
+              width: 270,
+              height: 480,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: c.fondo,
+                  border: Border.all(color: c.textoSuave, width: 6),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: RawImage(
+                      image: pantalla,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ));
+  await tester.pump();
+
+  final limite =
+      clave.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final png = await tester.runAsync(() => _pngSinAlfa(limite, 1));
+  File('$salida/grafico_destacado.png')
+    ..createSync(recursive: true)
+    ..writeAsBytesSync(png!);
 }
 
 Future<void> _recorrido(
@@ -301,12 +485,7 @@ Future<void> _recorrido(
     await asentar();
     final limite =
         clave.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final png = await tester.runAsync(() async {
-      final imagen = await limite.toImage(pixelRatio: d.escala);
-      final datos = await imagen.toByteData(format: ui.ImageByteFormat.png);
-      imagen.dispose();
-      return datos!.buffer.asUint8List();
-    });
+    final png = await tester.runAsync(() => _pngSinAlfa(limite, d.escala));
     File('$carpeta/$nombre.png')
       ..createSync(recursive: true)
       ..writeAsBytesSync(png!);

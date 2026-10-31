@@ -1,5 +1,5 @@
 name: capturas_tienda
-description: Renders App Store screenshots of an anthology app from its real config, fonts and poems, without a device.
+description: Renders store screenshots of an anthology app from its real config, fonts and poems, without a device.
 publish_to: 'none'
 version: 1.0.0
 
@@ -15,6 +15,7 @@ dependencies:
     sdk: flutter
   flutter_test:
     sdk: flutter
+  image: ^4.3.0
   provider: ^6.1.2
   shared_preferences: ^2.3.0
   poemario_core:
