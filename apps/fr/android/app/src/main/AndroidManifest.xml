@@ -1,4 +1,9 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Tip jar off (idsPropinas is empty in main.dart): drop the billing
+         permission the in_app_purchase plugin merges in. Delete this line
+         when turning tips on. -->
+    <uses-permission android:name="com.android.vending.BILLING" tools:node="remove" />
     <!-- Android 13+ runtime permission. Requested from the settings switch. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Reminders survive a reboot. Without this the schedule is silently lost. -->
